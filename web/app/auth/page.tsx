@@ -79,9 +79,26 @@ export default function AuthPage() {
     }
   };
 
-  const handleOAuthLogin = (provider: string) => {
-    // TODO: Implement OAuth login
-    console.log(`Login with ${provider}`);
+  const handleOAuthLogin = async (provider: string) => {
+    setError("");
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/oauth/${provider}/authorize`);
+      const result = await response.json();
+      if (result.success && result.data?.authorizationUrl) {
+        const authUrl = new URL(result.data.authorizationUrl);
+        if (returnUrl) {
+          authUrl.searchParams.set("state", encodeURIComponent(returnUrl));
+        }
+        window.location.href = authUrl.toString();
+      } else {
+        setError(result.message || "Failed to start OAuth login");
+        setIsLoading(false);
+      }
+    } catch {
+      setError("Failed to start OAuth login");
+      setIsLoading(false);
+    }
   };
 
   const switchMode = () => {
@@ -327,16 +344,7 @@ export default function AuthPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                onClick={() => handleOAuthLogin("github")}
-                disabled={isLoading}
-                className="gap-2 h-11"
-              >
-                <Github className="h-4 w-4" />
-                GitHub
-              </Button>
+            <div className="grid grid-cols-1 gap-3">
               <Button
                 variant="outline"
                 onClick={() => handleOAuthLogin("google")}
@@ -344,7 +352,7 @@ export default function AuthPage() {
                 className="gap-2 h-11"
               >
                 <Mail className="h-4 w-4" />
-                Google
+                Sign in with Google
               </Button>
             </div>
 

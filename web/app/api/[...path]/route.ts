@@ -1,41 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// 缓存环境变量和上次加载时间
+// Cache env var and last load time
 let cachedApiUrl: string | null = null;
 let lastLoadTime = 0;
-const CACHE_TTL = 5000; // 5秒缓存，方便热更新
+const CACHE_TTL = 5000; // 5s cache for hot reload
 
 /**
- * 动态加载 .env 文件获取 API_PROXY_URL
- * 优先级：系统环境变量 > .env.local > .env
+ * Dynamically load .env file to get API_PROXY_URL
+ * Priority: system env vars > .env.local > .env
  */
 function getApiProxyUrl(): string {
-  // 优先使用系统环境变量（Docker/K8s 传入）
+  // Prefer system env vars (Docker/K8s)
   if (process.env.API_PROXY_URL) {
     return process.env.API_PROXY_URL;
   }
-  
+
   const now = Date.now();
-  // 使用缓存
+  // Use cache
   if (cachedApiUrl !== null && (now - lastLoadTime) < CACHE_TTL) {
     return cachedApiUrl;
   }
-  
+
   try {
-    // 使用 require 避免构建时打包 Node.js 模块
+    // Use require to avoid bundling Node.js modules at build time
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require('fs');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require('path');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dotenv = require('dotenv');
-    
-    // 动态读取 .env 文件
+
+    // Dynamically read .env files
     const rootDir = process.cwd();
     const envLocalPath = path.resolve(rootDir, '.env.local');
     const envPath = path.resolve(rootDir, '.env');
-    
-    // 优先加载 .env.local
+
+    // Load .env.local first
     if (fs.existsSync(envLocalPath)) {
       const result = dotenv.config({ path: envLocalPath });
       if (result.parsed?.API_PROXY_URL) {
@@ -44,8 +44,8 @@ function getApiProxyUrl(): string {
         return cachedApiUrl!;
       }
     }
-    
-    // 其次加载 .env
+
+    // Then load .env
     if (fs.existsSync(envPath)) {
       const result = dotenv.config({ path: envPath });
       if (result.parsed?.API_PROXY_URL) {
@@ -55,30 +55,30 @@ function getApiProxyUrl(): string {
       }
     }
   } catch {
-    // 模块加载失败
+    // Module load failed
   }
-  
+
   cachedApiUrl = '';
   lastLoadTime = now;
   return '';
 }
 
-// 生成请求 ID
+// Generate request ID
 function generateRequestId(): string {
   return `req_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 }
 
-// 格式化时间戳
+// Format timestamp
 function formatTimestamp(): string {
   return new Date().toISOString();
 }
 
-// 计算耗时
+// Calculate duration
 function formatDuration(startTime: number): string {
   return `${Date.now() - startTime}ms`;
 }
 
-// 强制刷新的日志输出（生产环境下 console.log 可能被缓冲）
+// Force-flush log output (console.log may be buffered in production)
 function log(message: string): void {
   process.stdout.write(message + '\n');
 }
@@ -94,15 +94,15 @@ async function proxyRequest(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const searchParams = request.nextUrl.search;
 
-  log(`[${formatTimestamp()}] [${requestId}] ➡️  ${request.method} ${pathname}${searchParams}`);
-  
-  // 检查环境变量是否配置
+  log(`[${formatTimestamp()}] [${requestId}] -> ${request.method} ${pathname}${searchParams}`);
+
+  // Check if env var is configured
   if (!apiUrl) {
-    logError(`[${formatTimestamp()}] [${requestId}] ❌ API_PROXY_URL 环境变量未配置`);
+    logError(`[${formatTimestamp()}] [${requestId}] ERROR: API_PROXY_URL environment variable not configured`);
     return NextResponse.json(
       {
         error: 'API_PROXY_URL_NOT_CONFIGURED',
-        message: '后端 API 地址未配置，请设置 API_PROXY_URL 环境变量',
+        message: 'Backend API URL not configured. Please set the API_PROXY_URL environment variable.',
         requestId,
         timestamp: formatTimestamp(),
       },
@@ -111,20 +111,20 @@ async function proxyRequest(request: NextRequest) {
   }
 
   const targetUrl = `${apiUrl}${pathname}${searchParams}`;
-  log(`[${formatTimestamp()}] [${requestId}] 🎯 转发目标: ${targetUrl}`);
+  log(`[${formatTimestamp()}] [${requestId}] Forwarding to: ${targetUrl}`);
 
   try {
-    // 构建转发请求的 headers
+    // Build forwarded request headers
     const headers = new Headers();
     request.headers.forEach((value, key) => {
-      // 跳过 host 相关的 header
+      // Skip host-related headers
       if (!['host', 'connection'].includes(key.toLowerCase())) {
         headers.set(key, value);
       }
     });
 
-    // 转发请求
-    log(`[${formatTimestamp()}] [${requestId}] 🚀 开始转发请求...`);
+    // Forward request
+    log(`[${formatTimestamp()}] [${requestId}] Forwarding request...`);
     const response = await fetch(targetUrl, {
       method: request.method,
       headers,
@@ -133,22 +133,22 @@ async function proxyRequest(request: NextRequest) {
       duplex: 'half',
     });
 
-    log(`[${formatTimestamp()}] [${requestId}] ✅ 后端响应: ${response.status} ${response.statusText} [${formatDuration(startTime)}]`);
+    log(`[${formatTimestamp()}] [${requestId}] Backend response: ${response.status} ${response.statusText} [${formatDuration(startTime)}]`);
 
-    // 构建响应 headers
+    // Build response headers
     const responseHeaders = new Headers();
     response.headers.forEach((value, key) => {
-      // 跳过一些不应该转发的 header
+      // Skip headers that should not be forwarded
       if (!['content-encoding', 'transfer-encoding'].includes(key.toLowerCase())) {
         responseHeaders.set(key, value);
       }
     });
 
-    // 添加代理信息到响应头
+    // Add proxy info to response headers
     responseHeaders.set('X-Proxy-Request-Id', requestId);
     responseHeaders.set('X-Proxy-Duration', formatDuration(startTime));
 
-    // 返回响应
+    // Return response
     return new NextResponse(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -156,27 +156,27 @@ async function proxyRequest(request: NextRequest) {
     });
   } catch (error) {
     const duration = formatDuration(startTime);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
-    logError(`[${formatTimestamp()}] [${requestId}] ❌ 代理请求失败 [${duration}]`);
-    logError(`[${formatTimestamp()}] [${requestId}] 📛 错误信息: ${errorMessage}`);
+
+    logError(`[${formatTimestamp()}] [${requestId}] Proxy request failed [${duration}]`);
+    logError(`[${formatTimestamp()}] [${requestId}] Error: ${errorMessage}`);
     if (errorStack) {
-      logError(`[${formatTimestamp()}] [${requestId}] 📚 错误堆栈:\n${errorStack}`);
+      logError(`[${formatTimestamp()}] [${requestId}] Stack trace:\n${errorStack}`);
     }
-    
-    // 判断错误类型
-    const isConnectionError = errorMessage.includes('ECONNREFUSED') || 
+
+    // Determine error type
+    const isConnectionError = errorMessage.includes('ECONNREFUSED') ||
                               errorMessage.includes('ETIMEDOUT') ||
                               errorMessage.includes('fetch failed') ||
                               errorMessage.includes('ENOTFOUND');
 
     if (isConnectionError) {
-      logError(`[${formatTimestamp()}] [${requestId}] 🔌 连接错误: 无法连接到 ${apiUrl}`);
+      logError(`[${formatTimestamp()}] [${requestId}] Connection error: unable to connect to ${apiUrl}`);
       return NextResponse.json(
         {
           error: 'BACKEND_CONNECTION_FAILED',
-          message: `无法连接到后端服务: ${apiUrl}`,
+          message: `Unable to connect to backend service: ${apiUrl}`,
           detail: errorMessage,
           requestId,
           timestamp: formatTimestamp(),
@@ -189,7 +189,7 @@ async function proxyRequest(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'PROXY_ERROR',
-        message: '代理请求失败',
+        message: 'Proxy request failed',
         detail: errorMessage,
         requestId,
         timestamp: formatTimestamp(),

@@ -26,11 +26,11 @@ import {
 import { toast } from "sonner";
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
-  Pending: { icon: Clock, color: "text-yellow-500", label: "等待处理" },
-  Processing: { icon: Loader2, color: "text-blue-500", label: "处理中" },
-  Completed: { icon: CheckCircle, color: "text-green-500", label: "已完成" },
-  Failed: { icon: XCircle, color: "text-red-500", label: "失败" },
-  Unknown: { icon: AlertCircle, color: "text-gray-500", label: "未知" },
+  Pending: { icon: Clock, color: "text-yellow-500", label: "Pending" },
+  Processing: { icon: Loader2, color: "text-blue-500", label: "Processing" },
+  Completed: { icon: CheckCircle, color: "text-green-500", label: "Completed" },
+  Failed: { icon: XCircle, color: "text-red-500", label: "Failed" },
+  Unknown: { icon: AlertCircle, color: "text-gray-500", label: "Unknown" },
 };
 
 
@@ -53,7 +53,7 @@ export default function OrganizationsPage() {
       setRepositories(repos);
     } catch (error) {
       console.error("Failed to fetch organization data:", error);
-      toast.error("获取组织数据失败");
+      toast.error("Failed to fetch organization data");
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ export default function OrganizationsPage() {
       return (
         <Card className="flex h-64 flex-col items-center justify-center">
           <Building2 className="h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">请先登录查看您的组织</p>
+          <p className="mt-4 text-muted-foreground">Please log in to view your organizations</p>
         </Card>
       );
     }
@@ -89,17 +89,17 @@ export default function OrganizationsPage() {
       return (
         <Card className="flex h-64 flex-col items-center justify-center">
           <Building2 className="h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">您还没有加入任何部门</p>
-          <p className="mt-2 text-sm text-muted-foreground">请联系管理员将您添加到部门中</p>
+          <p className="mt-4 text-muted-foreground">You have not joined any departments yet</p>
+          <p className="mt-2 text-sm text-muted-foreground">Please contact an administrator to add you to a department</p>
         </Card>
       );
     }
 
     return (
       <div className="space-y-6">
-        {/* 部门列表 */}
+        {/* Department list */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">我的部门</h2>
+          <h2 className="text-lg font-semibold mb-4">My Departments</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {departments.map((dept) => (
               <Card key={dept.id} className="p-4">
@@ -110,7 +110,7 @@ export default function OrganizationsPage() {
                   <div>
                     <h3 className="font-medium">{dept.name}</h3>
                     {dept.isManager && (
-                      <span className="text-xs text-primary">部门主管</span>
+                      <span className="text-xs text-primary">Department Manager</span>
                     )}
                   </div>
                 </div>
@@ -125,13 +125,13 @@ export default function OrganizationsPage() {
         </div>
 
 
-        {/* 仓库列表 */}
+        {/* Repository list */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">部门仓库</h2>
+          <h2 className="text-lg font-semibold mb-4">Department Repositories</h2>
           {repositories.length === 0 ? (
             <Card className="flex h-32 flex-col items-center justify-center">
               <GitBranch className="h-8 w-8 text-muted-foreground/50" />
-              <p className="mt-2 text-sm text-muted-foreground">暂无分配的仓库</p>
+              <p className="mt-2 text-sm text-muted-foreground">No repositories assigned</p>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -163,7 +163,7 @@ export default function OrganizationsPage() {
                         <Link href={`/${repo.orgName}/${repo.repoName}`}>
                           <Button size="sm" variant="outline">
                             <ExternalLink className="mr-1 h-3 w-3" />
-                            查看文档
+                            View Docs
                           </Button>
                         </Link>
                       )}
@@ -179,14 +179,14 @@ export default function OrganizationsPage() {
   };
 
   return (
-    <AppLayout activeItem="我的组织">
+    <AppLayout activeItem="Organizations">
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">我的组织</h1>
+          <h1 className="text-2xl font-bold">My Organizations</h1>
           {user && (
             <Button variant="outline" onClick={fetchData}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              刷新
+              Refresh
             </Button>
           )}
         </div>

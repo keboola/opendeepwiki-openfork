@@ -1,0 +1,18 @@
+{
+  "title": "我的组织",
+  "refresh": "刷新",
+  "fetchFailed": "获取组织数据失败",
+  "loginRequired": "请先登录查看您的组织",
+  "noDepartments": "您还没有加入任何部门",
+  "contactAdmin": "请联系管理员将您添加到部门中",
+  "myDepartments": "我的部门",
+  "departmentManager": "部门主管",
+  "departmentRepos": "部门仓库",
+  "noRepos": "暂无分配的仓库",
+  "viewDocs": "查看文档",
+  "pending": "等待处理",
+  "processing": "处理中",
+  "completed": "已完成",
+  "failed": "失败",
+  "unknown": "未知"
+}

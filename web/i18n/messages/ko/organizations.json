@@ -1,0 +1,18 @@
+{
+  "title": "내 조직",
+  "refresh": "새로고침",
+  "fetchFailed": "조직 데이터를 가져오지 못했습니다",
+  "loginRequired": "조직을 보려면 로그인하세요",
+  "noDepartments": "아직 어떤 부서에도 가입하지 않았습니다",
+  "contactAdmin": "관리자에게 부서 추가를 요청하세요",
+  "myDepartments": "내 부서",
+  "departmentManager": "부서 관리자",
+  "departmentRepos": "부서 저장소",
+  "noRepos": "배정된 저장소가 없습니다",
+  "viewDocs": "문서 보기",
+  "pending": "대기 중",
+  "processing": "처리 중",
+  "completed": "완료",
+  "failed": "실패",
+  "unknown": "알 수 없음"
+}

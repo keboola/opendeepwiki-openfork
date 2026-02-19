@@ -1,0 +1,18 @@
+{
+  "title": "My Organizations",
+  "refresh": "Refresh",
+  "fetchFailed": "Failed to fetch organization data",
+  "loginRequired": "Please log in to view your organizations",
+  "noDepartments": "You have not joined any departments yet",
+  "contactAdmin": "Please contact an administrator to add you to a department",
+  "myDepartments": "My Departments",
+  "departmentManager": "Department Manager",
+  "departmentRepos": "Department Repositories",
+  "noRepos": "No repositories assigned",
+  "viewDocs": "View Docs",
+  "pending": "Pending",
+  "processing": "Processing",
+  "completed": "Completed",
+  "failed": "Failed",
+  "unknown": "Unknown"
+}

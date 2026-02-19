@@ -26,6 +26,7 @@ async function loadMessages(locale: Locale) {
   const apps = (await import(`./messages/${locale}/apps.json`)).default;
   const admin = (await import(`./messages/${locale}/admin.json`)).default;
   const chat = (await import(`./messages/${locale}/chat.json`)).default;
+  const organizations = (await import(`./messages/${locale}/organizations.json`)).default;
 
   return {
     common,
@@ -42,6 +43,7 @@ async function loadMessages(locale: Locale) {
     apps,
     admin,
     chat,
+    organizations,
   };
 }
 

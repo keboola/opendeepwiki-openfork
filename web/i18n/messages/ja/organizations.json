@@ -1,0 +1,18 @@
+{
+  "title": "マイ組織",
+  "refresh": "更新",
+  "fetchFailed": "組織データの取得に失敗しました",
+  "loginRequired": "組織を表示するにはログインしてください",
+  "noDepartments": "まだどの部署にも所属していません",
+  "contactAdmin": "管理者に部署への追加を依頼してください",
+  "myDepartments": "マイ部署",
+  "departmentManager": "部署マネージャー",
+  "departmentRepos": "部署リポジトリ",
+  "noRepos": "割り当てられたリポジトリはありません",
+  "viewDocs": "ドキュメントを表示",
+  "pending": "保留中",
+  "processing": "処理中",
+  "completed": "完了",
+  "failed": "失敗",
+  "unknown": "不明"
+}

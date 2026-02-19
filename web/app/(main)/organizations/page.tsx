@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,25 +24,26 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-
-const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
-  Pending: { icon: Clock, color: "text-yellow-500", label: "Pending" },
-  Processing: { icon: Loader2, color: "text-blue-500", label: "Processing" },
-  Completed: { icon: CheckCircle, color: "text-green-500", label: "Completed" },
-  Failed: { icon: XCircle, color: "text-red-500", label: "Failed" },
-  Unknown: { icon: AlertCircle, color: "text-gray-500", label: "Unknown" },
-};
-
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function OrganizationsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [departments, setDepartments] = useState<UserDepartment[]>([]);
   const [repositories, setRepositories] = useState<DepartmentRepository[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations();
+
+  const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = useMemo(() => ({
+    Pending: { icon: Clock, color: "text-yellow-500", label: t('organizations.pending') },
+    Processing: { icon: Loader2, color: "text-blue-500", label: t('organizations.processing') },
+    Completed: { icon: CheckCircle, color: "text-green-500", label: t('organizations.completed') },
+    Failed: { icon: XCircle, color: "text-red-500", label: t('organizations.failed') },
+    Unknown: { icon: AlertCircle, color: "text-gray-500", label: t('organizations.unknown') },
+  }), [t]);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const [depts, repos] = await Promise.all([
@@ -53,11 +54,11 @@ export default function OrganizationsPage() {
       setRepositories(repos);
     } catch (error) {
       console.error("Failed to fetch organization data:", error);
-      toast.error("Failed to fetch organization data");
+      toast.error(t('organizations.fetchFailed'));
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     if (user) {
@@ -80,7 +81,7 @@ export default function OrganizationsPage() {
       return (
         <Card className="flex h-64 flex-col items-center justify-center">
           <Building2 className="h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">Please log in to view your organizations</p>
+          <p className="mt-4 text-muted-foreground">{t('organizations.loginRequired')}</p>
         </Card>
       );
     }
@@ -89,8 +90,8 @@ export default function OrganizationsPage() {
       return (
         <Card className="flex h-64 flex-col items-center justify-center">
           <Building2 className="h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">You have not joined any departments yet</p>
-          <p className="mt-2 text-sm text-muted-foreground">Please contact an administrator to add you to a department</p>
+          <p className="mt-4 text-muted-foreground">{t('organizations.noDepartments')}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t('organizations.contactAdmin')}</p>
         </Card>
       );
     }
@@ -99,7 +100,7 @@ export default function OrganizationsPage() {
       <div className="space-y-6">
         {/* Department list */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">My Departments</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('organizations.myDepartments')}</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {departments.map((dept) => (
               <Card key={dept.id} className="p-4">
@@ -110,7 +111,7 @@ export default function OrganizationsPage() {
                   <div>
                     <h3 className="font-medium">{dept.name}</h3>
                     {dept.isManager && (
-                      <span className="text-xs text-primary">Department Manager</span>
+                      <span className="text-xs text-primary">{t('organizations.departmentManager')}</span>
                     )}
                   </div>
                 </div>
@@ -124,21 +125,20 @@ export default function OrganizationsPage() {
           </div>
         </div>
 
-
         {/* Repository list */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Department Repositories</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('organizations.departmentRepos')}</h2>
           {repositories.length === 0 ? (
             <Card className="flex h-32 flex-col items-center justify-center">
               <GitBranch className="h-8 w-8 text-muted-foreground/50" />
-              <p className="mt-2 text-sm text-muted-foreground">No repositories assigned</p>
+              <p className="mt-2 text-sm text-muted-foreground">{t('organizations.noRepos')}</p>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {repositories.map((repo) => {
                 const status = statusConfig[repo.statusName] || statusConfig.Unknown;
                 const StatusIcon = status.icon;
-                
+
                 return (
                   <Card key={repo.repositoryId} className="p-4">
                     <div className="flex items-start justify-between">
@@ -163,7 +163,7 @@ export default function OrganizationsPage() {
                         <Link href={`/${repo.orgName}/${repo.repoName}`}>
                           <Button size="sm" variant="outline">
                             <ExternalLink className="mr-1 h-3 w-3" />
-                            View Docs
+                            {t('organizations.viewDocs')}
                           </Button>
                         </Link>
                       )}
@@ -182,11 +182,11 @@ export default function OrganizationsPage() {
     <AppLayout activeItem="Organizations">
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">My Organizations</h1>
+          <h1 className="text-2xl font-bold">{t('organizations.title')}</h1>
           {user && (
             <Button variant="outline" onClick={fetchData}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              {t('organizations.refresh')}
             </Button>
           )}
         </div>

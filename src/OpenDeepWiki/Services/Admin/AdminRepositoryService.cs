@@ -8,7 +8,7 @@ using OpenDeepWiki.Services.Wiki;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端仓库服务实现
+/// Admin repository service implementation
 /// </summary>
 public class AdminRepositoryService : IAdminRepositoryService
 {
@@ -150,11 +150,11 @@ public class AdminRepositoryService : IAdminRepositoryService
 
     private static string GetStatusText(RepositoryStatus status) => status switch
     {
-        RepositoryStatus.Pending => "待处理",
-        RepositoryStatus.Processing => "处理中",
-        RepositoryStatus.Completed => "已完成",
-        RepositoryStatus.Failed => "失败",
-        _ => "未知"
+        RepositoryStatus.Pending => "Pending",
+        RepositoryStatus.Processing => "Processing",
+        RepositoryStatus.Completed => "Completed",
+        RepositoryStatus.Failed => "Failed",
+        _ => "Unknown"
     };
 
     public async Task<SyncStatsResult> SyncRepositoryStatsAsync(string id)
@@ -164,13 +164,13 @@ public class AdminRepositoryService : IAdminRepositoryService
 
         if (repo == null)
         {
-            return new SyncStatsResult { Success = false, Message = "仓库不存在" };
+            return new SyncStatsResult { Success = false, Message = "Repository not found" };
         }
 
         var stats = await _gitPlatformService.GetRepoStatsAsync(repo.GitUrl);
         if (stats == null)
         {
-            return new SyncStatsResult { Success = false, Message = "无法获取仓库统计信息，可能是私有仓库或不支持的平台" };
+            return new SyncStatsResult { Success = false, Message = "Unable to fetch repository statistics. The repository may be private or on an unsupported platform" };
         }
 
         repo.StarCount = stats.StarCount;
@@ -181,7 +181,7 @@ public class AdminRepositoryService : IAdminRepositoryService
         return new SyncStatsResult
         {
             Success = true,
-            Message = "同步成功",
+            Message = "Sync successful",
             StarCount = stats.StarCount,
             ForkCount = stats.ForkCount
         };
@@ -221,14 +221,14 @@ public class AdminRepositoryService : IAdminRepositoryService
             else
             {
                 itemResult.Success = false;
-                itemResult.Message = "无法获取统计信息";
+                itemResult.Message = "Unable to fetch statistics";
                 result.FailedCount++;
             }
 
             result.Results.Add(itemResult);
         }
 
-        // 处理不存在的仓库
+        // Handle repositories that were not found
         var foundIds = repos.Select(r => r.Id).ToHashSet();
         foreach (var id in ids.Where(id => !foundIds.Contains(id)))
         {
@@ -236,7 +236,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             {
                 Id = id,
                 Success = false,
-                Message = "仓库不存在"
+                Message = "Repository not found"
             });
             result.FailedCount++;
         }
@@ -263,7 +263,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             result.SuccessCount++;
         }
 
-        // 记录不存在的仓库
+        // Record repositories that were not found
         var foundIds = repos.Select(r => r.Id).ToHashSet();
         result.FailedIds = ids.Where(id => !foundIds.Contains(id)).ToList();
         result.FailedCount = result.FailedIds.Count;
@@ -398,7 +398,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "仓库不存在"
+                Message = "Repository not found"
             };
         }
 
@@ -407,7 +407,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "仓库正在处理中，无法重复触发"
+                Message = "Repository is currently being processed and cannot be triggered again"
             };
         }
 
@@ -461,7 +461,7 @@ public class AdminRepositoryService : IAdminRepositoryService
         return new AdminRepositoryOperationResult
         {
             Success = true,
-            Message = "已触发全量重生成"
+            Message = "Full regeneration triggered"
         };
     }
 
@@ -477,7 +477,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "请求参数不完整"
+                Message = "Request parameters are incomplete"
             };
         }
 
@@ -488,7 +488,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "仓库不存在"
+                Message = "Repository not found"
             };
         }
 
@@ -501,7 +501,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "分支不存在"
+                Message = "Branch not found"
             };
         }
 
@@ -517,7 +517,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "语言不存在"
+                Message = "Language not found"
             };
         }
 
@@ -532,7 +532,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "文档不存在"
+                Message = "Document not found"
             };
         }
 
@@ -568,7 +568,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = true,
-                Message = "文档重生成已完成"
+                Message = "Document regeneration completed"
             };
         }
         catch (Exception ex)
@@ -576,7 +576,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = $"文档重生成失败: {ex.Message}"
+                Message = $"Document regeneration failed: {ex.Message}"
             };
         }
     }
@@ -593,7 +593,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "请求参数不完整"
+                Message = "Request parameters are incomplete"
             };
         }
 
@@ -604,7 +604,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "仓库不存在"
+                Message = "Repository not found"
             };
         }
 
@@ -617,7 +617,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "分支不存在"
+                Message = "Branch not found"
             };
         }
 
@@ -633,7 +633,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "语言不存在"
+                Message = "Language not found"
             };
         }
 
@@ -650,7 +650,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "文档不存在或不可编辑"
+                Message = "Document not found or not editable"
             };
         }
 
@@ -661,7 +661,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             return new AdminRepositoryOperationResult
             {
                 Success = false,
-                Message = "文档文件不存在"
+                Message = "Document file not found"
             };
         }
 
@@ -674,7 +674,7 @@ public class AdminRepositoryService : IAdminRepositoryService
             Id = Guid.NewGuid().ToString(),
             RepositoryId = repository.Id,
             Step = ProcessingStep.Content,
-            Message = $"管理端手动更新文档：{normalizedPath}",
+            Message = $"Admin manual document update: {normalizedPath}",
             IsAiOutput = false,
             ToolName = "AdminDocEditor",
             CreatedAt = DateTime.UtcNow
@@ -685,7 +685,7 @@ public class AdminRepositoryService : IAdminRepositoryService
         return new AdminRepositoryOperationResult
         {
             Success = true,
-            Message = "文档内容已保存"
+            Message = "Document content saved"
         };
     }
 

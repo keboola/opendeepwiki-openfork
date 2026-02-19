@@ -43,7 +43,7 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
         repoName: repo,
         orgName: owner,
         branchName: gitHubInfo.defaultBranch,
-        languageCode: "zh",
+        languageCode: "en",
         isPublic: true,
       });
       

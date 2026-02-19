@@ -96,10 +96,10 @@ export async function getUserSettings(): Promise<UserSettings> {
   });
 
   if (!response.ok) {
-    // 返回默认设置
+    // Return default settings
     return {
       theme: "system",
-      language: "zh",
+      language: "en",
       emailNotifications: true,
       pushNotifications: false,
     };
@@ -108,7 +108,7 @@ export async function getUserSettings(): Promise<UserSettings> {
   const result = (await response.json()) as ApiResponse<UserSettings>;
   return result.data || {
     theme: "system",
-    language: "zh",
+    language: "en",
     emailNotifications: true,
     pushNotifications: false,
   };

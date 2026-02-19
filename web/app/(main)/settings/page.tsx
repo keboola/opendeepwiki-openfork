@@ -25,7 +25,7 @@ export default function SettingsPage() {
 
   const [settings, setSettings] = useState<UserSettings>({
     theme: "system",
-    language: "zh",
+    language: "en",
     emailNotifications: true,
     pushNotifications: false,
   });

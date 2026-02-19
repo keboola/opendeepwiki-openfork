@@ -41,8 +41,15 @@ public class GitHubAppService : IGitHubAppService
         _logger = logger;
     }
 
-    private string? AppId => _configuration["GitHub:App:Id"];
-    private string? PrivateKeyBase64 => _configuration["GitHub:App:PrivateKey"];
+    private string? AppId =>
+        _configuration["GitHub:App:Id"]
+        ?? Environment.GetEnvironmentVariable("GitHub__App__Id")
+        ?? Environment.GetEnvironmentVariable("GITHUB_APP_ID");
+
+    private string? PrivateKeyBase64 =>
+        _configuration["GitHub:App:PrivateKey"]
+        ?? Environment.GetEnvironmentVariable("GitHub__App__PrivateKey")
+        ?? Environment.GetEnvironmentVariable("GITHUB_APP_PRIVATE_KEY");
 
     public bool IsConfigured => !string.IsNullOrWhiteSpace(AppId) && !string.IsNullOrWhiteSpace(PrivateKeyBase64);
 

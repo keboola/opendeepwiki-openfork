@@ -21,7 +21,10 @@ public static class AdminGitHubImportEndpoints
 
         github.MapGet("/install-url", (Microsoft.Extensions.Configuration.IConfiguration configuration) =>
         {
-            var appName = configuration["GitHub:App:Name"] ?? "deepwiki-keboola";
+            var appName = configuration["GitHub:App:Name"]
+                ?? Environment.GetEnvironmentVariable("GitHub__App__Name")
+                ?? Environment.GetEnvironmentVariable("GITHUB_APP_NAME")
+                ?? "deepwiki-keboola";
             var url = $"https://github.com/apps/{appName}/installations/new";
             return Results.Ok(new { success = true, data = new { url, appName } });
         });

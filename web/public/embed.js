@@ -1,9 +1,9 @@
 /**
- * OpenDeepWiki 嵌入脚本
- * 
- * 用于将对话助手悬浮球嵌入到外部网站
- * 
- * 使用方式:
+ * OpenDeepWiki Embed Script
+ *
+ * Embeds a chat assistant floating widget into external websites
+ *
+ * Usage:
  * <script 
  *   src="https://your-domain.com/embed.js"
  *   data-app-id="app_xxxxx"
@@ -15,32 +15,32 @@
 (function() {
   'use strict';
 
-  // 获取当前脚本元素
+  // Get current script element
   var script = document.currentScript;
   if (!script) {
-    console.error('[OpenDeepWiki] 无法获取脚本元素');
+    console.error('[OpenDeepWiki] Cannot get script element');
     return;
   }
 
-  // 读取配置属性
+  // Read configuration attributes
   var appId = script.getAttribute('data-app-id');
   var iconUrl = script.getAttribute('data-icon');
   var position = script.getAttribute('data-position') || 'bottom-right';
   var theme = script.getAttribute('data-theme') || 'light';
 
-  // 验证必需参数
+  // Validate required parameters
   if (!appId) {
-    console.error('[OpenDeepWiki] data-app-id 是必需的');
+    console.error('[OpenDeepWiki] data-app-id is required');
     return;
   }
 
-  // API基础URL - 从脚本src中提取
+  // API base URL - extracted from script src
   var scriptSrc = script.src;
   var apiBaseUrl = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
-  // 移除 /embed.js 或类似路径，获取根URL
+  // Remove /embed.js or similar path to get root URL
   apiBaseUrl = apiBaseUrl.replace(/\/public$/, '').replace(/\/$/, '');
 
-  // 配置对象
+  // Configuration object
   var config = {
     appId: appId,
     iconUrl: iconUrl,
@@ -49,7 +49,7 @@
     apiBaseUrl: apiBaseUrl
   };
 
-  // 状态
+  // State
   var state = {
     isOpen: false,
     isLoading: true,
@@ -62,7 +62,7 @@
     selectedModel: null
   };
 
-  // 样式定义
+  // Style definitions
   var styles = {
     container: [
       'position: fixed',
@@ -228,14 +228,14 @@
     modelSelectorDark: 'background: #1e293b; border-color: #475569; color: #ffffff;'
   };
 
-  // 图标SVG
+  // Icon SVGs
   var icons = {
     chat: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
     close: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
     send: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>'
   };
 
-  // 注入CSS动画
+  // Inject CSS animations
   function injectStyles() {
     var styleEl = document.createElement('style');
     styleEl.textContent = [
@@ -258,12 +258,12 @@
   }
 
 
-  // 生成唯一ID
+  // Generate unique ID
   function generateId() {
     return 'odw-' + Math.random().toString(36).substr(2, 9);
   }
 
-  // 创建DOM元素
+  // Create DOM element
   function createElement(tag, attrs, children) {
     var el = document.createElement(tag);
     if (attrs) {
@@ -293,7 +293,7 @@
     return el;
   }
 
-  // 验证配置并获取应用信息
+  // Validate configuration and get app info
   function validateAndGetConfig(callback) {
     var url = config.apiBaseUrl + '/api/v1/embed/config?appId=' + encodeURIComponent(config.appId);
     
@@ -313,17 +313,17 @@
         state.selectedModel = data.defaultModel || (data.availableModels && data.availableModels[0]);
         callback(null, data);
       } else {
-        console.error('[OpenDeepWiki] 配置验证失败:', data.errorMessage);
-        callback(new Error(data.errorMessage || '配置验证失败'));
+        console.error('[OpenDeepWiki] Configuration validation failed:', data.errorMessage);
+        callback(new Error(data.errorMessage || 'Configuration validation failed'));
       }
     })
     .catch(function(error) {
-      console.error('[OpenDeepWiki] 获取配置失败:', error);
+      console.error('[OpenDeepWiki] Failed to get configuration:', error);
       callback(error);
     });
   }
 
-  // SSE流式对话
+  // SSE streaming chat
   function streamChat(messages, onContent, onDone, onError) {
     var url = config.apiBaseUrl + '/api/v1/embed/stream';
     
@@ -347,7 +347,7 @@
     })
     .then(function(response) {
       if (!response.ok) {
-        throw new Error('请求失败: ' + response.status);
+        throw new Error('Request failed: ' + response.status);
       }
       
       var reader = response.body.getReader();
@@ -369,9 +369,9 @@
             line = line.trim();
             if (!line) return;
 
-            // 解析SSE事件
+            // Parse SSE events
             if (line.startsWith('event: ')) {
-              // 事件类型行，暂存
+              // Event type line, skip
               return;
             }
             
@@ -382,12 +382,12 @@
                 if (event.type === 'content') {
                   onContent(event.data);
                 } else if (event.type === 'done') {
-                  // 完成事件会在流结束时处理
+                  // Done event will be handled when stream ends
                 } else if (event.type === 'error') {
-                  onError(new Error(event.data.message || '对话失败'));
+                  onError(new Error(event.data.message || 'Chat failed'));
                 }
               } catch (e) {
-                // 可能是纯文本内容
+                // Might be plain text content
                 onContent(dataStr);
               }
             }
@@ -406,7 +406,7 @@
     });
   }
 
-  // 渲染悬浮球
+  // Render floating ball
   function renderFloatingBall(container) {
     var ballStyle = styles.floatingBall;
 
@@ -420,7 +420,7 @@
     var ball = createElement('button', {
       id: 'odw-floating-ball',
       style: ballStyle,
-      'aria-label': '打开对话助手',
+      'aria-label': 'Open chat assistant',
       onClick: function() {
         togglePanel();
       },
@@ -436,7 +436,7 @@
     return ball;
   }
 
-  // 渲染背景遮罩
+  // Render backdrop overlay
   function renderBackdrop(container) {
     var backdrop = createElement('div', {
       id: 'odw-backdrop',
@@ -449,14 +449,14 @@
     return backdrop;
   }
 
-  // 渲染对话面板
+  // Render chat panel
   function renderPanel(container) {
     var isDark = config.theme === 'dark';
     var panelStyle = styles.panel;
     if (isDark) {
       panelStyle += ';' + styles.panelDark;
     }
-    // 初始状态：隐藏在右侧
+    // Initial state: hidden off-screen to the right
     panelStyle += '; transform: translateX(100%);';
 
     var panel = createElement('div', {
@@ -464,7 +464,7 @@
       style: panelStyle
     });
 
-    // 拖动调整宽度的手柄
+    // Drag handle for resizing width
     var resizeHandle = createElement('div', {
       id: 'odw-resize-handle',
       style: [
@@ -517,13 +517,13 @@
 
     panel.appendChild(resizeHandle);
 
-    // 头部
+    // Header
     var headerStyle = styles.header;
     if (isDark) headerStyle += styles.headerDark;
     
     var header = createElement('div', { style: headerStyle }, [
       createElement('div', { style: 'display: flex; align-items: center; gap: 12px;' }, [
-        createElement('span', { style: 'font-weight: 600; font-size: 16px;' }, state.appConfig ? state.appConfig.appName || '对话助手' : '对话助手'),
+        createElement('span', { style: 'font-weight: 600; font-size: 16px;' }, state.appConfig ? state.appConfig.appName || 'Chat Assistant' : 'Chat Assistant'),
         renderModelSelector()
       ]),
       createElement('button', {
@@ -533,24 +533,24 @@
     ]);
     panel.appendChild(header);
 
-    // 消息容器
+    // Messages container
     var messagesContainer = createElement('div', {
       id: 'odw-messages',
       style: styles.messagesContainer
     });
     
-    // 欢迎消息
+    // Welcome message
     messagesContainer.appendChild(createElement('div', {
       style: styles.welcomeMessage
     }, [
       createElement('div', { style: 'font-size: 24px; margin-bottom: 8px;' }, '👋'),
-      createElement('div', { style: 'font-weight: 500; margin-bottom: 4px;' }, '你好！'),
-      createElement('div', { style: 'font-size: 14px;' }, '有什么可以帮助你的吗？')
+      createElement('div', { style: 'font-weight: 500; margin-bottom: 4px;' }, 'Hello!'),
+      createElement('div', { style: 'font-size: 14px;' }, 'How can I help you?')
     ]));
     
     panel.appendChild(messagesContainer);
 
-    // 输入区域
+    // Input area
     var inputStyle = styles.inputContainer;
     if (isDark) inputStyle += styles.inputContainerDark;
     
@@ -560,7 +560,7 @@
     var textarea = createElement('textarea', {
       id: 'odw-input',
       style: textareaStyle,
-      placeholder: '输入消息...',
+      placeholder: 'Type a message...',
       rows: '1',
       onKeydown: function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -587,7 +587,7 @@
     return panel;
   }
 
-  // 渲染模型选择器
+  // Render model selector
   function renderModelSelector() {
     if (!state.appConfig || !state.appConfig.availableModels || state.appConfig.availableModels.length <= 1) {
       return null;
@@ -617,7 +617,7 @@
   }
 
 
-  // 切换面板显示
+  // Toggle panel visibility
   function togglePanel() {
     state.isOpen = !state.isOpen;
     var panel = document.getElementById('odw-panel');
@@ -626,15 +626,15 @@
 
     if (panel) {
       if (state.isOpen) {
-        // 展开：从右侧滑入
+        // Expand: slide in from right
         panel.style.transform = 'translateX(0)';
-        // 聚焦输入框
+        // Focus input field
         setTimeout(function() {
           var input = document.getElementById('odw-input');
           if (input) input.focus();
         }, 300);
       } else {
-        // 收起：滑出到右侧
+        // Collapse: slide out to right
         panel.style.transform = 'translateX(100%)';
       }
     }
@@ -655,16 +655,16 @@
         : (config.iconUrl
             ? '<img src="' + config.iconUrl + '" alt="Chat" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">'
             : '<span style="color: white;">' + icons.chat + '</span>');
-      ball.setAttribute('aria-label', state.isOpen ? '关闭对话助手' : '打开对话助手');
+      ball.setAttribute('aria-label', state.isOpen ? 'Close chat assistant' : 'Open chat assistant');
     }
   }
 
-  // 添加消息到UI
+  // Add message to UI
   function addMessageToUI(role, content) {
     var messagesContainer = document.getElementById('odw-messages');
     if (!messagesContainer) return;
 
-    // 移除欢迎消息
+    // Remove welcome message
     var welcomeMsg = messagesContainer.querySelector('[style*="text-align: center"]');
     if (welcomeMsg) {
       welcomeMsg.remove();
@@ -687,7 +687,7 @@
     return messageEl;
   }
 
-  // 更新最后一条助手消息
+  // Update last assistant message
   function updateLastAssistantMessage(content) {
     var messagesContainer = document.getElementById('odw-messages');
     if (!messagesContainer) return;
@@ -700,7 +700,7 @@
     }
   }
 
-  // 显示加载指示器
+  // Show loading indicator
   function showLoading() {
     var messagesContainer = document.getElementById('odw-messages');
     if (!messagesContainer) return;
@@ -724,7 +724,7 @@
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-  // 隐藏加载指示器
+  // Hide loading indicator
   function hideLoading() {
     var loadingEl = document.getElementById('odw-loading');
     if (loadingEl) {
@@ -732,7 +732,7 @@
     }
   }
 
-  // 显示错误消息
+  // Show error message
   function showError(message) {
     var messagesContainer = document.getElementById('odw-messages');
     if (!messagesContainer) return;
@@ -744,13 +744,13 @@
     messagesContainer.appendChild(errorEl);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-    // 3秒后自动移除
+    // Auto-remove after 5 seconds
     setTimeout(function() {
       errorEl.remove();
     }, 5000);
   }
 
-  // 发送消息
+  // Send message
   function sendMessage() {
     var input = document.getElementById('odw-input');
     var sendBtn = document.getElementById('odw-send-btn');
@@ -759,52 +759,52 @@
     var content = input.value.trim();
     if (!content) return;
 
-    // 禁用输入
+    // Disable input
     input.disabled = true;
     sendBtn.disabled = true;
     sendBtn.style.opacity = '0.5';
 
-    // 添加用户消息
+    // Add user message
     state.messages.push({ role: 'user', content: content });
     addMessageToUI('user', content);
 
-    // 清空输入框
+    // Clear input field
     input.value = '';
     input.style.height = 'auto';
 
-    // 显示加载
+    // Show loading
     showLoading();
 
-    // 准备助手消息
+    // Prepare assistant message
     var assistantContent = '';
     addMessageToUI('assistant', '');
 
-    // 发送请求
+    // Send request
     streamChat(
       state.messages,
       function(chunk) {
-        // 内容回调
+        // Content callback
         hideLoading();
         assistantContent += chunk;
         updateLastAssistantMessage(assistantContent);
       },
       function() {
-        // 完成回调
+        // Done callback
         hideLoading();
         state.messages.push({ role: 'assistant', content: assistantContent });
         
-        // 恢复输入
+        // Restore input
         input.disabled = false;
         sendBtn.disabled = false;
         sendBtn.style.opacity = '1';
         input.focus();
       },
       function(error) {
-        // 错误回调
+        // Error callback
         hideLoading();
-        showError(error.message || '发送失败，请重试');
+        showError(error.message || 'Failed to send, please try again');
         
-        // 移除空的助手消息
+        // Remove empty assistant message
         var messagesContainer = document.getElementById('odw-messages');
         var messages = messagesContainer.querySelectorAll('[data-role="assistant"]');
         var lastMessage = messages[messages.length - 1];
@@ -812,7 +812,7 @@
           lastMessage.remove();
         }
         
-        // 恢复输入
+        // Restore input
         input.disabled = false;
         sendBtn.disabled = false;
         sendBtn.style.opacity = '1';
@@ -821,82 +821,82 @@
     );
   }
 
-  // HTML转义
+  // HTML escape
   function escapeHtml(text) {
     var div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
-  // 简单的Markdown格式化
+  // Simple Markdown formatting
   function formatMarkdown(text) {
     if (!text) return '';
     
-    // 转义HTML
+    // Escape HTML
     text = escapeHtml(text);
     
-    // 代码块
+    // Code blocks
     text = text.replace(/```(\w*)\n([\s\S]*?)```/g, function(match, lang, code) {
       return '<pre style="background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 8px 0;"><code>' + code + '</code></pre>';
     });
     
-    // 行内代码
+    // Inline code
     text = text.replace(/`([^`]+)`/g, '<code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 13px;">$1</code>');
     
-    // 粗体
+    // Bold
     text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     
-    // 斜体
+    // Italic
     text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
     
-    // 链接
+    // Links
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: #667eea; text-decoration: underline;">$1</a>');
     
-    // 换行
+    // Line breaks
     text = text.replace(/\n/g, '<br>');
     
     return text;
   }
 
-  // 初始化
+  // Initialize
   function init() {
-    // 注入样式
+    // Inject styles
     injectStyles();
 
-    // 创建容器
+    // Create container
     var container = createElement('div', {
       id: 'odw-container',
       style: styles.container
     });
     document.body.appendChild(container);
 
-    // 验证配置
+    // Validate configuration
     state.isLoading = true;
     validateAndGetConfig(function(error, appConfig) {
       state.isLoading = false;
 
       if (error) {
-        console.error('[OpenDeepWiki] 初始化失败:', error.message);
+        console.error('[OpenDeepWiki] Initialization failed:', error.message);
         return;
       }
 
-      // 渲染UI - 先渲染背景遮罩，再渲染面板，最后渲染悬浮球
+      // Render UI - backdrop first, then panel, then floating ball
       renderBackdrop(container);
       renderPanel(container);
       renderFloatingBall(container);
 
-      console.log('[OpenDeepWiki] 初始化成功');
+      console.log('[OpenDeepWiki] Initialized successfully');
     });
   }
 
-  // 等待DOM加载完成
+  // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // 暴露API供外部调用
+  // Expose API for external use
   window.OpenDeepWiki = {
     open: function() {
       if (!state.isOpen) togglePanel();

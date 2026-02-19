@@ -54,11 +54,11 @@ export function ShareConversation({ share }: ShareConversationProps) {
           <div className="flex w-full items-center justify-between gap-3 px-4 py-2 md:px-6">
             <div className="min-w-0">
               <h1 className="truncate text-base font-semibold">
-                {share.title || "对话分享"}
+                {share.title || "Shared Conversation"}
               </h1>
               <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MessageSquare className="h-3.5 w-3.5" />
-                {messages.length} 条对话消息
+                {messages.length} messages
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -66,17 +66,17 @@ export function ShareConversation({ share }: ShareConversationProps) {
                 {copied ? (
                   <>
                     <Check className="h-4 w-4" />
-                    已复制
+                    Copied
                   </>
                 ) : (
                   <>
                     <Copy className="h-4 w-4" />
-                    复制链接
+                    Copy Link
                   </>
                 )}
               </Button>
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/">返回首页</Link>
+                <Link href="/">Back to Home</Link>
               </Button>
             </div>
           </div>
@@ -84,7 +84,7 @@ export function ShareConversation({ share }: ShareConversationProps) {
 
         <section className="flex-1">
           {messages.length === 0 ? (
-            <div className="px-4 py-6 text-center text-muted-foreground md:px-6">该分享暂无消息</div>
+            <div className="px-4 py-6 text-center text-muted-foreground md:px-6">This share has no messages</div>
           ) : (
             <div className="w-full px-2 py-1 md:px-4 md:py-2 lg:px-6">
               {messages.map((message) => (

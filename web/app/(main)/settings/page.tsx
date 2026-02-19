@@ -54,7 +54,7 @@ export default function SettingsPage() {
       const data = await getUserSettings();
       setSettings(data);
     } catch {
-      // 使用默认设置
+      // Use default settings
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +65,7 @@ export default function SettingsPage() {
       const data = await getSystemVersion();
       setSystemVersion(data);
     } catch {
-      // 使用默认版本
+      // Use default version
     }
   };
 
@@ -73,9 +73,9 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       await updateUserSettings(settings);
-      toast.success(t("settings.saveSuccess") || "设置已保存");
+      toast.success(t("settings.saveSuccess") || "Settings saved");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("settings.saveFailed") || "保存失败");
+      toast.error(err instanceof Error ? err.message : t("settings.saveFailed") || "Save failed");
     } finally {
       setIsSaving(false);
     }
@@ -88,7 +88,7 @@ export default function SettingsPage() {
 
   const handleLanguageChange = (value: string) => {
     setSettings((prev) => ({ ...prev, language: value }));
-    // 语言切换由 LanguageToggle 组件处理，这里只保存设置
+    // Language switching is handled by LanguageToggle component, only save settings here
   };
 
   if (authLoading || isLoading) {
@@ -112,7 +112,7 @@ export default function SettingsPage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            {t("common.backToHome") || "返回首页"}
+            {t("common.backToHome") || "Back to Home"}
           </Link>
         </div>
 
@@ -122,18 +122,18 @@ export default function SettingsPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                <CardTitle>{t("settings.appearance") || "外观设置"}</CardTitle>
+                <CardTitle>{t("settings.appearance") || "Appearance"}</CardTitle>
               </div>
               <CardDescription>
-                {t("settings.appearanceDescription") || "自定义应用的外观和显示"}
+                {t("settings.appearanceDescription") || "Customize the look and feel of the application"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>{t("settings.theme") || "主题"}</Label>
+                  <Label>{t("settings.theme") || "Theme"}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {t("settings.themeDescription") || "选择应用的颜色主题"}
+                    {t("settings.themeDescription") || "Choose the color theme for the application"}
                   </p>
                 </div>
                 <Select value={theme || settings.theme} onValueChange={handleThemeChange}>
@@ -141,18 +141,18 @@ export default function SettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="light">{t("settings.themeLight") || "浅色"}</SelectItem>
-                    <SelectItem value="dark">{t("settings.themeDark") || "深色"}</SelectItem>
-                    <SelectItem value="system">{t("settings.themeSystem") || "跟随系统"}</SelectItem>
+                    <SelectItem value="light">{t("settings.themeLight") || "Light"}</SelectItem>
+                    <SelectItem value="dark">{t("settings.themeDark") || "Dark"}</SelectItem>
+                    <SelectItem value="system">{t("settings.themeSystem") || "System"}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>{t("settings.language") || "语言"}</Label>
+                  <Label>{t("settings.language") || "Language"}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {t("settings.languageDescription") || "选择界面显示语言"}
+                    {t("settings.languageDescription") || "Choose the display language"}
                   </p>
                 </div>
                 <Select value={settings.language} onValueChange={handleLanguageChange}>
@@ -175,18 +175,18 @@ export default function SettingsPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                <CardTitle>{t("settings.notifications") || "通知设置"}</CardTitle>
+                <CardTitle>{t("settings.notifications") || "Notifications"}</CardTitle>
               </div>
               <CardDescription>
-                {t("settings.notificationsDescription") || "管理你的通知偏好"}
+                {t("settings.notificationsDescription") || "Manage your notification preferences"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>{t("settings.emailNotifications") || "邮件通知"}</Label>
+                  <Label>{t("settings.emailNotifications") || "Email Notifications"}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {t("settings.emailNotificationsDescription") || "接收重要更新的邮件通知"}
+                    {t("settings.emailNotificationsDescription") || "Receive email notifications for important updates"}
                   </p>
                 </div>
                 <Switch
@@ -199,9 +199,9 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>{t("settings.pushNotifications") || "推送通知"}</Label>
+                  <Label>{t("settings.pushNotifications") || "Push Notifications"}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {t("settings.pushNotificationsDescription") || "接收浏览器推送通知"}
+                    {t("settings.pushNotificationsDescription") || "Receive browser push notifications"}
                   </p>
                 </div>
                 <Switch
@@ -219,13 +219,13 @@ export default function SettingsPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Globe className="h-5 w-5" />
-                <CardTitle>{t("settings.about") || "关于"}</CardTitle>
+                <CardTitle>{t("settings.about") || "About"}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>{systemVersion?.productName || "OpenDeepWiki"} v{systemVersion?.version || "1.0.0"}</p>
-                <p>{t("settings.aboutDescription") || "AI 驱动的代码知识库平台"}</p>
+                <p>{t("settings.aboutDescription") || "AI-powered code knowledge base platform"}</p>
               </div>
             </CardContent>
           </Card>
@@ -236,10 +236,10 @@ export default function SettingsPage() {
               {isSaving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("common.loading") || "保存中..."}
+                  {t("common.loading") || "Saving..."}
                 </>
               ) : (
-                t("common.save") || "保存设置"
+                t("common.save") || "Save Settings"
               )}
             </Button>
           </div>

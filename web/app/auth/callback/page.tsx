@@ -38,8 +38,10 @@ export default function OAuthCallbackPage() {
 
         setToken(result.data.accessToken);
 
-        const returnUrl = state ? decodeURIComponent(state) : "/";
-        router.push(returnUrl);
+        // State may be a return URL (starts with /) or a backend-generated UUID
+        const decoded = state ? decodeURIComponent(state) : "/";
+        const returnUrl = decoded.startsWith("/") ? decoded : "/";
+        window.location.href = returnUrl;
       } catch {
         setError("Failed to complete OAuth login");
       }

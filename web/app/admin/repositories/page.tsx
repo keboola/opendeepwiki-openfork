@@ -288,7 +288,7 @@ export default function AdminRepositoriesPage() {
         </Button>
       </div>
 
-      {/* 搜索和筛选 */}
+      {/* Search and filter */}
       <Card className="p-4 transition-all duration-300 hover:shadow-sm">
         <div className="flex flex-wrap gap-4">
           <div className="flex flex-1 gap-2">
@@ -323,32 +323,32 @@ export default function AdminRepositoriesPage() {
         <div className="grid gap-3 md:grid-cols-3">
           <Card className="p-3">
             <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Page Completion Rate</span>
+              <span>{t('admin.repositories.pageCompletionRate')}</span>
               <span>{overview.completedRate}%</span>
             </div>
             <Progress value={overview.completedRate} className="h-2.5" />
             <p className="mt-2 text-xs text-muted-foreground">
-              Completed {overview.completedCount} / {overview.pageCount}, Processing {overview.processingCount}
+              {t('admin.repositories.completedOfTotal', { completed: overview.completedCount, total: overview.pageCount, processing: overview.processingCount })}
             </p>
           </Card>
           <Card className="p-3">
             <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Public Repository Ratio</span>
+              <span>{t('admin.repositories.publicRepoRatio')}</span>
               <span>{overview.publicRate}%</span>
             </div>
             <Progress value={overview.publicRate} className="h-2.5" />
             <p className="mt-2 text-xs text-muted-foreground">
-              Failed: {overview.failedCount}, prioritize investigation
+              {t('admin.repositories.failedPrioritize', { count: overview.failedCount })}
             </p>
           </Card>
           <Card className="p-3">
             <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Page Selection Ratio</span>
+              <span>{t('admin.repositories.pageSelectionRatio')}</span>
               <span>{overview.selectedRate}%</span>
             </div>
             <Progress value={overview.selectedRate} className="h-2.5" />
             <p className="mt-2 text-xs text-muted-foreground">
-              {selectedIds.size} selected for batch operations
+              {t('admin.repositories.selectedForBatch', { count: selectedIds.size })}
             </p>
           </Card>
         </div>
@@ -357,8 +357,8 @@ export default function AdminRepositoriesPage() {
       <Card className="p-4 transition-all duration-300 hover:shadow-sm">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-semibold">Page Status Distribution</p>
-            <Badge variant="outline">{overview.pageCount} total</Badge>
+            <p className="text-sm font-semibold">{t('admin.repositories.statusDistribution')}</p>
+            <Badge variant="outline">{t('admin.repositories.totalItems', { count: overview.pageCount })}</Badge>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
             <div className="flex h-full w-full">
@@ -382,7 +382,7 @@ export default function AdminRepositoriesPage() {
         </div>
       </Card>
 
-      {/* 批量操作栏 */}
+      {/* Batch operations bar */}
       {selectedIds.size > 0 && (
         <Card className="p-3 bg-muted/50 animate-in fade-in-0 slide-in-from-top-1 duration-200">
           <div className="flex items-center justify-between">
@@ -426,7 +426,7 @@ export default function AdminRepositoriesPage() {
         </Card>
       )}
 
-      {/* 仓库列表 */}
+      {/* Repository list */}
       <Card className="transition-all duration-300 hover:shadow-sm">
         {loading ? (
           <div className="flex h-64 items-center justify-center animate-in fade-in-0 duration-200">
@@ -476,7 +476,7 @@ export default function AdminRepositoriesPage() {
                               type="button"
                               className="font-medium text-left transition-all duration-200 hover:text-primary hover:underline underline-offset-4"
                               onClick={() => router.push(`/${repo.id}`)}
-                              title="Manage repository"
+                              title={t('admin.repositories.manageRepo')}
                             >
                               {repo.orgName}/{repo.repoName}
                             </button>
@@ -594,7 +594,7 @@ export default function AdminRepositoriesPage() {
                   ) : (
                     <tr>
                       <td colSpan={7} className="px-4 py-16 text-center text-sm text-muted-foreground animate-in fade-in-0 duration-200">
-                        No repositories found for current filters
+                        {t('admin.repositories.noReposForFilter')}
                       </td>
                     </tr>
                   )}
@@ -602,7 +602,7 @@ export default function AdminRepositoriesPage() {
               </table>
             </div>
 
-            {/* 分页 */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t px-4 py-3">
                 <p className="text-sm text-muted-foreground">
@@ -637,7 +637,7 @@ export default function AdminRepositoriesPage() {
         )}
       </Card>
 
-      {/* 详情对话框 */}
+      {/* Detail dialog */}
       <Dialog open={!!selectedRepo} onOpenChange={() => setSelectedRepo(null)}>
         <DialogContent>
           <DialogHeader>
@@ -695,7 +695,7 @@ export default function AdminRepositoriesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 删除确认对话框 */}
+      {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -713,7 +713,7 @@ export default function AdminRepositoriesPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 批量删除确认对话框 */}
+      {/* Batch delete confirmation dialog */}
       <AlertDialog open={showBatchDeleteConfirm} onOpenChange={setShowBatchDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>

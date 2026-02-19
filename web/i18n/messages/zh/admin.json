@@ -89,7 +89,17 @@
     "selectFirst": "请先选择要同步的仓库",
     "batchSyncResult": "批量同步完成: 成功 {success} 个，失败 {failed} 个",
     "batchDeleteResult": "批量删除完成: 成功 {success} 个，失败 {failed} 个",
-    "totalRecords": "共 {count} 条记录"
+    "totalRecords": "共 {count} 条记录",
+    "pageCompletionRate": "当前页完成率",
+    "completedOfTotal": "完成 {completed} / {total}，处理中 {processing}",
+    "publicRepoRatio": "公开仓库占比",
+    "failedPrioritize": "失败仓库 {count}，建议优先排查",
+    "pageSelectionRatio": "当前页选中占比",
+    "selectedForBatch": "已选择 {count} 项用于批量操作",
+    "statusDistribution": "当前页状态分布",
+    "totalItems": "共 {count} 条",
+    "manageRepo": "管理仓库",
+    "noReposForFilter": "当前筛选条件下暂无仓库数据"
   },
   "users": {
     "title": "用户管理",

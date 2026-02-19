@@ -89,7 +89,17 @@
     "selectFirst": "먼저 동기화할 저장소를 선택하세요",
     "batchSyncResult": "일괄 동기화 완료: {success}개 성공, {failed}개 실패",
     "batchDeleteResult": "일괄 삭제 완료: {success}개 성공, {failed}개 실패",
-    "totalRecords": "총 {count}개 레코드"
+    "totalRecords": "총 {count}개 레코드",
+    "pageCompletionRate": "페이지 완료율",
+    "completedOfTotal": "완료 {completed} / {total}, 처리 중 {processing}",
+    "publicRepoRatio": "공개 저장소 비율",
+    "failedPrioritize": "실패: {count}, 우선 조사 필요",
+    "pageSelectionRatio": "페이지 선택 비율",
+    "selectedForBatch": "일괄 작업에 {count}개 선택됨",
+    "statusDistribution": "페이지 상태 분포",
+    "totalItems": "총 {count}개",
+    "manageRepo": "저장소 관리",
+    "noReposForFilter": "현재 필터 조건에 맞는 저장소가 없습니다"
   },
   "users": {
     "title": "사용자 관리",

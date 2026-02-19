@@ -89,7 +89,17 @@
     "selectFirst": "まず同期するリポジトリを選択してください",
     "batchSyncResult": "一括同期完了: {success}件成功、{failed}件失敗",
     "batchDeleteResult": "一括削除完了: {success}件成功、{failed}件失敗",
-    "totalRecords": "全{count}件"
+    "totalRecords": "全{count}件",
+    "pageCompletionRate": "ページ完了率",
+    "completedOfTotal": "完了 {completed} / {total}、処理中 {processing}",
+    "publicRepoRatio": "公開リポジトリ比率",
+    "failedPrioritize": "失敗: {count}、優先的に調査してください",
+    "pageSelectionRatio": "ページ選択率",
+    "selectedForBatch": "一括操作に{count}件選択済み",
+    "statusDistribution": "ページステータス分布",
+    "totalItems": "合計 {count}件",
+    "manageRepo": "リポジトリを管理",
+    "noReposForFilter": "現在のフィルター条件に一致するリポジトリがありません"
   },
   "users": {
     "title": "ユーザー管理",

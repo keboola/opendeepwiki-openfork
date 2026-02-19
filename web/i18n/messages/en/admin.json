@@ -89,7 +89,17 @@
     "selectFirst": "Please select repositories to sync first",
     "batchSyncResult": "Batch sync completed: {success} succeeded, {failed} failed",
     "batchDeleteResult": "Batch delete completed: {success} succeeded, {failed} failed",
-    "totalRecords": "{count} records"
+    "totalRecords": "{count} records",
+    "pageCompletionRate": "Page Completion Rate",
+    "completedOfTotal": "Completed {completed} / {total}, Processing {processing}",
+    "publicRepoRatio": "Public Repository Ratio",
+    "failedPrioritize": "Failed: {count}, prioritize investigation",
+    "pageSelectionRatio": "Page Selection Ratio",
+    "selectedForBatch": "{count} selected for batch operations",
+    "statusDistribution": "Page Status Distribution",
+    "totalItems": "{count} total",
+    "manageRepo": "Manage repository",
+    "noReposForFilter": "No repositories found for current filters"
   },
   "users": {
     "title": "User Management",

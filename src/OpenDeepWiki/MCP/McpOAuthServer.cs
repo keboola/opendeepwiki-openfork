@@ -300,7 +300,19 @@ public class McpOAuthServer
             redirectUrl += $"&state={Uri.EscapeDataString(pending.State)}";
         }
 
-        return Results.Redirect(redirectUrl);
+        // Return HTML page that redirects and then closes the tab
+        var html = $"""
+            <!DOCTYPE html>
+            <html><head><title>Authorizing...</title></head>
+            <body>
+            <p>Authentication successful. Redirecting...</p>
+            <script>
+                window.location.href = {System.Text.Json.JsonSerializer.Serialize(redirectUrl)};
+                setTimeout(function() {{ window.close(); }}, 2000);
+            </script>
+            </body></html>
+            """;
+        return Results.Content(html, "text/html");
     }
 
     /// <summary>

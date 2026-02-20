@@ -93,7 +93,7 @@ try
             ?? "OpenDeepWiki-Default-Secret-Key-Please-Change-In-Production-Environment-2024";
     }
 
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    var authBuilder = builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
@@ -107,17 +107,26 @@ try
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
-        })
-        .AddMcpGoogleAuth(builder.Configuration);
+        });
+
+    // MCP Google auth scheme (only when GOOGLE_CLIENT_ID is configured)
+    var hasMcpAuth = !string.IsNullOrEmpty(builder.Configuration["GOOGLE_CLIENT_ID"]);
+    if (hasMcpAuth)
+    {
+        authBuilder.AddMcpGoogleAuth(builder.Configuration);
+    }
 
     builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-        options.AddPolicy(McpAuthConfiguration.McpPolicyName, policy =>
-            policy.AddAuthenticationSchemes(
-                    JwtBearerDefaults.AuthenticationScheme,
-                    McpAuthConfiguration.McpGoogleScheme)
-                .RequireAuthenticatedUser());
+        if (hasMcpAuth)
+        {
+            options.AddPolicy(McpAuthConfiguration.McpPolicyName, policy =>
+                policy.AddAuthenticationSchemes(
+                        JwtBearerDefaults.AuthenticationScheme,
+                        McpAuthConfiguration.McpGoogleScheme)
+                    .RequireAuthenticatedUser());
+        }
     });
 
     // 注册认证服务
@@ -369,13 +378,18 @@ try
     // Requirements: 13.5, 13.6, 14.2, 14.7, 17.1, 17.2, 17.4 - 嵌入脚本验证和对话
     builder.Services.AddScoped<IEmbedService, EmbedService>();
 
-    // MCP server registration
-    builder.Services.AddScoped<IMcpUserResolver, McpUserResolver>();
-    builder.Services.AddSingleton<McpOAuthServer>();
-    builder.Services.AddHostedService<McpOAuthCleanupService>();
-    builder.Services.AddMcpServer()
-        .WithHttpTransport()
-        .WithTools<McpRepositoryTools>();
+    // MCP server registration (requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
+    var mcpEnabled = !string.IsNullOrEmpty(builder.Configuration["GOOGLE_CLIENT_ID"])
+                     && !string.IsNullOrEmpty(builder.Configuration["GOOGLE_CLIENT_SECRET"]);
+    if (mcpEnabled)
+    {
+        builder.Services.AddScoped<IMcpUserResolver, McpUserResolver>();
+        builder.Services.AddSingleton<McpOAuthServer>();
+        builder.Services.AddHostedService<McpOAuthCleanupService>();
+        builder.Services.AddMcpServer()
+            .WithHttpTransport()
+            .WithTools<McpRepositoryTools>();
+    }
 
     var app = builder.Build();
 
@@ -406,13 +420,14 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    // MCP OAuth authorization server endpoints (anonymous, before auth-protected MCP)
-    app.MapMcpOAuthEndpoints();
-
-    // MCP server endpoints
-    app.UseSseKeepAlive("/api/mcp");
-    app.MapProtectedResourceMetadata();
-    app.MapMcp("/api/mcp").RequireAuthorization(McpAuthConfiguration.McpPolicyName);
+    // MCP server endpoints (only when fully configured with OAuth)
+    if (mcpEnabled)
+    {
+        app.MapMcpOAuthEndpoints();
+        app.UseSseKeepAlive("/api/mcp");
+        app.MapProtectedResourceMetadata();
+        app.MapMcp("/api/mcp").RequireAuthorization(McpAuthConfiguration.McpPolicyName);
+    }
 
     app.MapMiniApis();
     app.MapAuthEndpoints();

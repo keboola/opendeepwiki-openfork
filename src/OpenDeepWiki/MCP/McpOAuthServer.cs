@@ -491,7 +491,7 @@ public static class McpOAuthEndpoints
                 oauthServer.HandleAuthorizationServerMetadata)
             .AllowAnonymous();
 
-        // OAuth endpoints
+        // OAuth endpoints (proxied from frontend via /oauth/* catch-all route)
         app.MapGet("/oauth/authorize", oauthServer.HandleAuthorize)
             .AllowAnonymous();
         app.MapGet("/oauth/callback", oauthServer.HandleCallback)

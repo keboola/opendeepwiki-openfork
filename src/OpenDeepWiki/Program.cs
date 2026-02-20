@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenDeepWiki.Agents;
 using OpenDeepWiki.Cache.DependencyInjection;
 using OpenDeepWiki.Chat;
+using OpenDeepWiki.MCP;
 using OpenDeepWiki.Endpoints;
 using OpenDeepWiki.Endpoints.Admin;
 using OpenDeepWiki.Infrastructure;
@@ -106,11 +107,17 @@ try
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
-        });
+        })
+        .AddMcpGoogleAuth(builder.Configuration);
 
     builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+        options.AddPolicy(McpAuthConfiguration.McpPolicyName, policy =>
+            policy.AddAuthenticationSchemes(
+                    JwtBearerDefaults.AuthenticationScheme,
+                    McpAuthConfiguration.McpGoogleScheme)
+                .RequireAuthenticatedUser());
     });
 
     // 注册认证服务
@@ -362,6 +369,12 @@ try
     // Requirements: 13.5, 13.6, 14.2, 14.7, 17.1, 17.2, 17.4 - 嵌入脚本验证和对话
     builder.Services.AddScoped<IEmbedService, EmbedService>();
 
+    // MCP server registration
+    builder.Services.AddScoped<IMcpUserResolver, McpUserResolver>();
+    builder.Services.AddMcpServer()
+        .WithHttpTransport()
+        .WithTools<McpRepositoryTools>();
+
     var app = builder.Build();
 
     // 初始化数据库
@@ -390,6 +403,11 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
+
+    // MCP server endpoints
+    app.UseSseKeepAlive("/api/mcp");
+    app.MapProtectedResourceMetadata();
+    app.MapMcp("/api/mcp").RequireAuthorization(McpAuthConfiguration.McpPolicyName);
 
     app.MapMiniApis();
     app.MapAuthEndpoints();

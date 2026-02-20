@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import {
   RefreshCw,
   ExternalLink,
@@ -41,6 +42,7 @@ import {
   AlertCircle,
   Plus,
   Download,
+  Search,
 } from "lucide-react";
 
 export default function GitHubImportPage() {
@@ -62,6 +64,10 @@ export default function GitHubImportPage() {
 
   // Selection
   const [selectedRepos, setSelectedRepos] = useState<Set<string>>(new Set());
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [languageFilter, setLanguageFilter] = useState<string>("all");
 
   // Import
   const [departments, setDepartments] = useState<AdminDepartment[]>([]);
@@ -154,8 +160,7 @@ export default function GitHubImportPage() {
   };
 
   const toggleSelectAll = () => {
-    const importableRepos = repos.filter((r) => !r.alreadyImported);
-    if (selectedRepos.size === importableRepos.length) {
+    if (selectedRepos.size === importableRepos.length && importableRepos.length > 0) {
       setSelectedRepos(new Set());
     } else {
       setSelectedRepos(new Set(importableRepos.map((r) => r.fullName)));
@@ -209,7 +214,27 @@ export default function GitHubImportPage() {
   };
 
   const totalPages = Math.ceil(repoTotalCount / perPage);
-  const importableRepos = repos.filter((r) => !r.alreadyImported);
+
+  // Apply client-side filters
+  const filteredRepos = repos.filter((r) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesName = r.fullName.toLowerCase().includes(q);
+      const matchesDesc = r.description?.toLowerCase().includes(q);
+      if (!matchesName && !matchesDesc) return false;
+    }
+    if (languageFilter !== "all" && (r.language || "").toLowerCase() !== languageFilter.toLowerCase()) {
+      return false;
+    }
+    return true;
+  });
+
+  const importableRepos = filteredRepos.filter((r) => !r.alreadyImported);
+
+  // Collect unique languages from current page for the filter dropdown
+  const repoLanguages = Array.from(
+    new Set(repos.map((r) => r.language).filter(Boolean) as string[])
+  ).sort();
 
   if (loading) {
     return (
@@ -365,6 +390,32 @@ export default function GitHubImportPage() {
               </div>
             </div>
 
+            {/* Search and Filter */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t("admin.githubImport.searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={languageFilter} onValueChange={setLanguageFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder={t("admin.githubImport.allLanguages")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("admin.githubImport.allLanguages")}</SelectItem>
+                  {repoLanguages.map((lang) => (
+                    <SelectItem key={lang} value={lang.toLowerCase()}>
+                      {lang}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Select All */}
             <div className="flex items-center gap-2 border-b pb-2">
               <Checkbox
@@ -376,8 +427,11 @@ export default function GitHubImportPage() {
               />
               <span className="text-sm font-medium">
                 {t("admin.githubImport.selectAll")}
+                {searchQuery || languageFilter !== "all"
+                  ? ` (${filteredRepos.length} ${t("admin.githubImport.matching")})`
+                  : ""}
                 {selectedRepos.size > 0 &&
-                  ` (${selectedRepos.size} ${t("admin.githubImport.selected")})`}
+                  ` - ${selectedRepos.size} ${t("admin.githubImport.selected")}`}
               </span>
             </div>
 
@@ -388,7 +442,7 @@ export default function GitHubImportPage() {
               </div>
             ) : (
               <div className="space-y-1">
-                {repos.map((repo) => (
+                {filteredRepos.map((repo) => (
                   <div
                     key={repo.fullName}
                     className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${

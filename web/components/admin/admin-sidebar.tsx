@@ -13,11 +13,10 @@ import {
   Users,
   Cog,
   Wrench,
-  ChevronLeft,
+  Home,
   Building2,
   MessageCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api-client";
 import { useTranslations } from "@/hooks/use-translations";
@@ -85,7 +84,11 @@ interface VersionInfo {
   productName: string;
 }
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  onNavigate?: () => void;
+}
+
+export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
   const pathname = usePathname();
   const t = useTranslations();
   const navItems = getNavItems(t);
@@ -100,7 +103,7 @@ export function AdminSidebar() {
         }
       })
       .catch(() => {
-        // 忽略版本获取失败
+        // Ignore version fetch failure
       });
   }, []);
 
@@ -115,19 +118,12 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="w-64 border-r bg-card flex flex-col">
+    <aside className="w-64 border-r bg-card flex flex-col h-full">
       <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">{t('common.adminPanel')}</h1>
-          <Link href="/">
-            <Button variant="ghost" size="icon" title={t('common.backToHome')}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
+        <h1 className="text-lg font-semibold">{t('common.adminPanel')}</h1>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           if (item.children) {
             const isExpanded = expandedItems.includes(item.label);
@@ -161,6 +157,7 @@ export function AdminSidebar() {
                       <Link
                         key={child.href}
                         href={child.href}
+                        onClick={onNavigate}
                         className={cn(
                           "block px-3 py-2 rounded-md text-sm transition-colors",
                           pathname === child.href
@@ -185,6 +182,7 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 isActive
@@ -197,6 +195,17 @@ export function AdminSidebar() {
             </Link>
           );
         })}
+
+        <div className="pt-2 mt-2 border-t">
+          <Link
+            href="/"
+            onClick={onNavigate}
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <Home className="h-4 w-4" />
+            {t('common.backToHome')}
+          </Link>
+        </div>
       </nav>
 
       {versionInfo && (

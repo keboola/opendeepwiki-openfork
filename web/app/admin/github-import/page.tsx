@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "@/hooks/use-translations";
 import { toast } from "sonner";
 import {
@@ -45,6 +45,9 @@ import {
   Search,
 } from "lucide-react";
 
+const PAGE_SIZE = 30;
+const FETCH_BATCH_SIZE = 100;
+
 export default function GitHubImportPage() {
   const t = useTranslations();
 
@@ -55,12 +58,11 @@ export default function GitHubImportPage() {
   // Selected installation
   const [selectedInstallation, setSelectedInstallation] = useState<GitHubInstallation | null>(null);
 
-  // Repos
-  const [repos, setRepos] = useState<GitHubRepo[]>([]);
+  // All repos (fetched in full)
+  const [allRepos, setAllRepos] = useState<GitHubRepo[]>([]);
   const [repoTotalCount, setRepoTotalCount] = useState(0);
-  const [repoPage, setRepoPage] = useState(1);
   const [repoLoading, setRepoLoading] = useState(false);
-  const perPage = 30;
+  const [loadProgress, setLoadProgress] = useState("");
 
   // Selection
   const [selectedRepos, setSelectedRepos] = useState<Set<string>>(new Set());
@@ -68,6 +70,9 @@ export default function GitHubImportPage() {
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [languageFilter, setLanguageFilter] = useState<string>("all");
+
+  // Client-side pagination
+  const [page, setPage] = useState(1);
 
   // Import
   const [departments, setDepartments] = useState<AdminDepartment[]>([]);
@@ -103,23 +108,47 @@ export default function GitHubImportPage() {
     }
   }, [selectedDepartmentId]);
 
-  const fetchRepos = useCallback(async () => {
+  // Fetch ALL repos from the installation (paginated API calls in background)
+  const fetchAllRepos = useCallback(async () => {
     if (!selectedInstallation) return;
     setRepoLoading(true);
+    setAllRepos([]);
+    setRepoTotalCount(0);
+    setLoadProgress("");
+
     try {
-      const result = await getInstallationRepos(
+      // First request to get total count
+      const firstResult = await getInstallationRepos(
         selectedInstallation.installationId,
-        repoPage,
-        perPage
+        1,
+        FETCH_BATCH_SIZE
       );
-      setRepos(result.repositories);
-      setRepoTotalCount(result.totalCount);
+      const total = firstResult.totalCount;
+      setRepoTotalCount(total);
+
+      let accumulated = [...firstResult.repositories];
+      setAllRepos(accumulated);
+      setLoadProgress(`${accumulated.length} / ${total}`);
+
+      // Fetch remaining pages
+      const totalPages = Math.ceil(total / FETCH_BATCH_SIZE);
+      for (let p = 2; p <= totalPages; p++) {
+        const result = await getInstallationRepos(
+          selectedInstallation.installationId,
+          p,
+          FETCH_BATCH_SIZE
+        );
+        accumulated = [...accumulated, ...result.repositories];
+        setAllRepos(accumulated);
+        setLoadProgress(`${accumulated.length} / ${total}`);
+      }
     } catch (error) {
       toast.error(t("admin.githubImport.fetchReposFailed"));
     } finally {
       setRepoLoading(false);
+      setLoadProgress("");
     }
-  }, [selectedInstallation, repoPage, t]);
+  }, [selectedInstallation, t]);
 
   useEffect(() => {
     fetchStatus();
@@ -128,15 +157,14 @@ export default function GitHubImportPage() {
 
   useEffect(() => {
     if (selectedInstallation) {
-      setRepoPage(1);
       setSelectedRepos(new Set());
       setImportResult(null);
+      setSearchQuery("");
+      setLanguageFilter("all");
+      setPage(1);
+      fetchAllRepos();
     }
   }, [selectedInstallation]);
-
-  useEffect(() => {
-    fetchRepos();
-  }, [fetchRepos]);
 
   const handleConnectNew = async () => {
     try {
@@ -159,11 +187,50 @@ export default function GitHubImportPage() {
     });
   };
 
+  // Apply filters across ALL repos
+  const filteredRepos = useMemo(() => {
+    return allRepos.filter((r) => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = r.fullName.toLowerCase().includes(q);
+        const matchesDesc = r.description?.toLowerCase().includes(q);
+        if (!matchesName && !matchesDesc) return false;
+      }
+      if (languageFilter !== "all" && (r.language || "").toLowerCase() !== languageFilter.toLowerCase()) {
+        return false;
+      }
+      return true;
+    });
+  }, [allRepos, searchQuery, languageFilter]);
+
+  const importableFiltered = useMemo(
+    () => filteredRepos.filter((r) => !r.alreadyImported),
+    [filteredRepos]
+  );
+
+  // Client-side pagination of filtered results
+  const totalFilteredPages = Math.ceil(filteredRepos.length / PAGE_SIZE);
+  const pagedRepos = useMemo(
+    () => filteredRepos.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredRepos, page]
+  );
+
+  // Collect unique languages from ALL repos for the filter dropdown
+  const repoLanguages = useMemo(
+    () => Array.from(new Set(allRepos.map((r) => r.language).filter(Boolean) as string[])).sort(),
+    [allRepos]
+  );
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, languageFilter]);
+
   const toggleSelectAll = () => {
-    if (selectedRepos.size === importableRepos.length && importableRepos.length > 0) {
+    if (selectedRepos.size === importableFiltered.length && importableFiltered.length > 0) {
       setSelectedRepos(new Set());
     } else {
-      setSelectedRepos(new Set(importableRepos.map((r) => r.fullName)));
+      setSelectedRepos(new Set(importableFiltered.map((r) => r.fullName)));
     }
   };
 
@@ -173,7 +240,7 @@ export default function GitHubImportPage() {
     setImporting(true);
     setImportResult(null);
     try {
-      const selectedRepoData = repos
+      const selectedRepoData = allRepos
         .filter((r) => selectedRepos.has(r.fullName))
         .map((r) => ({
           fullName: r.fullName,
@@ -203,7 +270,7 @@ export default function GitHubImportPage() {
       );
 
       // Refresh repo list to update "already imported" flags
-      fetchRepos();
+      fetchAllRepos();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : t("admin.githubImport.importFailed")
@@ -212,29 +279,6 @@ export default function GitHubImportPage() {
       setImporting(false);
     }
   };
-
-  const totalPages = Math.ceil(repoTotalCount / perPage);
-
-  // Apply client-side filters
-  const filteredRepos = repos.filter((r) => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const matchesName = r.fullName.toLowerCase().includes(q);
-      const matchesDesc = r.description?.toLowerCase().includes(q);
-      if (!matchesName && !matchesDesc) return false;
-    }
-    if (languageFilter !== "all" && (r.language || "").toLowerCase() !== languageFilter.toLowerCase()) {
-      return false;
-    }
-    return true;
-  });
-
-  const importableRepos = filteredRepos.filter((r) => !r.alreadyImported);
-
-  // Collect unique languages from current page for the filter dropdown
-  const repoLanguages = Array.from(
-    new Set(repos.map((r) => r.language).filter(Boolean) as string[])
-  ).sort();
 
   if (loading) {
     return (
@@ -342,10 +386,12 @@ export default function GitHubImportPage() {
               )}
             </CardTitle>
             <CardDescription>
-              {t("admin.githubImport.totalRepos").replace(
-                "{count}",
-                repoTotalCount.toString()
-              )}
+              {repoLoading && loadProgress
+                ? `${t("admin.githubImport.loadingRepos")} ${loadProgress}...`
+                : t("admin.githubImport.totalRepos").replace(
+                    "{count}",
+                    repoTotalCount.toString()
+                  )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -420,8 +466,8 @@ export default function GitHubImportPage() {
             <div className="flex items-center gap-2 border-b pb-2">
               <Checkbox
                 checked={
-                  importableRepos.length > 0 &&
-                  selectedRepos.size === importableRepos.length
+                  importableFiltered.length > 0 &&
+                  selectedRepos.size === importableFiltered.length
                 }
                 onCheckedChange={toggleSelectAll}
               />
@@ -436,13 +482,18 @@ export default function GitHubImportPage() {
             </div>
 
             {/* Repository List */}
-            {repoLoading ? (
+            {repoLoading && allRepos.length === 0 ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : (
               <div className="space-y-1">
-                {filteredRepos.map((repo) => (
+                {pagedRepos.length === 0 && searchQuery && (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    {t("admin.githubImport.noResults")}
+                  </p>
+                )}
+                {pagedRepos.map((repo) => (
                   <div
                     key={repo.fullName}
                     className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
@@ -509,24 +560,24 @@ export default function GitHubImportPage() {
             )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {totalFilteredPages > 1 && (
               <div className="flex items-center justify-between pt-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={repoPage <= 1}
-                  onClick={() => setRepoPage((p) => p - 1)}
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
                 >
                   {t("admin.githubImport.prevPage")}
                 </Button>
                 <span className="text-sm text-muted-foreground">
-                  {repoPage} / {totalPages}
+                  {page} / {totalFilteredPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={repoPage >= totalPages}
-                  onClick={() => setRepoPage((p) => p + 1)}
+                  disabled={page >= totalFilteredPages}
+                  onClick={() => setPage((p) => p + 1)}
                 >
                   {t("admin.githubImport.nextPage")}
                 </Button>

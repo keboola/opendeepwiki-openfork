@@ -445,6 +445,8 @@
     "connectNew": "Connect New Organization",
     "importFrom": "Import Repositories from {org}",
     "totalRepos": "{count} repositories available",
+    "loadingRepos": "Loading repositories",
+    "noResults": "No repositories match your search",
     "department": "Department",
     "selectDepartment": "Select department",
     "language": "Language",

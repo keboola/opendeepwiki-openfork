@@ -92,7 +92,7 @@ public static class McpAuthConfiguration
         var metadata = new
         {
             resource = $"{baseUrl}/api/mcp",
-            authorization_servers = new[] { "https://accounts.google.com" },
+            authorization_servers = new[] { baseUrl },
             scopes_supported = new[] { "openid", "email", "profile" },
             resource_documentation = $"{baseUrl}/docs/mcp"
         };

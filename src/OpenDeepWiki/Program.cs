@@ -371,6 +371,8 @@ try
 
     // MCP server registration
     builder.Services.AddScoped<IMcpUserResolver, McpUserResolver>();
+    builder.Services.AddSingleton<McpOAuthServer>();
+    builder.Services.AddHostedService<McpOAuthCleanupService>();
     builder.Services.AddMcpServer()
         .WithHttpTransport()
         .WithTools<McpRepositoryTools>();
@@ -403,6 +405,9 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
+
+    // MCP OAuth authorization server endpoints (anonymous, before auth-protected MCP)
+    app.MapMcpOAuthEndpoints();
 
     // MCP server endpoints
     app.UseSseKeepAlive("/api/mcp");

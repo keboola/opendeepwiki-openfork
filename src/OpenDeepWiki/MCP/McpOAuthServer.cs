@@ -301,17 +301,12 @@ public class McpOAuthServer
         }
 
         // Return HTML page that redirects and then closes the tab
-        var html = $"""
-            <!DOCTYPE html>
-            <html><head><title>Authorizing...</title></head>
-            <body>
-            <p>Authentication successful. Redirecting...</p>
-            <script>
-                window.location.href = {System.Text.Json.JsonSerializer.Serialize(redirectUrl)};
-                setTimeout(function() {{ window.close(); }}, 2000);
-            </script>
-            </body></html>
-            """;
+        var safeUrl = System.Text.Json.JsonSerializer.Serialize(redirectUrl);
+        var html = "<!DOCTYPE html><html><head><title>Authorizing...</title></head><body>"
+                   + "<p>Authentication successful. Redirecting...</p>"
+                   + "<script>window.location.href=" + safeUrl + ";"
+                   + "setTimeout(function(){window.close();},2000);</script>"
+                   + "</body></html>";
         return Results.Content(html, "text/html");
     }
 

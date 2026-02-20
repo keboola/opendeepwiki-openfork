@@ -1,0 +1,12 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '-t'
+    - 'europe-west3-docker.pkg.dev/keboola-deep-wiki/deepwiki/backend:latest'
+    - '-f'
+    - 'src/OpenDeepWiki/Dockerfile'
+    - '.'
+images:
+  - 'europe-west3-docker.pkg.dev/keboola-deep-wiki/deepwiki/backend:latest'
+timeout: 900s

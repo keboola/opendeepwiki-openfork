@@ -492,16 +492,22 @@ public static class McpOAuthEndpoints
             .AllowAnonymous();
 
         // OAuth endpoints (proxied from frontend via /oauth/* catch-all route)
-        // NOTE: async Task<IResult> handlers must use lambdas, not method groups,
-        // because method groups with (HttpContext) -> Task<IResult> are ambiguous
-        // with RequestDelegate (HttpContext -> Task), causing ASP.NET to ignore the IResult.
+        // NOTE: Handlers returning async Task<IResult> with HttpContext parameter are
+        // ambiguous with RequestDelegate (HttpContext -> Task) due to covariance.
+        // We must explicitly execute the IResult to avoid ASP.NET ignoring the return value.
         app.MapGet("/oauth/authorize", oauthServer.HandleAuthorize)
             .AllowAnonymous();
-        app.MapGet("/oauth/callback",
-                async (HttpContext ctx) => await oauthServer.HandleCallback(ctx))
+        app.MapGet("/oauth/callback", async (HttpContext ctx) =>
+            {
+                var result = await oauthServer.HandleCallback(ctx);
+                await result.ExecuteAsync(ctx);
+            })
             .AllowAnonymous();
-        app.MapPost("/oauth/token",
-                async (HttpContext ctx) => await oauthServer.HandleToken(ctx))
+        app.MapPost("/oauth/token", async (HttpContext ctx) =>
+            {
+                var result = await oauthServer.HandleToken(ctx);
+                await result.ExecuteAsync(ctx);
+            })
             .AllowAnonymous();
 
         return app;

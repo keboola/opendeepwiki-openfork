@@ -24,7 +24,7 @@
   "searchPlaceholder": "GitHubリポジトリのリンクを貼り付けるか、キーワードで検索",
   "addPrivateRepo": "プライベートリポジトリを追加",
   "exploreTrending": "今週のトレンドリポジトリを探索",
-  "mcpIntegration": "OpenDeepWiki MCPを開発ツールに統合 🔥",
+  "mcpIntegration": "KeboolaDeepWiki MCPを開発ツールに統合 🔥",
   "private": {
     "visibility": {
       "public": "公開",

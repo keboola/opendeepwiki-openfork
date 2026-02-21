@@ -24,7 +24,7 @@
   "searchPlaceholder": "Paste a GitHub repository link or search by keywords",
   "addPrivateRepo": "Add Private Repository",
   "exploreTrending": "Explore This Week's Trending Repos",
-  "mcpIntegration": "Integrate OpenDeepWiki MCP into your dev tools 🔥",
+  "mcpIntegration": "Integrate KeboolaDeepWiki MCP into your dev tools 🔥",
   "private": {
     "visibility": {
       "public": "Public",

@@ -106,12 +106,12 @@ export function AppSidebar({ activeItem, onItemClick, ...props }: AppSidebarProp
                     <SidebarGroupLabel>
                         <Image
                             src="/favicon.png"
-                            alt="OpenDeepWiki"
+                            alt="KeboolaDeepWiki"
                             width={24}
                             height={24}
                             className="shrink-0 rounded"
                         />
-                        <span className="ml-2">OpenDeepWiki</span>
+                        <span className="ml-2">KeboolaDeepWiki</span>
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>

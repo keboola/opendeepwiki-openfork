@@ -155,7 +155,7 @@ export async function getSystemVersion(): Promise<SystemVersion> {
     return {
       version: "1.0.0",
       assemblyVersion: "1.0.0.0",
-      productName: "OpenDeepWiki",
+      productName: "KeboolaDeepWiki",
     };
   }
 
@@ -163,6 +163,6 @@ export async function getSystemVersion(): Promise<SystemVersion> {
   return result.data || {
     version: "1.0.0",
     assemblyVersion: "1.0.0.0",
-    productName: "OpenDeepWiki",
+    productName: "KeboolaDeepWiki",
   };
 }

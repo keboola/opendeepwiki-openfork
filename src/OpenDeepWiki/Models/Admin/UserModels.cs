@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// 管理端用户列表响应
+/// Admin user list response
 /// </summary>
 public class AdminUserListResponse
 {
@@ -12,7 +12,7 @@ public class AdminUserListResponse
 }
 
 /// <summary>
-/// 管理端用户 DTO
+/// Admin user DTO
 /// </summary>
 public class AdminUserDto
 {
@@ -31,7 +31,7 @@ public class AdminUserDto
 }
 
 /// <summary>
-/// 创建用户请求
+/// Create user request
 /// </summary>
 public class CreateUserRequest
 {
@@ -43,7 +43,7 @@ public class CreateUserRequest
 }
 
 /// <summary>
-/// 更新用户请求
+/// Update user request
 /// </summary>
 public class UpdateUserRequest
 {
@@ -54,7 +54,7 @@ public class UpdateUserRequest
 }
 
 /// <summary>
-/// 更新用户角色请求
+/// Update user roles request
 /// </summary>
 public class UpdateUserRolesRequest
 {
@@ -62,7 +62,7 @@ public class UpdateUserRolesRequest
 }
 
 /// <summary>
-/// 重置密码请求
+/// Reset password request
 /// </summary>
 public class ResetPasswordRequest
 {

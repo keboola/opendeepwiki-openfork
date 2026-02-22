@@ -40,7 +40,7 @@ export default async function RepoDocPage({ params, searchParams }: RepoDocPageP
 
   const data = await getDocData(owner, repo, slug, branch, lang);
   
-  // 文档不存在，但保留侧边栏（由layout提供）
+  // Document does not exist, but keep sidebar (provided by layout)
   if (!data) {
     return (
       <DocsPage toc={[]}>
@@ -53,7 +53,7 @@ export default async function RepoDocPage({ params, searchParams }: RepoDocPageP
 
   const { doc, headings } = data;
 
-  // 转换 headings 为 fumadocs TOC 格式
+  // Convert headings to fumadocs TOC format
   const toc: TOCItemType[] = headings.map((h) => ({
     title: h.text,
     url: `#${h.id}`,

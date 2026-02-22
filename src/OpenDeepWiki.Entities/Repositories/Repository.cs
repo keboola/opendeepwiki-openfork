@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 仓库处理状态
+/// Repository processing status
 /// </summary>
 public enum RepositoryStatus
 {
@@ -15,104 +15,104 @@ public enum RepositoryStatus
 }
 
 /// <summary>
-/// 仓库实体
+/// Repository entity
 /// </summary>
 public class Repository : AggregateRoot<string>
 {
     /// <summary>
-    /// 所属用户ID
+    /// Owner user ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string OwnerUserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Git地址
+    /// Git URL
     /// </summary>
     [Required]
     [StringLength(500)]
     public string GitUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     [Required]
     [StringLength(100)]
     public string RepoName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库组织
+    /// Repository organization
     /// </summary>
     [Required]
     [StringLength(100)]
     public string OrgName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库账户
+    /// Repository authentication account
     /// </summary>
     [StringLength(200)]
     public string? AuthAccount { get; set; }
 
     /// <summary>
-    /// 仓库密码（明文存储）
+    /// Repository authentication password (stored in plaintext)
     /// </summary>
     [StringLength(500)]
     public string? AuthPassword { get; set; }
 
     /// <summary>
-    /// 是否公开
+    /// Whether public
     /// </summary>
     public bool IsPublic { get; set; } = true;
 
     /// <summary>
-    /// 仓库处理状态
+    /// Repository processing status
     /// </summary>
     public RepositoryStatus Status { get; set; } = RepositoryStatus.Pending;
 
     /// <summary>
-    /// Star数量
+    /// Star count
     /// </summary>
     public int StarCount { get; set; }
 
     /// <summary>
-    /// Fork数量
+    /// Fork count
     /// </summary>
     public int ForkCount { get; set; }
 
     /// <summary>
-    /// 收藏数量
+    /// Bookmark count
     /// </summary>
     public int BookmarkCount { get; set; } = 0;
 
     /// <summary>
-    /// 订阅数量
+    /// Subscription count
     /// </summary>
     public int SubscriptionCount { get; set; } = 0;
 
     /// <summary>
-    /// 浏览数量
+    /// View count
     /// </summary>
     public int ViewCount { get; set; } = 0;
 
     /// <summary>
-    /// 仓库主要编程语言
+    /// Repository primary programming language
     /// </summary>
     [StringLength(50)]
     public string? PrimaryLanguage { get; set; }
 
     /// <summary>
-    /// 更新检查间隔（分钟）
-    /// null 表示使用全局默认值
+    /// Update check interval (minutes)
+    /// null means use global default
     /// </summary>
     public int? UpdateIntervalMinutes { get; set; }
 
     /// <summary>
-    /// 上次检查更新时间
+    /// Last update check time
     /// </summary>
     public DateTime? LastUpdateCheckAt { get; set; }
 
     /// <summary>
-    /// 所属用户导航属性
+    /// Owner user navigation property
     /// </summary>
     [ForeignKey("OwnerUserId")]
     public virtual User? Owner { get; set; }

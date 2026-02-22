@@ -4,45 +4,45 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 聚合根基类（DDD设计）
+/// Aggregate root base class (DDD design)
 /// </summary>
-/// <typeparam name="TKey">主键类型</typeparam>
+/// <typeparam name="TKey">Primary key type</typeparam>
 public abstract class AggregateRoot<TKey>
 {
     /// <summary>
-    /// 主键ID
+    /// Primary key ID
     /// </summary>
     [Key]
     public TKey Id { get; set; } = default!;
 
     /// <summary>
-    /// 创建时间（UTC）
+    /// Creation time (UTC)
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// 更新时间（UTC）
+    /// Update time (UTC)
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
-    /// 删除时间（UTC）
+    /// Deletion time (UTC)
     /// </summary>
     public DateTime? DeletedAt { get; set; }
 
     /// <summary>
-    /// 是否已删除（软删除）
+    /// Whether deleted (soft delete)
     /// </summary>
     public bool IsDeleted { get; set; } = false;
 
     /// <summary>
-    /// 版本号（用于乐观并发控制）
+    /// Version number (used for optimistic concurrency control)
     /// </summary>
     [Timestamp]
     public byte[]? Version { get; set; }
 
     /// <summary>
-    /// 标记为已删除
+    /// Mark as deleted
     /// </summary>
     public virtual void MarkAsDeleted()
     {
@@ -52,7 +52,7 @@ public abstract class AggregateRoot<TKey>
     }
 
     /// <summary>
-    /// 更新时间戳
+    /// Update timestamp
     /// </summary>
     public virtual void UpdateTimestamp()
     {

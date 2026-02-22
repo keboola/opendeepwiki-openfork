@@ -5,17 +5,17 @@ using OpenDeepWiki.Services.OAuth;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// OAuth认证相关端点
+/// OAuth authentication related endpoints
 /// </summary>
 public static class OAuthEndpoints
 {
     public static IEndpointRouteBuilder MapOAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/oauth")
-            .WithTags("OAuth认证")
+            .WithTags("OAuth Authentication")
             .WithOpenApi();
 
-        // 获取OAuth授权URL
+        // Get OAuth authorization URL
         group.MapGet("/{provider}/authorize", async (
             [FromRoute] string provider,
             [FromQuery] string? state,
@@ -36,12 +36,12 @@ public static class OAuthEndpoints
             }
         })
         .WithName("GetOAuthAuthorizationUrl")
-        .WithSummary("获取OAuth授权URL")
-        .WithDescription("支持的提供商: github, gitee")
+        .WithSummary("Get OAuth authorization URL")
+        .WithDescription("Supported providers: github, gitee")
         .Produces<object>(200)
         .Produces(400);
 
-        // OAuth回调处理
+        // OAuth callback handler
         group.MapGet("/{provider}/callback", async (
             [FromRoute] string provider,
             [FromQuery] string code,
@@ -63,12 +63,12 @@ public static class OAuthEndpoints
             }
         })
         .WithName("OAuthCallback")
-        .WithSummary("OAuth回调处理")
-        .WithDescription("OAuth提供商回调此端点以完成授权流程")
+        .WithSummary("OAuth callback handler")
+        .WithDescription("OAuth provider calls this endpoint to complete the authorization flow")
         .Produces<LoginResponse>(200)
         .Produces(400);
 
-        // GitHub登录快捷方式
+        // GitHub login shortcut
         group.MapGet("/github/login", async (
             [FromQuery] string? state,
             [FromServices] IOAuthService oauthService) =>
@@ -84,10 +84,10 @@ public static class OAuthEndpoints
             }
         })
         .WithName("GitHubLogin")
-        .WithSummary("GitHub登录")
+        .WithSummary("GitHub login")
         .ExcludeFromDescription();
 
-        // Gitee登录快捷方式
+        // Gitee login shortcut
         group.MapGet("/gitee/login", async (
             [FromQuery] string? state,
             [FromServices] IOAuthService oauthService) =>
@@ -103,7 +103,7 @@ public static class OAuthEndpoints
             }
         })
         .WithName("GiteeLogin")
-        .WithSummary("Gitee登录")
+        .WithSummary("Gitee login")
         .ExcludeFromDescription();
 
         return app;

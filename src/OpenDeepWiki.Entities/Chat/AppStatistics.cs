@@ -3,35 +3,35 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 应用统计数据实体
-/// 记录每日调用次数、Token消耗等统计信息
+/// Application statistics entity
+/// Records daily call counts, token consumption, and other statistics
 /// </summary>
 public class AppStatistics : AggregateRoot<Guid>
 {
     /// <summary>
-    /// 关联的应用ID
+    /// Associated application ID
     /// </summary>
     [Required]
     [StringLength(64)]
     public string AppId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 统计日期
+    /// Statistics date
     /// </summary>
     public DateTime Date { get; set; }
 
     /// <summary>
-    /// 请求总数
+    /// Total request count
     /// </summary>
     public long RequestCount { get; set; } = 0;
 
     /// <summary>
-    /// 输入Token数量
+    /// Input token count
     /// </summary>
     public long InputTokens { get; set; } = 0;
 
     /// <summary>
-    /// 输出Token数量
+    /// Output token count
     /// </summary>
     public long OutputTokens { get; set; } = 0;
 }

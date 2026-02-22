@@ -37,7 +37,7 @@ export default function AdminChatAssistantPage() {
   const [saving, setSaving] = useState(false);
   const t = useTranslations();
 
-  // 编辑状态
+  // Editing state
   const [isEnabled, setIsEnabled] = useState(false);
   const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
   const [selectedMcpIds, setSelectedMcpIds] = useState<string[]>([]);
@@ -49,7 +49,7 @@ export default function AdminChatAssistantPage() {
     try {
       const result = await getChatAssistantConfig();
       setConfigOptions(result);
-      // 初始化编辑状态
+      // Initialize editing state
       setIsEnabled(result.config.isEnabled);
       setSelectedModelIds(result.config.enabledModelIds);
       setSelectedMcpIds(result.config.enabledMcpIds);
@@ -148,7 +148,7 @@ export default function AdminChatAssistantPage() {
         </div>
       </div>
 
-      {/* 启用开关 */}
+      {/* Enable switch */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -161,7 +161,7 @@ export default function AdminChatAssistantPage() {
         </div>
       </Card>
 
-      {/* 模型配置 */}
+      {/* Model configuration */}
       <Card className="p-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function AdminChatAssistantPage() {
             </div>
           )}
 
-          {/* 默认模型选择 */}
+          {/* Default model selection */}
           {selectedModels.length > 0 && (
             <div className="pt-4 border-t">
               <Label className="text-sm font-medium">{t('admin.chatAssistant.defaultModel')}</Label>
@@ -235,7 +235,7 @@ export default function AdminChatAssistantPage() {
         </div>
       </Card>
 
-      {/* MCP配置 */}
+      {/* MCP configuration */}
       <Card className="p-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -287,7 +287,7 @@ export default function AdminChatAssistantPage() {
         </div>
       </Card>
 
-      {/* Skills配置 */}
+      {/* Skills configuration */}
       <Card className="p-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -339,7 +339,7 @@ export default function AdminChatAssistantPage() {
         </div>
       </Card>
 
-      {/* 浮动保存按钮 */}
+      {/* Floating save button */}
       {hasChanges && (
         <div className="fixed bottom-6 right-6">
           <Button onClick={handleSave} disabled={saving} size="lg" className="shadow-lg">

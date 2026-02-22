@@ -10,8 +10,8 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Providers.WeChat;
 
 /// <summary>
-/// 微信客服消息 Provider 实现
-/// 支持文本、图片和语音消息
+/// WeChat customer service message Provider implementation
+/// Supports text, image, and voice messages
 /// </summary>
 public class WeChatProvider : BaseMessageProvider
 {
@@ -23,7 +23,7 @@ public class WeChatProvider : BaseMessageProvider
     private readonly SemaphoreSlim _tokenLock = new(1, 1);
     
     /// <summary>
-    /// 微信支持的消息类型
+    /// Message types supported by WeChat
     /// </summary>
     private static readonly HashSet<ChatMessageType> SupportedMessageTypes = new()
     {
@@ -33,7 +33,7 @@ public class WeChatProvider : BaseMessageProvider
     };
     
     public override string PlatformId => "wechat";
-    public override string DisplayName => "微信客服";
+    public override string DisplayName => "WeChat Customer Service";
     
     public WeChatProvider(
         ILogger<WeChatProvider> logger,
@@ -46,7 +46,7 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 初始化 Provider
+    /// Initialize Provider
     /// </summary>
     public override async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -58,7 +58,7 @@ public class WeChatProvider : BaseMessageProvider
             return;
         }
         
-        // 初始化加解密工具（如果配置了 EncodingAesKey）
+        // Initialize encryption/decryption utility (if EncodingAesKey is configured)
         if (!string.IsNullOrEmpty(_wechatOptions.EncodingAesKey) && !string.IsNullOrEmpty(_wechatOptions.Token))
         {
             _crypto = new WeChatCrypto(_wechatOptions.Token, _wechatOptions.EncodingAesKey, _wechatOptions.AppId);
@@ -78,13 +78,13 @@ public class WeChatProvider : BaseMessageProvider
 
     
     /// <summary>
-    /// 解析微信原始消息为统一格式
+    /// Parse raw WeChat message into unified format
     /// </summary>
     public override async Task<IChatMessage?> ParseMessageAsync(string rawMessage, CancellationToken cancellationToken = default)
     {
         try
         {
-            // 尝试解析加密消息
+            // Try to parse encrypted message
             var xmlMessage = await ParseXmlMessageAsync(rawMessage, cancellationToken);
             if (xmlMessage == null)
             {
@@ -92,7 +92,7 @@ public class WeChatProvider : BaseMessageProvider
                 return null;
             }
             
-            // 忽略事件消息（只处理普通消息）
+            // Ignore event messages (only process regular messages)
             if (xmlMessage.MsgType == WeChatMsgType.Event)
             {
                 Logger.LogDebug("Ignoring WeChat event message: {Event}", xmlMessage.Event);
@@ -128,7 +128,7 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 发送消息到微信
+    /// Send message to WeChat
     /// </summary>
     public override async Task<SendResult> SendMessageAsync(
         IChatMessage message, 
@@ -139,10 +139,10 @@ public class WeChatProvider : BaseMessageProvider
         {
             var token = await GetAccessTokenAsync(cancellationToken);
             
-            // 降级不支持的消息类型
+            // Downgrade unsupported message types
             var processedMessage = DegradeMessage(message, SupportedMessageTypes);
             
-            // 构建客服消息请求
+            // Build customer service message request
             var request = BuildCustomMessageRequest(processedMessage, targetUserId);
             
             var url = $"{_wechatOptions.ApiBaseUrl}/cgi-bin/message/custom/send?access_token={token}";
@@ -177,7 +177,7 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 验证微信 Webhook 请求
+    /// Validate WeChat Webhook request
     /// </summary>
     public override async Task<WebhookValidationResult> ValidateWebhookAsync(
         HttpRequest request, 
@@ -185,14 +185,14 @@ public class WeChatProvider : BaseMessageProvider
     {
         try
         {
-            // 获取验证参数
+            // Get verification parameters
             var signature = request.Query["signature"].ToString();
             var timestamp = request.Query["timestamp"].ToString();
             var nonce = request.Query["nonce"].ToString();
             var echostr = request.Query["echostr"].ToString();
             var msgSignature = request.Query["msg_signature"].ToString();
             
-            // URL 验证请求（GET 请求）
+            // URL verification request (GET request)
             if (request.Method == "GET" && !string.IsNullOrEmpty(echostr))
             {
                 if (VerifySignature(signature, timestamp, nonce))
@@ -202,10 +202,10 @@ public class WeChatProvider : BaseMessageProvider
                 return new WebhookValidationResult(false, ErrorMessage: "Invalid signature");
             }
             
-            // 消息请求验证（POST 请求）
+            // Message request verification (POST request)
             if (request.Method == "POST")
             {
-                // 明文模式：验证普通签名
+                // Plaintext mode: verify normal signature
                 if (string.IsNullOrEmpty(msgSignature))
                 {
                     if (!VerifySignature(signature, timestamp, nonce))
@@ -213,7 +213,7 @@ public class WeChatProvider : BaseMessageProvider
                         return new WebhookValidationResult(false, ErrorMessage: "Invalid signature");
                     }
                 }
-                // 加密模式：验证消息签名
+                // Encrypted mode: verify message signature
                 else if (_crypto != null)
                 {
                     request.EnableBuffering();
@@ -221,7 +221,7 @@ public class WeChatProvider : BaseMessageProvider
                     var body = await reader.ReadToEndAsync(cancellationToken);
                     request.Body.Position = 0;
                     
-                    // 解析加密消息获取 Encrypt 字段
+                    // Parse encrypted message to get the Encrypt field
                     var encryptedMsg = DeserializeXml<WeChatEncryptedMessage>(body);
                     if (encryptedMsg != null && !string.IsNullOrEmpty(encryptedMsg.Encrypt))
                     {
@@ -243,10 +243,10 @@ public class WeChatProvider : BaseMessageProvider
     }
 
     
-    #region 私有方法
+    #region Private methods
     
     /// <summary>
-    /// 获取 Access Token（带缓存）
+    /// Get Access Token (with caching)
     /// </summary>
     private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
@@ -258,7 +258,7 @@ public class WeChatProvider : BaseMessageProvider
         await _tokenLock.WaitAsync(cancellationToken);
         try
         {
-            // 双重检查
+            // Double-check
             if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpireTime)
             {
                 return _accessToken;
@@ -289,16 +289,16 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析 XML 消息（支持加密和明文）
+    /// Parse XML message (supports encrypted and plaintext)
     /// </summary>
     private async Task<WeChatXmlMessage?> ParseXmlMessageAsync(string rawMessage, CancellationToken cancellationToken)
     {
-        // 首先尝试解析为加密消息
+        // First try to parse as encrypted message
         var encryptedMsg = DeserializeXml<WeChatEncryptedMessage>(rawMessage);
         
         if (encryptedMsg != null && !string.IsNullOrEmpty(encryptedMsg.Encrypt) && _crypto != null)
         {
-            // 解密消息
+            // Decrypt message
             var decryptedXml = _crypto.Decrypt(encryptedMsg.Encrypt);
             if (decryptedXml == null)
             {
@@ -309,12 +309,12 @@ public class WeChatProvider : BaseMessageProvider
             return DeserializeXml<WeChatXmlMessage>(decryptedXml);
         }
         
-        // 明文消息
+        // Plaintext message
         return DeserializeXml<WeChatXmlMessage>(rawMessage);
     }
     
     /// <summary>
-    /// 解析微信消息内容
+    /// Parse WeChat message content
     /// </summary>
     private (ChatMessageType Type, string Content) ParseWeChatMessageContent(WeChatXmlMessage message)
     {
@@ -324,14 +324,14 @@ public class WeChatProvider : BaseMessageProvider
             WeChatMsgType.Image => (ChatMessageType.Image, message.PicUrl ?? message.MediaId ?? string.Empty),
             WeChatMsgType.Voice => (ChatMessageType.Audio, message.Recognition ?? message.MediaId ?? string.Empty),
             WeChatMsgType.Video or WeChatMsgType.ShortVideo => (ChatMessageType.Video, message.MediaId ?? string.Empty),
-            WeChatMsgType.Location => (ChatMessageType.Text, $"位置: {message.Label} ({message.LocationX}, {message.LocationY})"),
+            WeChatMsgType.Location => (ChatMessageType.Text, $"Location: {message.Label} ({message.LocationX}, {message.LocationY})"),
             WeChatMsgType.Link => (ChatMessageType.Text, $"{message.Title}: {message.Url}"),
             _ => (ChatMessageType.Unknown, message.Content ?? string.Empty)
         };
     }
     
     /// <summary>
-    /// 构建客服消息请求
+    /// Build customer service message request
     /// </summary>
     private WeChatCustomMessageRequest BuildCustomMessageRequest(IChatMessage message, string targetUserId)
     {
@@ -358,7 +358,7 @@ public class WeChatProvider : BaseMessageProvider
                 break;
                 
             default:
-                // 默认发送文本消息
+                // Default to sending text message
                 request.MsgType = WeChatMsgType.Text;
                 request.Text = new WeChatTextContent { Content = message.Content };
                 break;
@@ -368,12 +368,12 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 验证签名（明文模式）
+    /// Verify signature (plaintext mode)
     /// </summary>
     private bool VerifySignature(string signature, string timestamp, string nonce)
     {
         if (string.IsNullOrEmpty(_wechatOptions.Token))
-            return true; // 未配置 Token 时跳过验证
+            return true; // Skip verification when Token is not configured
         
         var items = new[] { _wechatOptions.Token, timestamp, nonce };
         Array.Sort(items, StringComparer.Ordinal);
@@ -386,7 +386,7 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 反序列化 XML
+    /// Deserialize XML
     /// </summary>
     private static T? DeserializeXml<T>(string xml) where T : class
     {
@@ -403,24 +403,24 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 判断是否为可重试的错误
+    /// Determine whether the error is retryable
     /// </summary>
     private static bool IsRetryableError(int errorCode)
     {
-        // 微信常见可重试错误码
+        // Common retryable WeChat error codes
         return errorCode switch
         {
-            -1 => true,      // 系统繁忙
-            40001 => true,   // access_token 无效（可能过期）
-            40014 => true,   // access_token 无效
-            42001 => true,   // access_token 过期
-            45015 => true,   // 回复时间超过限制（可重试）
+            -1 => true,      // System busy
+            40001 => true,   // Invalid access_token (possibly expired)
+            40014 => true,   // Invalid access_token
+            42001 => true,   // access_token expired
+            45015 => true,   // Reply time limit exceeded (retryable)
             _ => false
         };
     }
     
     /// <summary>
-    /// 带重试的发送逻辑
+    /// Send logic with retry
     /// </summary>
     private async Task<SendResult> SendWithRetryAsync(
         Func<Task<SendResult>> sendFunc,
@@ -435,7 +435,7 @@ public class WeChatProvider : BaseMessageProvider
             {
                 var result = await sendFunc();
                 
-                // 如果是 Token 过期错误，清除缓存后重试
+                // If token expired error, clear cache and retry
                 if (!result.Success && result.ErrorCode is "40001" or "40014" or "42001")
                 {
                     _accessToken = null;
@@ -453,7 +453,7 @@ public class WeChatProvider : BaseMessageProvider
                     return result;
                 }
                 
-                // 指数退避
+                // Exponential backoff
                 var delay = retryDelayBase * (int)Math.Pow(2, attempt);
                 Logger.LogWarning(
                     "WeChat API call failed (attempt {Attempt}/{MaxRetries}), retrying in {Delay}ms. Error: {Error}",
@@ -477,10 +477,10 @@ public class WeChatProvider : BaseMessageProvider
     
     #endregion
     
-    #region 公开辅助方法
+    #region Public helper methods
     
     /// <summary>
-    /// 转换消息为微信格式（用于测试）
+    /// Convert message to WeChat format (for testing)
     /// </summary>
     public (string MsgType, string Content) ConvertToWeChatFormat(IChatMessage message)
     {
@@ -494,7 +494,7 @@ public class WeChatProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 获取加解密工具实例（用于测试）
+    /// Get encryption/decryption utility instance (for testing)
     /// </summary>
     public WeChatCrypto? GetCrypto() => _crypto;
     

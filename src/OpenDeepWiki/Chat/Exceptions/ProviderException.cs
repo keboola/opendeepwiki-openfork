@@ -1,12 +1,12 @@
 namespace OpenDeepWiki.Chat.Exceptions;
 
 /// <summary>
-/// Provider 异常
+/// Provider exception
 /// </summary>
 public class ProviderException : ChatException
 {
     /// <summary>
-    /// 平台标识
+    /// Platform identifier
     /// </summary>
     public string Platform { get; }
     

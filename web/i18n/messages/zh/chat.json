@@ -1,7 +1,7 @@
 {
   "assistant": {
-    "title": "OpenDeepWiki智能体",
-    "greeting": "👋 你好！我是OpenDeepWiki智能体",
+    "title": "KeboolaDeepWiki智能体",
+    "greeting": "👋 你好！我是KeboolaDeepWiki智能体",
     "greetingSubtitle": "有什么关于文档的问题可以问我",
     "disabled": "智能体功能已禁用",
     "noModels": "暂无可用模型，请联系管理员配置",

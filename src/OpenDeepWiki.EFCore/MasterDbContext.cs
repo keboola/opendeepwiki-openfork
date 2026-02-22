@@ -115,168 +115,168 @@ public abstract class MasterDbContext : DbContext, IContext
             .HasIndex(language => new { language.RepositoryBranchId, language.LanguageCode })
             .IsUnique();
 
-        // DocCatalog 树形结构配置
+        // DocCatalog tree structure configuration
         modelBuilder.Entity<DocCatalog>()
             .HasOne(catalog => catalog.Parent)
             .WithMany(catalog => catalog.Children)
             .HasForeignKey(catalog => catalog.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // DocCatalog 路径唯一索引（同一分支语言下路径唯一）
+        // DocCatalog path unique index (path must be unique within the same branch language)
         modelBuilder.Entity<DocCatalog>()
             .HasIndex(catalog => new { catalog.BranchLanguageId, catalog.Path })
             .IsUnique();
 
-        // DocCatalog 与 DocFile 关联
+        // DocCatalog and DocFile association
         modelBuilder.Entity<DocCatalog>()
             .HasOne(catalog => catalog.DocFile)
             .WithMany()
             .HasForeignKey(catalog => catalog.DocFileId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // UserBookmark 唯一索引（同一用户对同一仓库只能收藏一次）
+        // UserBookmark unique index (a user can only bookmark the same repository once)
         modelBuilder.Entity<UserBookmark>()
             .HasIndex(b => new { b.UserId, b.RepositoryId })
             .IsUnique();
 
-        // UserSubscription 唯一索引（同一用户对同一仓库只能订阅一次）
+        // UserSubscription unique index (a user can only subscribe to the same repository once)
         modelBuilder.Entity<UserSubscription>()
             .HasIndex(s => new { s.UserId, s.RepositoryId })
             .IsUnique();
 
-        // RepositoryProcessingLog 索引（按仓库ID和创建时间查询）
+        // RepositoryProcessingLog index (query by repository ID and creation time)
         modelBuilder.Entity<RepositoryProcessingLog>()
             .HasIndex(log => new { log.RepositoryId, log.CreatedAt });
 
-        // TokenUsage 索引（按记录时间查询统计）
+        // TokenUsage index (query statistics by record time)
         modelBuilder.Entity<TokenUsage>()
             .HasIndex(t => t.RecordedAt);
 
-        // SystemSetting 唯一键索引
+        // SystemSetting unique key index
         modelBuilder.Entity<SystemSetting>()
             .HasIndex(s => s.Key)
             .IsUnique();
 
-        // McpConfig 名称唯一索引
+        // McpConfig name unique index
         modelBuilder.Entity<McpConfig>()
             .HasIndex(m => m.Name)
             .IsUnique();
 
-        // SkillConfig 名称唯一索引
+        // SkillConfig name unique index
         modelBuilder.Entity<SkillConfig>()
             .HasIndex(s => s.Name)
             .IsUnique();
 
-        // ModelConfig 名称唯一索引
+        // ModelConfig name unique index
         modelBuilder.Entity<ModelConfig>()
             .HasIndex(m => m.Name)
             .IsUnique();
 
-        // ChatSession 用户和平台组合唯一索引
+        // ChatSession user and platform composite unique index
         modelBuilder.Entity<ChatSession>()
             .HasIndex(s => new { s.UserId, s.Platform })
             .IsUnique();
 
-        // ChatSession 状态索引（用于查询活跃会话）
+        // ChatSession state index (for querying active sessions)
         modelBuilder.Entity<ChatSession>()
             .HasIndex(s => s.State);
 
-        // ChatMessageHistory 与 ChatSession 关联
+        // ChatMessageHistory and ChatSession association
         modelBuilder.Entity<ChatMessageHistory>()
             .HasOne(m => m.Session)
             .WithMany(s => s.Messages)
             .HasForeignKey(m => m.SessionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // ChatMessageHistory 会话ID和时间戳索引（用于按时间查询消息）
+        // ChatMessageHistory session ID and timestamp index (for querying messages by time)
         modelBuilder.Entity<ChatMessageHistory>()
             .HasIndex(m => new { m.SessionId, m.MessageTimestamp });
 
-        // ChatShareSnapshot ShareId 唯一索引
+        // ChatShareSnapshot ShareId unique index
         modelBuilder.Entity<ChatShareSnapshot>()
             .HasIndex(s => s.ShareId)
             .IsUnique();
 
-        // ChatShareSnapshot 过期时间索引
+        // ChatShareSnapshot expiration time index
         modelBuilder.Entity<ChatShareSnapshot>()
             .HasIndex(s => s.ExpiresAt);
 
-        // ChatProviderConfig 平台唯一索引
+        // ChatProviderConfig platform unique index
         modelBuilder.Entity<ChatProviderConfig>()
             .HasIndex(c => c.Platform)
             .IsUnique();
 
-        // ChatMessageQueue 状态和计划时间索引（用于出队处理）
+        // ChatMessageQueue status and scheduled time index (for dequeue processing)
         modelBuilder.Entity<ChatMessageQueue>()
             .HasIndex(q => new { q.Status, q.ScheduledAt });
 
-        // ChatMessageQueue 平台和目标用户索引（用于按用户查询队列）
+        // ChatMessageQueue platform and target user index (for querying queue by user)
         modelBuilder.Entity<ChatMessageQueue>()
             .HasIndex(q => new { q.Platform, q.TargetUserId });
 
-        // UserDepartment 唯一索引（同一用户在同一部门只能有一条记录）
+        // UserDepartment unique index (a user can only have one record in the same department)
         modelBuilder.Entity<UserDepartment>()
             .HasIndex(ud => new { ud.UserId, ud.DepartmentId })
             .IsUnique();
 
-        // UserActivity 索引（按用户ID和时间查询）
+        // UserActivity index (query by user ID and time)
         modelBuilder.Entity<UserActivity>()
             .HasIndex(a => new { a.UserId, a.CreatedAt });
 
-        // UserActivity 索引（按仓库ID查询）
+        // UserActivity index (query by repository ID)
         modelBuilder.Entity<UserActivity>()
             .HasIndex(a => a.RepositoryId);
 
-        // UserPreferenceCache 用户ID唯一索引
+        // UserPreferenceCache user ID unique index
         modelBuilder.Entity<UserPreferenceCache>()
             .HasIndex(p => p.UserId)
             .IsUnique();
 
-        // UserDislike 唯一索引（同一用户对同一仓库只能标记一次不感兴趣）
+        // UserDislike unique index (a user can only mark the same repository as not interested once)
         modelBuilder.Entity<UserDislike>()
             .HasIndex(d => new { d.UserId, d.RepositoryId })
             .IsUnique();
 
-        // ChatApp AppId唯一索引
+        // ChatApp AppId unique index
         modelBuilder.Entity<ChatApp>()
             .HasIndex(a => a.AppId)
             .IsUnique();
 
-        // ChatApp 用户ID索引（用于查询用户的应用列表）
+        // ChatApp user ID index (for querying user's application list)
         modelBuilder.Entity<ChatApp>()
             .HasIndex(a => a.UserId);
 
-        // AppStatistics AppId和日期组合唯一索引
+        // AppStatistics AppId and date composite unique index
         modelBuilder.Entity<AppStatistics>()
             .HasIndex(s => new { s.AppId, s.Date })
             .IsUnique();
 
-        // ChatLog AppId索引（用于按应用查询提问记录）
+        // ChatLog AppId index (for querying question records by application)
         modelBuilder.Entity<ChatLog>()
             .HasIndex(l => l.AppId);
 
-        // ChatLog 创建时间索引（用于按时间范围查询）
+        // ChatLog creation time index (for querying by time range)
         modelBuilder.Entity<ChatLog>()
             .HasIndex(l => l.CreatedAt);
 
-        // TranslationTask 状态索引（用于查询待处理任务）
+        // TranslationTask status index (for querying pending tasks)
         modelBuilder.Entity<TranslationTask>()
             .HasIndex(t => t.Status);
 
-        // TranslationTask 仓库分支和目标语言组合唯一索引（避免重复任务）
+        // TranslationTask repository branch and target language composite unique index (to avoid duplicate tasks)
         modelBuilder.Entity<TranslationTask>()
             .HasIndex(t => new { t.RepositoryBranchId, t.TargetLanguageCode })
             .IsUnique();
 
-        // IncrementalUpdateTask 状态索引（用于查询待处理任务）
+        // IncrementalUpdateTask status index (for querying pending tasks)
         modelBuilder.Entity<IncrementalUpdateTask>()
             .HasIndex(t => t.Status);
 
-        // IncrementalUpdateTask 仓库分支和状态组合索引（防止重复的待处理/处理中任务）
+        // IncrementalUpdateTask repository branch and status composite index (to prevent duplicate pending/processing tasks)
         modelBuilder.Entity<IncrementalUpdateTask>()
             .HasIndex(t => new { t.RepositoryId, t.BranchId, t.Status });
 
-        // IncrementalUpdateTask 优先级和创建时间索引（用于按优先级排序处理）
+        // IncrementalUpdateTask priority and creation time index (for processing sorted by priority)
         modelBuilder.Entity<IncrementalUpdateTask>()
             .HasIndex(t => new { t.Priority, t.CreatedAt });
 

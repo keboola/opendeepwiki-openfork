@@ -4,30 +4,30 @@ using OpenDeepWiki.Chat.Sessions;
 namespace OpenDeepWiki.Chat.Execution;
 
 /// <summary>
-/// Agent 执行器接口
-/// 负责处理消息并生成响应
+/// Agent executor interface
+/// Responsible for processing messages and generating responses
 /// </summary>
 public interface IAgentExecutor
 {
     /// <summary>
-    /// 执行 Agent 处理消息
+    /// Execute Agent to process a message
     /// </summary>
-    /// <param name="message">用户消息</param>
-    /// <param name="session">对话会话</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>Agent 响应</returns>
+    /// <param name="message">User message</param>
+    /// <param name="session">Chat session</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Agent response</returns>
     Task<AgentResponse> ExecuteAsync(
         IChatMessage message, 
         IChatSession session, 
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// 流式执行 Agent
+    /// Execute Agent in streaming mode
     /// </summary>
-    /// <param name="message">用户消息</param>
-    /// <param name="session">对话会话</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>Agent 响应块流</returns>
+    /// <param name="message">User message</param>
+    /// <param name="session">Chat session</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Stream of Agent response chunks</returns>
     IAsyncEnumerable<AgentResponseChunk> ExecuteStreamAsync(
         IChatMessage message, 
         IChatSession session, 

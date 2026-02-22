@@ -5,14 +5,14 @@ using OpenDeepWiki.Services.Admin;
 namespace OpenDeepWiki.Endpoints.Admin;
 
 /// <summary>
-/// 管理端工具配置端点
+/// Admin tools configuration endpoints
 /// </summary>
 public static class AdminToolsEndpoints
 {
     public static RouteGroupBuilder MapAdminToolsEndpoints(this RouteGroupBuilder group)
     {
         var toolsGroup = group.MapGroup("/tools")
-            .WithTags("管理端-工具配置");
+            .WithTags("Admin - Tools Config");
 
         MapMcpEndpoints(toolsGroup);
         MapSkillEndpoints(toolsGroup);
@@ -63,14 +63,14 @@ public static class AdminToolsEndpoints
     {
         var skillGroup = group.MapGroup("/skills");
 
-        // 获取所有 Skills
+        // Get all Skills
         skillGroup.MapGet("/", async ([FromServices] IAdminToolsService toolsService) =>
         {
             var result = await toolsService.GetSkillConfigsAsync();
             return Results.Ok(new { success = true, data = result });
         }).WithName("AdminGetSkills");
 
-        // 获取 Skill 详情
+        // Get Skill details
         skillGroup.MapGet("/{id}", async (
             string id,
             [FromServices] IAdminToolsService toolsService) =>
@@ -78,17 +78,17 @@ public static class AdminToolsEndpoints
             var result = await toolsService.GetSkillDetailAsync(id);
             return result != null 
                 ? Results.Ok(new { success = true, data = result })
-                : Results.NotFound(new { success = false, message = "Skill 不存在" });
+                : Results.NotFound(new { success = false, message = "Skill not found" });
         }).WithName("AdminGetSkillDetail");
 
-        // 上传 Skill（ZIP 压缩包）
+        // Upload Skill (ZIP archive)
         skillGroup.MapPost("/upload", async (
             HttpRequest request,
             [FromServices] IAdminToolsService toolsService) =>
         {
             if (!request.HasFormContentType)
             {
-                return Results.BadRequest(new { success = false, message = "请使用 multipart/form-data 格式" });
+                return Results.BadRequest(new { success = false, message = "Please use multipart/form-data format" });
             }
 
             var form = await request.ReadFormAsync();
@@ -96,12 +96,12 @@ public static class AdminToolsEndpoints
             
             if (file == null || file.Length == 0)
             {
-                return Results.BadRequest(new { success = false, message = "请上传 ZIP 文件" });
+                return Results.BadRequest(new { success = false, message = "Please upload a ZIP file" });
             }
 
             if (!file.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
             {
-                return Results.BadRequest(new { success = false, message = "只支持 ZIP 格式" });
+                return Results.BadRequest(new { success = false, message = "Only ZIP format is supported" });
             }
 
             try
@@ -117,7 +117,7 @@ public static class AdminToolsEndpoints
         }).WithName("AdminUploadSkill")
           .DisableAntiforgery();
 
-        // 更新 Skill（仅管理字段）
+        // Update Skill (admin fields only)
         skillGroup.MapPut("/{id}", async (
             string id,
             [FromBody] SkillUpdateRequest request,
@@ -128,7 +128,7 @@ public static class AdminToolsEndpoints
                 : Results.NotFound(new { success = false });
         }).WithName("AdminUpdateSkill");
 
-        // 删除 Skill
+        // Delete Skill
         skillGroup.MapDelete("/{id}", async (
             string id,
             [FromServices] IAdminToolsService toolsService) =>
@@ -138,7 +138,7 @@ public static class AdminToolsEndpoints
                 : Results.NotFound(new { success = false });
         }).WithName("AdminDeleteSkill");
 
-        // 获取 Skill 文件内容
+        // Get Skill file content
         skillGroup.MapGet("/{id}/files/{*filePath}", async (
             string id,
             string filePath,
@@ -149,19 +149,19 @@ public static class AdminToolsEndpoints
                 var content = await toolsService.GetSkillFileContentAsync(id, filePath);
                 return content != null 
                     ? Results.Ok(new { success = true, data = content })
-                    : Results.NotFound(new { success = false, message = "文件不存在" });
+                    : Results.NotFound(new { success = false, message = "File not found" });
             }
             catch (UnauthorizedAccessException)
             {
-                return Results.BadRequest(new { success = false, message = "非法路径" });
+                return Results.BadRequest(new { success = false, message = "Invalid path" });
             }
         }).WithName("AdminGetSkillFile");
 
-        // 从磁盘刷新 Skills
+        // Refresh Skills from disk
         skillGroup.MapPost("/refresh", async ([FromServices] IAdminToolsService toolsService) =>
         {
             await toolsService.RefreshSkillsFromDiskAsync();
-            return Results.Ok(new { success = true, message = "刷新完成" });
+            return Results.Ok(new { success = true, message = "Refresh completed" });
         }).WithName("AdminRefreshSkills");
     }
 

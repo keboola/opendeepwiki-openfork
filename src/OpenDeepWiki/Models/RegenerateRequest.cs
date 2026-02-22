@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 重新生成仓库文档请求
+/// Regenerate repository documentation request
 /// </summary>
 public class RegenerateRequest
 {
     /// <summary>
-    /// 仓库所有者
+    /// Repository owner
     /// </summary>
     [Required]
     [StringLength(100)]
     public string Owner { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     [Required]
     [StringLength(100)]
@@ -23,17 +23,17 @@ public class RegenerateRequest
 }
 
 /// <summary>
-/// 重新生成仓库文档响应
+/// Regenerate repository documentation response
 /// </summary>
 public class RegenerateResponse
 {
     /// <summary>
-    /// 是否成功
+    /// Whether the operation was successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 错误信息
+    /// Error message
     /// </summary>
     public string? ErrorMessage { get; set; }
 }

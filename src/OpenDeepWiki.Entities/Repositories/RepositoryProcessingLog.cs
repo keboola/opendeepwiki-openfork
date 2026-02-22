@@ -4,77 +4,77 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 处理步骤类型
+/// Processing step type
 /// </summary>
 public enum ProcessingStep
 {
     /// <summary>
-    /// 准备工作区
+    /// Prepare workspace
     /// </summary>
     Workspace = 0,
-    
+
     /// <summary>
-    /// 生成目录
+    /// Generate catalog
     /// </summary>
     Catalog = 1,
-    
+
     /// <summary>
-    /// 生成文档内容
+    /// Generate document content
     /// </summary>
     Content = 2,
-    
+
     /// <summary>
-    /// 多语言翻译
+    /// Multi-language translation
     /// </summary>
     Translation = 3,
-    
+
     /// <summary>
-    /// 生成思维导图
+    /// Generate mind map
     /// </summary>
     MindMap = 4,
-    
+
     /// <summary>
-    /// 完成
+    /// Complete
     /// </summary>
     Complete = 5
 }
 
 /// <summary>
-/// 仓库处理日志实体
+/// Repository processing log entity
 /// </summary>
 public class RepositoryProcessingLog : AggregateRoot<string>
 {
     /// <summary>
-    /// 关联的仓库ID
+    /// Associated repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 当前处理步骤
+    /// Current processing step
     /// </summary>
     public ProcessingStep Step { get; set; } = ProcessingStep.Workspace;
 
     /// <summary>
-    /// 日志消息
+    /// Log message
     /// </summary>
     [Required]
     public string Message { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否为AI输出
+    /// Whether this is AI output
     /// </summary>
     public bool IsAiOutput { get; set; } = false;
 
     /// <summary>
-    /// 工具调用名称（如果是工具调用）
+    /// Tool call name (if it is a tool call)
     /// </summary>
     [StringLength(100)]
     public string? ToolName { get; set; }
 
     /// <summary>
-    /// 关联的仓库导航属性
+    /// Associated repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }

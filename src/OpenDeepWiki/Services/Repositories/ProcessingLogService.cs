@@ -6,7 +6,7 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Repositories;
 
 /// <summary>
-/// 处理日志服务实现
+/// Processing log service implementation
 /// </summary>
 public class ProcessingLogService : IProcessingLogService
 {
@@ -26,7 +26,7 @@ public class ProcessingLogService : IProcessingLogService
         string? toolName = null,
         CancellationToken cancellationToken = default)
     {
-        // 使用独立的 scope 来保存日志，避免影响其他操作
+        // Use an independent scope to save logs, avoiding interference with other operations
         using var scope = _scopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<IContext>();
 
@@ -77,16 +77,16 @@ public class ProcessingLogService : IProcessingLogService
             })
             .ToListAsync(cancellationToken);
 
-        // 反转列表，使其按时间正序排列（最早的在前）
+        // Reverse the list so it's in chronological order (earliest first)
         logs.Reverse();
 
-        // 获取当前步骤（最新日志的步骤）
+        // Get current step (step from the latest log entry)
         var currentStep = logs.LastOrDefault()?.Step ?? ProcessingStep.Workspace;
 
-        // 解析文档生成进度
+        // Parse document generation progress
         var (totalDocuments, completedDocuments) = ParseDocumentProgress(logs);
 
-        // 获取开始时间（第一条日志的时间）
+        // Get start time (time of the first log entry)
         var startedAt = logs.FirstOrDefault()?.CreatedAt;
 
         return new ProcessingLogResponse
@@ -100,7 +100,7 @@ public class ProcessingLogService : IProcessingLogService
     }
 
     /// <summary>
-    /// 从日志中解析文档生成进度
+    /// Parse document generation progress from logs
     /// </summary>
     private static (int total, int completed) ParseDocumentProgress(List<ProcessingLogItem> logs)
     {
@@ -112,18 +112,18 @@ public class ProcessingLogService : IProcessingLogService
             if (log.Step != ProcessingStep.Content || log.IsAiOutput || !string.IsNullOrEmpty(log.ToolName))
                 continue;
 
-            // 匹配 "发现 X 个文档需要生成" 格式
+            // Match "Found X documents to generate" or legacy "发现 X 个文档" format
             var totalMatch = System.Text.RegularExpressions.Regex.Match(
-                log.Message, @"发现\s*(\d+)\s*个文档");
+                log.Message, @"(?:Found\s+(\d+)\s+documents|发现\s*(\d+)\s*个文档)");
             if (totalMatch.Success)
             {
-                total = int.Parse(totalMatch.Groups[1].Value);
+                total = int.Parse(totalMatch.Groups[1].Success ? totalMatch.Groups[1].Value : totalMatch.Groups[2].Value);
                 continue;
             }
 
-            // 匹配 "文档完成 (X/Y)" 格式（以完成为准）
+            // Match "Document completed (X/Y)" or legacy "文档完成 (X/Y)" format
             var completedMatch = System.Text.RegularExpressions.Regex.Match(
-                log.Message, @"文档完成\s*\((\d+)/(\d+)\)");
+                log.Message, @"(?:Document completed|文档完成)\s*\((\d+)/(\d+)\)");
             if (completedMatch.Success)
             {
                 completed = Math.Max(completed, int.Parse(completedMatch.Groups[1].Value));
@@ -134,9 +134,9 @@ public class ProcessingLogService : IProcessingLogService
                 continue;
             }
 
-            // 匹配 "开始生成文档 (X/Y)" 或旧格式 "正在生成文档 (X/Y)" - 仅用于补全总数
+            // Match "Start generating document (X/Y)" or legacy Chinese format - only used to fill in total
             var progressMatch = System.Text.RegularExpressions.Regex.Match(
-                log.Message, @"(开始生成文档|正在生成文档)\s*\((\d+)/(\d+)\)");
+                log.Message, @"(Start generating document|Generating document|开始生成文档|正在生成文档)\s*\((\d+)/(\d+)\)");
             if (progressMatch.Success)
             {
                 if (total == 0)
@@ -146,8 +146,8 @@ public class ProcessingLogService : IProcessingLogService
                 continue;
             }
 
-            // 匹配 "文档生成完成" 格式
-            if (log.Message.Contains("文档生成完成"))
+            // Match "Document generation completed" or legacy "文档生成完成" format
+            if (log.Message.Contains("文档生成完成") || log.Message.Contains("Document generation completed"))
             {
                 completed = total;
             }

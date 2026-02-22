@@ -160,10 +160,10 @@ export default function SettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="zh">中文</SelectItem>
+                    <SelectItem value="zh">Chinese</SelectItem>
                     <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="ja">日本語</SelectItem>
-                    <SelectItem value="ko">한국어</SelectItem>
+                    <SelectItem value="ja">Japanese</SelectItem>
+                    <SelectItem value="ko">Korean</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>{systemVersion?.productName || "OpenDeepWiki"} v{systemVersion?.version || "1.0.0"}</p>
+                <p>{systemVersion?.productName || "KeboolaDeepWiki"} v{systemVersion?.version || "1.0.0"}</p>
                 <p>{t("settings.aboutDescription") || "AI-powered code knowledge base platform"}</p>
               </div>
             </CardContent>

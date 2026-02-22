@@ -37,7 +37,7 @@ export function RepoSidebar({ owner, repo, nodes }: RepoSidebarProps) {
   const activeSlug = Array.isArray(slugParam) ? slugParam.join("/") : slugParam ?? "";
   const basePath = `/${owner}/${repo}`;
 
-  // 构建带查询参数的链接
+  // Build link with query parameters
   const buildHref = (slug: string) => {
     const path = `${basePath}/${encodeSlug(slug)}`;
     const queryString = searchParams.toString();

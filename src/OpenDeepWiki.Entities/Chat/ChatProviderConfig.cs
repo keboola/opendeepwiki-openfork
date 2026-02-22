@@ -3,32 +3,32 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// Provider 配置实体
-/// 存储各平台的接入配置
+/// Provider configuration entity
+/// Stores integration configuration for each platform
 /// </summary>
 public class ChatProviderConfig : AggregateRoot<Guid>
 {
     /// <summary>
-    /// 平台标识
+    /// Platform identifier
     /// </summary>
     [Required]
     [StringLength(50)]
     public string Platform { get; set; } = string.Empty;
 
     /// <summary>
-    /// 显示名称
+    /// Display name
     /// </summary>
     [Required]
     [StringLength(100)]
     public string DisplayName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否启用
+    /// Whether enabled
     /// </summary>
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// 配置数据（加密JSON）
+    /// Configuration data (encrypted JSON)
     /// </summary>
     [Required]
     public string ConfigData { get; set; } = string.Empty;
@@ -40,12 +40,12 @@ public class ChatProviderConfig : AggregateRoot<Guid>
     public string? WebhookUrl { get; set; }
 
     /// <summary>
-    /// 消息发送间隔（毫秒）
+    /// Message sending interval (milliseconds)
     /// </summary>
     public int MessageInterval { get; set; } = 500;
 
     /// <summary>
-    /// 最大重试次数
+    /// Maximum retry count
     /// </summary>
     public int MaxRetryCount { get; set; } = 3;
 }

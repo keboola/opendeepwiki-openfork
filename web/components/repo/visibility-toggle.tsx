@@ -33,26 +33,26 @@ export function VisibilityToggle({
   const [isLoading, setIsLoading] = React.useState(false);
   const [currentIsPublic, setCurrentIsPublic] = React.useState(isPublic);
 
-  // 同步外部状态变化
+  // Sync external state changes
   React.useEffect(() => {
     setCurrentIsPublic(isPublic);
   }, [isPublic]);
 
-  // 判断是否可以切换到私有
-  // 只有当仓库有密码时，才能设为私有
+  // Determine if switching to private is allowed
+  // Can only be set to private when the repository has a password
   const canSetPrivate = hasPassword;
 
-  // 判断开关是否应该被禁用
-  // 1. 外部传入的 disabled
-  // 2. 正在加载中
-  // 3. 当前是公开状态且没有密码（不能切换到私有）
+  // Determine if the switch should be disabled
+  // 1. Externally passed disabled prop
+  // 2. Currently loading
+  // 3. Currently public and no password (cannot switch to private)
   const isDisabled = disabled || isLoading || (currentIsPublic && !canSetPrivate);
 
   const handleToggle = async (checked: boolean) => {
-    // checked = true 表示公开，checked = false 表示私有
+    // checked = true means public, checked = false means private
     const newIsPublic = checked;
 
-    // 如果尝试设为私有但没有密码，阻止操作
+    // If trying to set to private but no password, block the operation
     if (!newIsPublic && !canSetPrivate) {
       toast.error(t("home.private.visibility.noPasswordError"));
       return;
@@ -85,7 +85,7 @@ export function VisibilityToggle({
     }
   };
 
-  // 渲染开关内容
+  // Render switch content
   const renderSwitch = () => (
     <div className="flex items-center gap-2">
       {isLoading ? (
@@ -107,7 +107,7 @@ export function VisibilityToggle({
     </div>
   );
 
-  // 如果无法设为私有（没有密码），显示带有提示的开关
+  // If cannot be set to private (no password), show switch with tooltip
   if (currentIsPublic && !canSetPrivate) {
     return (
       <Popover>

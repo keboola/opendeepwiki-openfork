@@ -15,31 +15,31 @@ import {
 } from "@/lib/image-validation"
 
 /**
- * 图片上传组件属性
+ * Image upload component props
  */
 export interface ImageUploadProps {
-  /** 已上传的图片列表 (Base64) */
+  /** List of uploaded images (Base64) */
   images: string[]
-  /** 图片变更回调 */
+  /** Image change callback */
   onImagesChange: (images: string[]) => void
-  /** 错误回调 */
+  /** Error callback */
   onError?: (error: string) => void
-  /** 是否禁用 */
+  /** Whether disabled */
   disabled?: boolean
-  /** 最大图片数量 */
+  /** Maximum number of images */
   maxImages?: number
-  /** 自定义类名 */
+  /** Custom class name */
   className?: string
 }
 
 /**
- * 图片上传组件
- * 
- * 支持PNG、JPG、GIF、WebP格式
- * 图片大小限制10MB
- * 图片预览功能
- * Base64编码
- * 
+ * Image upload component
+ *
+ * Supports PNG, JPG, GIF, WebP formats
+ * Image size limit 10MB
+ * Image preview functionality
+ * Base64 encoding
+ *
  * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5
  */
 export function ImageUpload({
@@ -53,7 +53,7 @@ export function ImageUpload({
   const t = useTranslations("chat")
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-  // 处理文件选择
+  // Handle file selection
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -62,13 +62,13 @@ export function ImageUpload({
     const errors: string[] = []
 
     for (const file of Array.from(files)) {
-      // 检查是否超过最大数量
+      // Check if maximum count exceeded
       if (images.length + newImages.length >= maxImages) {
         errors.push(t("image.supportedFormats", { maxImages }))
         break
       }
 
-      // 验证文件
+      // Validate file
       const validation = validateImageFile(file)
       if (!validation.valid) {
         errors.push(validation.error!)
@@ -83,33 +83,33 @@ export function ImageUpload({
       }
     }
 
-    // 更新图片列表
+    // Update image list
     if (newImages.length > 0) {
       onImagesChange([...images, ...newImages])
     }
 
-    // 报告错误
+    // Report errors
     if (errors.length > 0 && onError) {
       onError(errors.join("; "))
     }
 
-    // 清空input以便重复选择同一文件
+    // Clear input to allow re-selecting the same file
     e.target.value = ""
   }
 
-  // 移除图片
+  // Remove image
   const handleRemove = (index: number) => {
     onImagesChange(images.filter((_, i) => i !== index))
   }
 
-  // 触发文件选择
+  // Trigger file selection
   const handleClick = () => {
     fileInputRef.current?.click()
   }
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      {/* 图片预览 */}
+      {/* Image preview */}
       {images.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {images.map((img, index) => (
@@ -139,7 +139,7 @@ export function ImageUpload({
         </div>
       )}
 
-      {/* 上传按钮 */}
+      {/* Upload button */}
       <input
         ref={fileInputRef}
         type="file"
@@ -164,7 +164,7 @@ export function ImageUpload({
         </Button>
       )}
 
-      {/* 提示信息 */}
+      {/* Hint information */}
       <p className="text-xs text-muted-foreground">
         {t("image.supportedFormats", { maxImages })}
       </p>
@@ -172,7 +172,7 @@ export function ImageUpload({
   )
 }
 
-// 导出验证函数和常量供外部使用
+// Export validation functions and constants for external use
 export {
   validateImageFile,
   fileToBase64,

@@ -6,8 +6,8 @@ using OpenDeepWiki.Chat.Routing;
 namespace OpenDeepWiki.Chat;
 
 /// <summary>
-/// Provider 初始化后台服务
-/// 负责在应用启动时初始化所有 Provider 并注册到路由器
+/// Provider initialization background service
+/// Responsible for initializing all providers and registering them with the router on application startup
 /// Requirements: 2.2, 2.4
 /// </summary>
 public class ProviderInitializationService : IHostedService
@@ -25,7 +25,7 @@ public class ProviderInitializationService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("开始初始化 Chat Provider...");
+        _logger.LogInformation("Starting Chat Provider initialization...");
 
         using var scope = _serviceProvider.CreateScope();
         var providers = scope.ServiceProvider.GetRequiredService<IEnumerable<IMessageProvider>>();
@@ -35,32 +35,32 @@ public class ProviderInitializationService : IHostedService
         {
             try
             {
-                _logger.LogInformation("正在初始化 Provider: {PlatformId} ({DisplayName})", 
+                _logger.LogInformation("Initializing Provider: {PlatformId} ({DisplayName})", 
                     provider.PlatformId, provider.DisplayName);
 
                 await provider.InitializeAsync(cancellationToken);
                 
-                // 注册到路由器
+                // Register with the router
                 router.RegisterProvider(provider);
                 
-                _logger.LogInformation("Provider {PlatformId} 初始化成功，已启用: {IsEnabled}", 
+                _logger.LogInformation("Provider {PlatformId} initialized successfully, enabled: {IsEnabled}", 
                     provider.PlatformId, provider.IsEnabled);
             }
             catch (Exception ex)
             {
-                // Requirements: 2.4 - Provider 初始化失败时记录错误并继续加载其他 Provider
-                _logger.LogError(ex, "Provider {PlatformId} 初始化失败，将继续加载其他 Provider", 
+                // Requirements: 2.4 - Log errors on Provider initialization failure and continue loading other providers
+                _logger.LogError(ex, "Provider {PlatformId} initialization failed, will continue loading other providers", 
                     provider.PlatformId);
             }
         }
 
-        _logger.LogInformation("Chat Provider 初始化完成，共注册 {Count} 个 Provider", 
+        _logger.LogInformation("Chat Provider initialization complete, {Count} providers registered", 
             router.GetAllProviders().Count());
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("正在关闭 Chat Provider...");
+        _logger.LogInformation("Shutting down Chat Providers...");
 
         var router = _serviceProvider.GetRequiredService<IMessageRouter>();
         
@@ -69,14 +69,14 @@ public class ProviderInitializationService : IHostedService
             try
             {
                 await provider.ShutdownAsync(cancellationToken);
-                _logger.LogInformation("Provider {PlatformId} 已关闭", provider.PlatformId);
+                _logger.LogInformation("Provider {PlatformId} has been shut down", provider.PlatformId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Provider {PlatformId} 关闭时发生错误", provider.PlatformId);
+                _logger.LogError(ex, "Error occurred while shutting down Provider {PlatformId}", provider.PlatformId);
             }
         }
 
-        _logger.LogInformation("Chat Provider 已全部关闭");
+        _logger.LogInformation("All Chat Providers have been shut down");
     }
 }

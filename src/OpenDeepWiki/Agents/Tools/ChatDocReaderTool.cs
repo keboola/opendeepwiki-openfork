@@ -60,22 +60,22 @@ public class ChatDocReaderTool
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            return JsonSerializer.Serialize(new { error = true, message = "文档路径不能为空" });
+            return JsonSerializer.Serialize(new { error = true, message = "Document path cannot be empty" });
         }
 
         if (startLine < 1)
         {
-            return JsonSerializer.Serialize(new { error = true, message = "startLine 必须大于等于 1" });
+            return JsonSerializer.Serialize(new { error = true, message = "startLine must be greater than or equal to 1" });
         }
 
         if (endLine < startLine)
         {
-            return JsonSerializer.Serialize(new { error = true, message = "endLine 必须大于等于 startLine" });
+            return JsonSerializer.Serialize(new { error = true, message = "endLine must be greater than or equal to startLine" });
         }
 
         if (endLine - startLine > 200)
         {
-            return JsonSerializer.Serialize(new { error = true, message = "单次最多读取 200 行，请缩小范围" });
+            return JsonSerializer.Serialize(new { error = true, message = "Maximum 200 lines per read, please reduce the range" });
         }
 
         try
@@ -87,7 +87,7 @@ public class ChatDocReaderTool
 
             if (repository == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"仓库 '{_owner}/{_repo}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Repository '{_owner}/{_repo}' does not exist" });
             }
 
             var branch = await _context.RepositoryBranches
@@ -97,7 +97,7 @@ public class ChatDocReaderTool
 
             if (branch == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"分支 '{_branch}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Branch '{_branch}' does not exist" });
             }
 
             var branchLanguage = await _context.BranchLanguages
@@ -107,7 +107,7 @@ public class ChatDocReaderTool
 
             if (branchLanguage == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"语言 '{_language}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Language '{_language}' does not exist" });
             }
 
             var catalog = await _context.DocCatalogs
@@ -117,12 +117,12 @@ public class ChatDocReaderTool
 
             if (catalog == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"文档 '{path}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Document '{path}' does not exist" });
             }
 
             if (string.IsNullOrEmpty(catalog.DocFileId))
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"文档 '{path}' 没有内容" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Document '{path}' has no content" });
             }
 
             var docFile = await _context.DocFiles
@@ -130,7 +130,7 @@ public class ChatDocReaderTool
 
             if (docFile == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"文档 '{path}' 内容不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Document '{path}' content does not exist" });
             }
 
             var allLines = docFile.Content.Split('\n');
@@ -141,14 +141,14 @@ public class ChatDocReaderTool
             {
                 return JsonSerializer.Serialize(new { 
                     error = true, 
-                    message = $"startLine ({startLine}) 超出文档总行数 ({totalLines})" 
+                    message = $"startLine ({startLine}) exceeds total line count ({totalLines})" 
                 });
             }
 
             var selectedLines = allLines.Skip(startLine - 1).Take(actualEndLine - startLine + 1);
             var content = string.Join("\n", selectedLines);
 
-            // 解析文档依赖的源代码文件列表
+            // Parse the list of source code files the document depends on
             List<string>? sourceFiles = null;
             if (!string.IsNullOrEmpty(docFile.SourceFiles))
             {
@@ -158,7 +158,7 @@ public class ChatDocReaderTool
                 }
                 catch
                 {
-                    // 解析失败时忽略
+                    // Ignore parsing failures
                 }
             }
 
@@ -173,7 +173,7 @@ public class ChatDocReaderTool
         }
         catch (Exception ex)
         {
-            return JsonSerializer.Serialize(new { error = true, message = $"读取文档失败: {ex.Message}" });
+            return JsonSerializer.Serialize(new { error = true, message = $"Failed to read document: {ex.Message}" });
         }
     }
 

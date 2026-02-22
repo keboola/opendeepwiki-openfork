@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenDeepWiki",
+  title: "KeboolaDeepWiki",
   description: "AI-powered code knowledge base with multi-platform repository analysis and intelligent documentation generation",
   icons: {
     icon: "/favicon.png",

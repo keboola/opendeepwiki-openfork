@@ -1,198 +1,198 @@
 namespace OpenDeepWiki.Chat.Exceptions;
 
 /// <summary>
-/// 对话助手错误码常量
-/// 定义所有对话相关的错误码，用于前后端统一错误处理
+/// Chat assistant error code constants
+/// Defines all chat-related error codes for unified frontend/backend error handling
 /// Requirements: 11.1, 11.2, 11.3
 /// </summary>
 public static class ChatErrorCodes
 {
-    #region 功能状态错误 (1xxx)
-    
+    #region Feature status errors (1xxx)
+
     /// <summary>
-    /// 对话助手功能未启用
+    /// Chat assistant feature is not enabled
     /// </summary>
     public const string FEATURE_DISABLED = "FEATURE_DISABLED";
     
     /// <summary>
-    /// 功能配置缺失
+    /// Feature configuration missing
     /// </summary>
     public const string CONFIG_MISSING = "CONFIG_MISSING";
-    
+
     #endregion
 
-    #region 模型相关错误 (2xxx)
-    
+    #region Model-related errors (2xxx)
+
     /// <summary>
-    /// 模型不可用
+    /// Model unavailable
     /// </summary>
     public const string MODEL_UNAVAILABLE = "MODEL_UNAVAILABLE";
     
     /// <summary>
-    /// 模型配置无效
+    /// Invalid model configuration
     /// </summary>
     public const string MODEL_CONFIG_INVALID = "MODEL_CONFIG_INVALID";
     
     /// <summary>
-    /// 没有可用的模型
+    /// No available models
     /// </summary>
     public const string NO_AVAILABLE_MODELS = "NO_AVAILABLE_MODELS";
     
     #endregion
 
-    #region 应用相关错误 (3xxx)
-    
+    #region Application-related errors (3xxx)
+
     /// <summary>
-    /// 无效的AppId
+    /// Invalid AppId
     /// </summary>
     public const string INVALID_APP_ID = "INVALID_APP_ID";
     
     /// <summary>
-    /// 应用未配置模型
+    /// Application has no model configured
     /// </summary>
     public const string APP_MODEL_NOT_CONFIGURED = "APP_MODEL_NOT_CONFIGURED";
     
     /// <summary>
-    /// 应用已禁用
+    /// Application is disabled
     /// </summary>
     public const string APP_DISABLED = "APP_DISABLED";
     
     #endregion
 
-    #region 域名校验错误 (4xxx)
-    
+    #region Domain validation errors (4xxx)
+
     /// <summary>
-    /// 域名不在允许列表中
+    /// Domain not in allowed list
     /// </summary>
     public const string DOMAIN_NOT_ALLOWED = "DOMAIN_NOT_ALLOWED";
     
     /// <summary>
-    /// 无法获取请求来源域名
+    /// Unable to determine request origin domain
     /// </summary>
     public const string DOMAIN_UNKNOWN = "DOMAIN_UNKNOWN";
     
     #endregion
 
-    #region 限流错误 (5xxx)
-    
+    #region Rate limiting errors (5xxx)
+
     /// <summary>
-    /// 请求频率超限
+    /// Rate limit exceeded
     /// </summary>
     public const string RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED";
     
     #endregion
 
-    #region 文档相关错误 (6xxx)
-    
+    #region Document-related errors (6xxx)
+
     /// <summary>
-    /// 文档不存在
+    /// Document not found
     /// </summary>
     public const string DOCUMENT_NOT_FOUND = "DOCUMENT_NOT_FOUND";
     
     /// <summary>
-    /// 文档访问被拒绝
+    /// Document access denied
     /// </summary>
     public const string DOCUMENT_ACCESS_DENIED = "DOCUMENT_ACCESS_DENIED";
     
     /// <summary>
-    /// 仓库不存在
+    /// Repository not found
     /// </summary>
     public const string REPOSITORY_NOT_FOUND = "REPOSITORY_NOT_FOUND";
     
     #endregion
 
-    #region 工具调用错误 (7xxx)
-    
+    #region Tool call errors (7xxx)
+
     /// <summary>
-    /// MCP调用失败
+    /// MCP call failed
     /// </summary>
     public const string MCP_CALL_FAILED = "MCP_CALL_FAILED";
     
     /// <summary>
-    /// 工具执行失败
+    /// Tool execution failed
     /// </summary>
     public const string TOOL_EXECUTION_FAILED = "TOOL_EXECUTION_FAILED";
     
     /// <summary>
-    /// 工具不存在
+    /// Tool not found
     /// </summary>
     public const string TOOL_NOT_FOUND = "TOOL_NOT_FOUND";
     
     #endregion
 
-    #region 连接和超时错误 (8xxx)
-    
+    #region Connection and timeout errors (8xxx)
+
     /// <summary>
-    /// 连接失败
+    /// Connection failed
     /// </summary>
     public const string CONNECTION_FAILED = "CONNECTION_FAILED";
     
     /// <summary>
-    /// 请求超时
+    /// Request timed out
     /// </summary>
     public const string REQUEST_TIMEOUT = "REQUEST_TIMEOUT";
     
     /// <summary>
-    /// SSE流中断
+    /// SSE stream interrupted
     /// </summary>
     public const string STREAM_INTERRUPTED = "STREAM_INTERRUPTED";
     
     #endregion
 
-    #region 内部错误 (9xxx)
-    
+    #region Internal errors (9xxx)
+
     /// <summary>
-    /// 内部服务器错误
+    /// Internal server error
     /// </summary>
     public const string INTERNAL_ERROR = "INTERNAL_ERROR";
     
     /// <summary>
-    /// 未知错误
+    /// Unknown error
     /// </summary>
     public const string UNKNOWN_ERROR = "UNKNOWN_ERROR";
     
     #endregion
 
     /// <summary>
-    /// 获取错误码对应的默认消息
+    /// Get the default message for an error code
     /// </summary>
-    /// <param name="errorCode">错误码</param>
-    /// <returns>默认错误消息</returns>
+    /// <param name="errorCode">Error code</param>
+    /// <returns>Default error message</returns>
     public static string GetDefaultMessage(string errorCode)
     {
         return errorCode switch
         {
-            FEATURE_DISABLED => "对话助手功能未启用",
-            CONFIG_MISSING => "功能配置缺失",
-            MODEL_UNAVAILABLE => "模型不可用，请选择其他模型",
-            MODEL_CONFIG_INVALID => "模型配置无效",
-            NO_AVAILABLE_MODELS => "暂无可用模型，请联系管理员配置",
-            INVALID_APP_ID => "无效的应用ID",
-            APP_MODEL_NOT_CONFIGURED => "应用未配置AI模型",
-            APP_DISABLED => "应用已禁用",
-            DOMAIN_NOT_ALLOWED => "当前域名不在允许列表中",
-            DOMAIN_UNKNOWN => "无法获取请求来源域名",
-            RATE_LIMIT_EXCEEDED => "请求频率超限，请稍后重试",
-            DOCUMENT_NOT_FOUND => "文档不存在",
-            DOCUMENT_ACCESS_DENIED => "文档访问被拒绝",
-            REPOSITORY_NOT_FOUND => "仓库不存在",
-            MCP_CALL_FAILED => "MCP工具调用失败",
-            TOOL_EXECUTION_FAILED => "工具执行失败",
-            TOOL_NOT_FOUND => "工具不存在",
-            CONNECTION_FAILED => "连接失败，请检查网络",
-            REQUEST_TIMEOUT => "请求超时，请重试",
-            STREAM_INTERRUPTED => "数据流中断，请重试",
-            INTERNAL_ERROR => "服务器内部错误",
-            UNKNOWN_ERROR => "未知错误",
-            _ => "发生错误"
+            FEATURE_DISABLED => "Chat assistant is not enabled",
+            CONFIG_MISSING => "Feature configuration missing",
+            MODEL_UNAVAILABLE => "Model unavailable, please select another",
+            MODEL_CONFIG_INVALID => "Invalid model configuration",
+            NO_AVAILABLE_MODELS => "No models available, contact admin",
+            INVALID_APP_ID => "Invalid application ID",
+            APP_MODEL_NOT_CONFIGURED => "Application has no AI model configured",
+            APP_DISABLED => "Application is disabled",
+            DOMAIN_NOT_ALLOWED => "Domain not in allowed list",
+            DOMAIN_UNKNOWN => "Unable to determine request origin domain",
+            RATE_LIMIT_EXCEEDED => "Rate limit exceeded, please retry later",
+            DOCUMENT_NOT_FOUND => "Document not found",
+            DOCUMENT_ACCESS_DENIED => "Document access denied",
+            REPOSITORY_NOT_FOUND => "Repository not found",
+            MCP_CALL_FAILED => "MCP tool call failed",
+            TOOL_EXECUTION_FAILED => "Tool execution failed",
+            TOOL_NOT_FOUND => "Tool not found",
+            CONNECTION_FAILED => "Connection failed, check network",
+            REQUEST_TIMEOUT => "Request timed out, please retry",
+            STREAM_INTERRUPTED => "Stream interrupted, please retry",
+            INTERNAL_ERROR => "Internal server error",
+            UNKNOWN_ERROR => "Unknown error",
+            _ => "An error occurred"
         };
     }
 
     /// <summary>
-    /// 判断错误是否可重试
+    /// Determine if an error is retryable
     /// </summary>
-    /// <param name="errorCode">错误码</param>
-    /// <returns>是否可重试</returns>
+    /// <param name="errorCode">Error code</param>
+    /// <returns>Whether the error is retryable</returns>
     public static bool IsRetryable(string errorCode)
     {
         return errorCode switch

@@ -5,16 +5,16 @@ using OpenDeepWiki.Services.Admin;
 namespace OpenDeepWiki.Endpoints.Admin;
 
 /// <summary>
-/// 管理端仓库管理端点
+/// Admin repository management endpoints
 /// </summary>
 public static class AdminRepositoryEndpoints
 {
     public static RouteGroupBuilder MapAdminRepositoryEndpoints(this RouteGroupBuilder group)
     {
         var repoGroup = group.MapGroup("/repositories")
-            .WithTags("管理端-仓库管理");
+            .WithTags("Admin - Repository Management");
 
-        // 获取仓库列表（分页）
+        // Get repository list (paginated)
         repoGroup.MapGet("/", async (
             [FromQuery] int page,
             [FromQuery] int pageSize,
@@ -28,35 +28,35 @@ public static class AdminRepositoryEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetRepositories")
-        .WithSummary("获取仓库列表");
+        .WithSummary("Get repository list");
 
-        // 获取仓库详情
+        // Get repository details
         repoGroup.MapGet("/{id}", async (
             string id,
             [FromServices] IAdminRepositoryService repositoryService) =>
         {
             var result = await repositoryService.GetRepositoryByIdAsync(id);
             if (result == null)
-                return Results.NotFound(new { success = false, message = "仓库不存在" });
+                return Results.NotFound(new { success = false, message = "Repository not found" });
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetRepository")
-        .WithSummary("获取仓库详情");
+        .WithSummary("Get repository details");
 
-        // 获取仓库深度管理信息（分支、语言、增量任务）
+        // Get repository deep management info (branches, languages, incremental tasks)
         repoGroup.MapGet("/{id}/management", async (
             string id,
             [FromServices] IAdminRepositoryService repositoryService) =>
         {
             var result = await repositoryService.GetRepositoryManagementAsync(id);
             if (result == null)
-                return Results.NotFound(new { success = false, message = "仓库不存在" });
+                return Results.NotFound(new { success = false, message = "Repository not found" });
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetRepositoryManagement")
-        .WithSummary("获取仓库深度管理信息");
+        .WithSummary("Get repository management info");
 
-        // 更新仓库
+        // Update repository
         repoGroup.MapPut("/{id}", async (
             string id,
             [FromBody] UpdateRepositoryRequest request,
@@ -64,26 +64,26 @@ public static class AdminRepositoryEndpoints
         {
             var result = await repositoryService.UpdateRepositoryAsync(id, request);
             if (!result)
-                return Results.NotFound(new { success = false, message = "仓库不存在" });
-            return Results.Ok(new { success = true, message = "更新成功" });
+                return Results.NotFound(new { success = false, message = "Repository not found" });
+            return Results.Ok(new { success = true, message = "Updated successfully" });
         })
         .WithName("AdminUpdateRepository")
-        .WithSummary("更新仓库");
+        .WithSummary("Update repository");
 
-        // 删除仓库
+        // Delete repository
         repoGroup.MapDelete("/{id}", async (
             string id,
             [FromServices] IAdminRepositoryService repositoryService) =>
         {
             var result = await repositoryService.DeleteRepositoryAsync(id);
             if (!result)
-                return Results.NotFound(new { success = false, message = "仓库不存在" });
-            return Results.Ok(new { success = true, message = "删除成功" });
+                return Results.NotFound(new { success = false, message = "Repository not found" });
+            return Results.Ok(new { success = true, message = "Deleted successfully" });
         })
         .WithName("AdminDeleteRepository")
-        .WithSummary("删除仓库");
+        .WithSummary("Delete repository");
 
-        // 更新仓库状态
+        // Update repository status
         repoGroup.MapPut("/{id}/status", async (
             string id,
             [FromBody] UpdateStatusRequest request,
@@ -91,13 +91,13 @@ public static class AdminRepositoryEndpoints
         {
             var result = await repositoryService.UpdateRepositoryStatusAsync(id, request.Status);
             if (!result)
-                return Results.NotFound(new { success = false, message = "仓库不存在" });
-            return Results.Ok(new { success = true, message = "状态更新成功" });
+                return Results.NotFound(new { success = false, message = "Repository not found" });
+            return Results.Ok(new { success = true, message = "Status updated successfully" });
         })
         .WithName("AdminUpdateRepositoryStatus")
-        .WithSummary("更新仓库状态");
+        .WithSummary("Update repository status");
 
-        // 同步单个仓库统计信息
+        // Sync single repository statistics
         repoGroup.MapPost("/{id}/sync-stats", async (
             string id,
             [FromServices] IAdminRepositoryService repositoryService) =>
@@ -106,9 +106,9 @@ public static class AdminRepositoryEndpoints
             return Results.Ok(new { success = result.Success, message = result.Message, data = result });
         })
         .WithName("AdminSyncRepositoryStats")
-        .WithSummary("同步仓库统计信息");
+        .WithSummary("Sync repository statistics");
 
-        // 触发仓库全量重生成
+        // Trigger full repository regeneration
         repoGroup.MapPost("/{id}/regenerate", async (
             string id,
             [FromServices] IAdminRepositoryService repositoryService) =>
@@ -117,9 +117,9 @@ public static class AdminRepositoryEndpoints
             return Results.Ok(new { success = result.Success, message = result.Message, data = result });
         })
         .WithName("AdminRegenerateRepository")
-        .WithSummary("触发仓库全量重生成");
+        .WithSummary("Trigger full repository regeneration");
 
-        // 触发指定文档重生成
+        // Trigger specific document regeneration
         repoGroup.MapPost("/{id}/documents/regenerate", async (
             string id,
             [FromBody] RegenerateRepositoryDocumentRequest request,
@@ -130,9 +130,9 @@ public static class AdminRepositoryEndpoints
             return Results.Ok(new { success = result.Success, message = result.Message, data = result });
         })
         .WithName("AdminRegenerateRepositoryDocument")
-        .WithSummary("触发指定文档重生成");
+        .WithSummary("Trigger specific document regeneration");
 
-        // 手动更新指定文档内容
+        // Manually update specific document content
         repoGroup.MapPut("/{id}/documents/content", async (
             string id,
             [FromBody] UpdateRepositoryDocumentContentRequest request,
@@ -143,9 +143,9 @@ public static class AdminRepositoryEndpoints
             return Results.Ok(new { success = result.Success, message = result.Message, data = result });
         })
         .WithName("AdminUpdateRepositoryDocumentContent")
-        .WithSummary("手动更新指定文档内容");
+        .WithSummary("Manually update specific document content");
 
-        // 批量同步仓库统计信息
+        // Batch sync repository statistics
         repoGroup.MapPost("/batch/sync-stats", async (
             [FromBody] BatchOperationRequest request,
             [FromServices] IAdminRepositoryService repositoryService) =>
@@ -154,9 +154,9 @@ public static class AdminRepositoryEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminBatchSyncRepositoryStats")
-        .WithSummary("批量同步仓库统计信息");
+        .WithSummary("Batch sync repository statistics");
 
-        // 批量删除仓库
+        // Batch delete repositories
         repoGroup.MapPost("/batch/delete", async (
             [FromBody] BatchOperationRequest request,
             [FromServices] IAdminRepositoryService repositoryService) =>
@@ -165,7 +165,7 @@ public static class AdminRepositoryEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminBatchDeleteRepositories")
-        .WithSummary("批量删除仓库");
+        .WithSummary("Batch delete repositories");
 
         return group;
     }

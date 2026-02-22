@@ -12,22 +12,22 @@ import {
 import { ModelConfig } from "@/lib/chat-api"
 
 /**
- * 模型选择器属性
+ * Model selector props
  */
 export interface ModelSelectorProps {
-  /** 可用模型列表 */
+  /** Available models list */
   models: ModelConfig[]
-  /** 当前选中的模型ID */
+  /** Currently selected model ID */
   selectedModelId: string
-  /** 模型变更回调 */
+  /** Model change callback */
   onModelChange: (modelId: string) => void
-  /** 是否禁用 */
+  /** Whether disabled */
   disabled?: boolean
 }
 
 /**
- * 模型选择器组件
- * 
+ * Model selector component
+ *
  * Requirements: 2.2, 3.1, 3.2, 3.3
  */
 export function ModelSelector({

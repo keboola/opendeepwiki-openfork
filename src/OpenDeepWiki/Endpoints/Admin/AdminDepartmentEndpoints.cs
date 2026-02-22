@@ -5,47 +5,47 @@ using OpenDeepWiki.Services.Admin;
 namespace OpenDeepWiki.Endpoints.Admin;
 
 /// <summary>
-/// 管理端部门管理端点
+/// Admin department management endpoints
 /// </summary>
 public static class AdminDepartmentEndpoints
 {
     public static RouteGroupBuilder MapAdminDepartmentEndpoints(this RouteGroupBuilder group)
     {
         var deptGroup = group.MapGroup("/departments")
-            .WithTags("管理端-部门管理");
+            .WithTags("Admin - Department Management");
 
-        // 获取部门列表
+        // Get department list
         deptGroup.MapGet("/", async ([FromServices] IAdminDepartmentService deptService) =>
         {
             var result = await deptService.GetDepartmentsAsync();
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetDepartments")
-        .WithSummary("获取部门列表");
+        .WithSummary("Get department list");
 
-        // 获取部门树形结构
+        // Get department tree structure
         deptGroup.MapGet("/tree", async ([FromServices] IAdminDepartmentService deptService) =>
         {
             var result = await deptService.GetDepartmentTreeAsync();
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetDepartmentTree")
-        .WithSummary("获取部门树形结构");
+        .WithSummary("Get department tree structure");
 
-        // 获取部门详情
+        // Get department details
         deptGroup.MapGet("/{id}", async (
             string id,
             [FromServices] IAdminDepartmentService deptService) =>
         {
             var result = await deptService.GetDepartmentByIdAsync(id);
             if (result == null)
-                return Results.NotFound(new { success = false, message = "部门不存在" });
+                return Results.NotFound(new { success = false, message = "Department not found" });
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetDepartment")
-        .WithSummary("获取部门详情");
+        .WithSummary("Get department details");
 
-        // 创建部门
+        // Create department
         deptGroup.MapPost("/", async (
             [FromBody] CreateDepartmentRequest request,
             [FromServices] IAdminDepartmentService deptService) =>
@@ -61,9 +61,9 @@ public static class AdminDepartmentEndpoints
             }
         })
         .WithName("AdminCreateDepartment")
-        .WithSummary("创建部门");
+        .WithSummary("Create department");
 
-        // 更新部门
+        // Update department
         deptGroup.MapPut("/{id}", async (
             string id,
             [FromBody] UpdateDepartmentRequest request,
@@ -73,8 +73,8 @@ public static class AdminDepartmentEndpoints
             {
                 var result = await deptService.UpdateDepartmentAsync(id, request);
                 if (!result)
-                    return Results.NotFound(new { success = false, message = "部门不存在" });
-                return Results.Ok(new { success = true, message = "更新成功" });
+                    return Results.NotFound(new { success = false, message = "Department not found" });
+                return Results.Ok(new { success = true, message = "Updated successfully" });
             }
             catch (Exception ex)
             {
@@ -82,9 +82,9 @@ public static class AdminDepartmentEndpoints
             }
         })
         .WithName("AdminUpdateDepartment")
-        .WithSummary("更新部门");
+        .WithSummary("Update department");
 
-        // 删除部门
+        // Delete department
         deptGroup.MapDelete("/{id}", async (
             string id,
             [FromServices] IAdminDepartmentService deptService) =>
@@ -93,8 +93,8 @@ public static class AdminDepartmentEndpoints
             {
                 var result = await deptService.DeleteDepartmentAsync(id);
                 if (!result)
-                    return Results.NotFound(new { success = false, message = "部门不存在" });
-                return Results.Ok(new { success = true, message = "删除成功" });
+                    return Results.NotFound(new { success = false, message = "Department not found" });
+                return Results.Ok(new { success = true, message = "Deleted successfully" });
             }
             catch (Exception ex)
             {
@@ -102,9 +102,9 @@ public static class AdminDepartmentEndpoints
             }
         })
         .WithName("AdminDeleteDepartment")
-        .WithSummary("删除部门");
+        .WithSummary("Delete department");
 
-        // 获取部门用户列表
+        // Get department user list
         deptGroup.MapGet("/{id}/users", async (
             string id,
             [FromServices] IAdminDepartmentService deptService) =>
@@ -113,9 +113,9 @@ public static class AdminDepartmentEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetDepartmentUsers")
-        .WithSummary("获取部门用户列表");
+        .WithSummary("Get department user list");
 
-        // 添加用户到部门
+        // Add user to department
         deptGroup.MapPost("/{id}/users", async (
             string id,
             [FromBody] AddUserToDepartmentRequest request,
@@ -124,7 +124,7 @@ public static class AdminDepartmentEndpoints
             try
             {
                 await deptService.AddUserToDepartmentAsync(id, request.UserId, request.IsManager);
-                return Results.Ok(new { success = true, message = "添加成功" });
+                return Results.Ok(new { success = true, message = "Added successfully" });
             }
             catch (Exception ex)
             {
@@ -132,9 +132,9 @@ public static class AdminDepartmentEndpoints
             }
         })
         .WithName("AdminAddUserToDepartment")
-        .WithSummary("添加用户到部门");
+        .WithSummary("Add user to department");
 
-        // 从部门移除用户
+        // Remove user from department
         deptGroup.MapDelete("/{id}/users/{userId}", async (
             string id,
             string userId,
@@ -142,13 +142,13 @@ public static class AdminDepartmentEndpoints
         {
             var result = await deptService.RemoveUserFromDepartmentAsync(id, userId);
             if (!result)
-                return Results.NotFound(new { success = false, message = "用户不在该部门中" });
-            return Results.Ok(new { success = true, message = "移除成功" });
+                return Results.NotFound(new { success = false, message = "User is not in this department" });
+            return Results.Ok(new { success = true, message = "Removed successfully" });
         })
         .WithName("AdminRemoveUserFromDepartment")
-        .WithSummary("从部门移除用户");
+        .WithSummary("Remove user from department");
 
-        // 获取部门仓库列表
+        // Get department repository list
         deptGroup.MapGet("/{id}/repositories", async (
             string id,
             [FromServices] IAdminDepartmentService deptService) =>
@@ -157,9 +157,9 @@ public static class AdminDepartmentEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetDepartmentRepositories")
-        .WithSummary("获取部门仓库列表");
+        .WithSummary("Get department repository list");
 
-        // 分配仓库到部门
+        // Assign repository to department
         deptGroup.MapPost("/{id}/repositories", async (
             string id,
             [FromBody] AssignRepositoryRequest request,
@@ -168,7 +168,7 @@ public static class AdminDepartmentEndpoints
             try
             {
                 await deptService.AssignRepositoryToDepartmentAsync(id, request.RepositoryId, request.AssigneeUserId);
-                return Results.Ok(new { success = true, message = "分配成功" });
+                return Results.Ok(new { success = true, message = "Assigned successfully" });
             }
             catch (Exception ex)
             {
@@ -176,9 +176,9 @@ public static class AdminDepartmentEndpoints
             }
         })
         .WithName("AdminAssignRepositoryToDepartment")
-        .WithSummary("分配仓库到部门");
+        .WithSummary("Assign repository to department");
 
-        // 从部门移除仓库
+        // Remove repository from department
         deptGroup.MapDelete("/{id}/repositories/{repositoryId}", async (
             string id,
             string repositoryId,
@@ -186,11 +186,11 @@ public static class AdminDepartmentEndpoints
         {
             var result = await deptService.RemoveRepositoryFromDepartmentAsync(id, repositoryId);
             if (!result)
-                return Results.NotFound(new { success = false, message = "仓库未分配给该部门" });
-            return Results.Ok(new { success = true, message = "移除成功" });
+                return Results.NotFound(new { success = false, message = "Repository is not assigned to this department" });
+            return Results.Ok(new { success = true, message = "Removed successfully" });
         })
         .WithName("AdminRemoveRepositoryFromDepartment")
-        .WithSummary("从部门移除仓库");
+        .WithSummary("Remove repository from department");
 
         return group;
     }

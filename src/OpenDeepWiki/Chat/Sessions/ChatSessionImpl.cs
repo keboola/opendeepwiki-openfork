@@ -3,8 +3,8 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Sessions;
 
 /// <summary>
-/// 对话会话实现类
-/// 维护用户与 Agent 之间的对话上下文
+/// Chat session implementation class
+/// Maintains conversation context between user and Agent
 /// </summary>
 public class ChatSessionImpl : IChatSession
 {
@@ -14,7 +14,7 @@ public class ChatSessionImpl : IChatSession
     private DateTimeOffset _lastActivityAt;
     
     /// <summary>
-    /// 最大历史消息数量，默认100条
+    /// Maximum history message count, default 100
     /// </summary>
     public int MaxHistoryCount { get; set; } = 100;
     
@@ -70,11 +70,11 @@ public class ChatSessionImpl : IChatSession
     public IDictionary<string, object>? Metadata { get; set; }
 
     /// <summary>
-    /// 创建新会话
+    /// Create a new session
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
-    /// <param name="userId">用户ID</param>
-    /// <param name="platform">平台标识</param>
+    /// <param name="sessionId">Session ID</param>
+    /// <param name="userId">User ID</param>
+    /// <param name="platform">Platform identifier</param>
     public ChatSessionImpl(string sessionId, string userId, string platform)
     {
         SessionId = sessionId ?? throw new ArgumentNullException(nameof(sessionId));
@@ -86,16 +86,16 @@ public class ChatSessionImpl : IChatSession
     }
     
     /// <summary>
-    /// 从现有数据恢复会话
+    /// Restore session from existing data
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
-    /// <param name="userId">用户ID</param>
-    /// <param name="platform">平台标识</param>
-    /// <param name="state">会话状态</param>
-    /// <param name="createdAt">创建时间</param>
-    /// <param name="lastActivityAt">最后活动时间</param>
-    /// <param name="history">历史消息</param>
-    /// <param name="metadata">元数据</param>
+    /// <param name="sessionId">Session ID</param>
+    /// <param name="userId">User ID</param>
+    /// <param name="platform">Platform identifier</param>
+    /// <param name="state">Session state</param>
+    /// <param name="createdAt">Creation time</param>
+    /// <param name="lastActivityAt">Last activity time</param>
+    /// <param name="history">Message history</param>
+    /// <param name="metadata">Metadata</param>
     public ChatSessionImpl(
         string sessionId,
         string userId,
@@ -129,7 +129,7 @@ public class ChatSessionImpl : IChatSession
         {
             _history.Add(message);
             
-            // 如果超过最大历史数量，移除最早的消息
+            // If exceeding maximum history count, remove the earliest messages
             while (_history.Count > MaxHistoryCount && MaxHistoryCount > 0)
             {
                 _history.RemoveAt(0);

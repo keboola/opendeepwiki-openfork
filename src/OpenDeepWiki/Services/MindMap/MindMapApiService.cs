@@ -6,14 +6,14 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.MindMap;
 
 /// <summary>
-/// 思维导图API服务
+/// Mind map API service
 /// </summary>
 [MiniApi(Route = "/api/v1/repos")]
-[Tags("思维导图")]
+[Tags("Mind Map")]
 public class MindMapApiService(IContext context)
 {
     /// <summary>
-    /// 获取仓库项目架构思维导图
+    /// Get repository project architecture mind map
     /// </summary>
     [HttpGet("/{owner}/{repo}/mindmap")]
     public async Task<IResult> GetMindMapAsync(
@@ -28,7 +28,7 @@ public class MindMapApiService(IContext context)
 
         if (repository is null)
         {
-            return Results.NotFound(new { error = "仓库不存在" });
+            return Results.NotFound(new { error = "Repository does not exist" });
         }
 
         var branchQuery = context.RepositoryBranches
@@ -43,7 +43,7 @@ public class MindMapApiService(IContext context)
         var repoBranch = await branchQuery.FirstOrDefaultAsync();
         if (repoBranch is null)
         {
-            return Results.NotFound(new { error = "分支不存在" });
+            return Results.NotFound(new { error = "Branch does not exist" });
         }
 
         var languageQuery = context.BranchLanguages
@@ -62,7 +62,7 @@ public class MindMapApiService(IContext context)
         var branchLanguage = await languageQuery.FirstOrDefaultAsync();
         if (branchLanguage is null)
         {
-            return Results.NotFound(new { error = "语言不存在" });
+            return Results.NotFound(new { error = "Language does not exist" });
         }
 
         return Results.Ok(new MindMapResponse
@@ -79,7 +79,7 @@ public class MindMapApiService(IContext context)
 }
 
 /// <summary>
-/// 思维导图API响应
+/// Mind map API response
 /// </summary>
 public class MindMapResponse
 {

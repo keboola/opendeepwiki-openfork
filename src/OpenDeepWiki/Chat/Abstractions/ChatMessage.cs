@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Chat.Abstractions;
 
 /// <summary>
-/// 统一消息实现
+/// Unified message implementation
 /// </summary>
 public class ChatMessage : IChatMessage
 {

@@ -58,7 +58,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // 加载 .env 文件到 Configuration
+    // Load .env file into Configuration
     LoadEnvFile(builder.Configuration);
 
     // Add Serilog logging
@@ -69,10 +69,10 @@ try
     builder.Services.AddOpenApi();
     builder.Services.AddMiniApis();
 
-    // 根据配置添加数据库服务
+    // Add database services based on configuration
     builder.Services.AddDatabase(builder.Configuration);
 
-    // 配置JWT
+    // Configure JWT
     builder.Services.AddOptions<JwtOptions>()
         .Bind(builder.Configuration.GetSection("Jwt"))
         .PostConfigure(options =>
@@ -80,11 +80,11 @@ try
             if (string.IsNullOrWhiteSpace(options.SecretKey))
             {
                 options.SecretKey = builder.Configuration["JWT_SECRET_KEY"]
-                    ?? throw new InvalidOperationException("JWT密钥未配置");
+                    ?? throw new InvalidOperationException("JWT secret key is not configured");
             }
         });
 
-    // 添加JWT认证
+    // Add JWT authentication
     var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
     var secretKey = jwtOptions.SecretKey;
     if (string.IsNullOrWhiteSpace(secretKey))
@@ -129,17 +129,17 @@ try
         }
     });
 
-    // 注册认证服务
+    // Register authentication services
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<IJwtService, JwtService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IOAuthService, OAuthService>();
     builder.Services.AddScoped<IUserContext, UserContext>();
 
-    // 添加HttpClient
+    // Add HttpClient
     builder.Services.AddHttpClient();
 
-    // 注册Git平台服务
+    // Register Git platform service
     builder.Services.AddScoped<IGitPlatformService, GitPlatformService>();
 
     builder.Services.AddOptions<AiRequestOptions>()
@@ -178,7 +178,7 @@ try
         });
     builder.Services.AddSingleton<AgentFactory>();
 
-    // 配置 Repository Analyzer
+    // Configure Repository Analyzer
     builder.Services.AddOptions<RepositoryAnalyzerOptions>()
         .Bind(builder.Configuration.GetSection("RepositoryAnalyzer"))
         .PostConfigure(options =>
@@ -191,12 +191,12 @@ try
         });
     builder.Services.AddScoped<IRepositoryAnalyzer, RepositoryAnalyzer>();
 
-    // 配置 Wiki Generator
+    // Configure Wiki Generator
     builder.Services.AddOptions<WikiGeneratorOptions>()
         .Bind(builder.Configuration.GetSection(WikiGeneratorOptions.SectionName))
         .PostConfigure(options =>
         {
-            // Catalog 配置
+            // Catalog configuration
             var catalogModel = builder.Configuration["WIKI_CATALOG_MODEL"];
             if (!string.IsNullOrWhiteSpace(catalogModel))
             {
@@ -221,7 +221,7 @@ try
                 options.CatalogRequestType = catalogParsed;
             }
 
-            // Content 配置
+            // Content configuration
             var contentModel = builder.Configuration["WIKI_CONTENT_MODEL"];
             if (!string.IsNullOrWhiteSpace(contentModel))
             {
@@ -246,7 +246,7 @@ try
                 options.ContentRequestType = contentParsed;
             }
 
-            // Translation 配置（可选，不配置则使用 Content 配置）
+            // Translation configuration (optional, falls back to Content configuration if not set)
             var translationModel = builder.Configuration["WIKI_TRANSLATION_MODEL"];
             if (!string.IsNullOrWhiteSpace(translationModel))
             {
@@ -271,7 +271,7 @@ try
                 options.TranslationRequestType = translationParsed;
             }
 
-            // 多语言配置
+            // Multi-language configuration
             var languages = builder.Configuration["WIKI_LANGUAGES"];
             if (!string.IsNullOrWhiteSpace(languages))
             {
@@ -279,7 +279,7 @@ try
             }
         });
 
-    // 注册 Prompt Plugin
+    // Register Prompt Plugin
     builder.Services.AddSingleton<IPromptPlugin>(sp =>
     {
         var options = sp.GetRequiredService<IOptions<WikiGeneratorOptions>>().Value;
@@ -294,20 +294,21 @@ try
         return new FilePromptPlugin(promptsDir);
     });
 
-    // 注册 Wiki Generator
+    // Register Wiki Generator
     builder.Services.AddScoped<IWikiGenerator, WikiGenerator>();
 
-    // 注册缓存框架（默认内存实现）
+    // Register caching framework (default in-memory implementation)
     builder.Services.AddOpenDeepWikiCache();
 
-    // 注册处理日志服务（使用 Singleton，因为它内部使用 IServiceScopeFactory 创建独立 scope）
+    // Register processing log service (Singleton because it uses IServiceScopeFactory to create independent scopes internally)
     builder.Services.AddSingleton<IProcessingLogService, ProcessingLogService>();
 
-    // 注册 GitHub App 服务
+    // Register GitHub App services
+    builder.Services.AddSingleton<GitHubAppCredentialCache>();
     builder.Services.AddScoped<IGitHubAppService, GitHubAppService>();
     builder.Services.AddScoped<IAdminGitHubImportService, AdminGitHubImportService>();
 
-    // 注册管理端服务
+    // Register admin services
     builder.Services.AddScoped<IAdminStatisticsService, AdminStatisticsService>();
     builder.Services.AddScoped<IAdminRepositoryService, AdminRepositoryService>();
     builder.Services.AddScoped<IAdminUserService, AdminUserService>();
@@ -318,64 +319,64 @@ try
     builder.Services.AddScoped<IAdminChatAssistantService, AdminChatAssistantService>();
     builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 
-    // 注册动态配置管理器
+    // Register dynamic configuration manager
     builder.Services.AddScoped<IDynamicConfigManager, DynamicConfigManager>();
 
-    // 注册推荐服务
+    // Register recommendation service
     builder.Services.AddScoped<RecommendationService>();
 
-    // 注册用户资料服务
+    // Register user profile service
     builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
-    // 注册翻译服务
+    // Register translation service
     builder.Services.AddScoped<ITranslationService, TranslationService>();
 
     builder.Services.AddHostedService<RepositoryProcessingWorker>();
     builder.Services.AddHostedService<TranslationWorker>();
     builder.Services.AddHostedService<MindMapWorker>();
 
-    // 配置增量更新选项
-    // Requirements: 6.2, 6.3, 6.6 - 可配置的更新间隔
+    // Configure incremental update options
+    // Requirements: 6.2, 6.3, 6.6 - Configurable update intervals
     builder.Services.AddOptions<IncrementalUpdateOptions>()
         .Bind(builder.Configuration.GetSection(IncrementalUpdateOptions.SectionName));
 
-    // 注册增量更新服务
-    // Requirements: 2.1 - 增量更新服务接口
+    // Register incremental update service
+    // Requirements: 2.1 - Incremental update service interface
     builder.Services.AddScoped<IIncrementalUpdateService, IncrementalUpdateService>();
 
-    // 注册订阅者通知服务（空实现）
-    // Requirements: 4.1 - 订阅者通知服务接口
+    // Register subscriber notification service (null implementation)
+    // Requirements: 4.1 - Subscriber notification service interface
     builder.Services.AddScoped<ISubscriberNotificationService, NullSubscriberNotificationService>();
 
-    // 注册增量更新后台工作器
-    // Requirements: 1.1 - 独立的增量更新后台工作器
+    // Register incremental update background worker
+    // Requirements: 1.1 - Independent incremental update background worker
     builder.Services.AddHostedService<IncrementalUpdateWorker>();
 
-    // 注册 Chat 系统服务
-    // Requirements: 2.2, 2.4 - 通过依赖注入自动发现并加载 Provider
+    // Register Chat system services
+    // Requirements: 2.2, 2.4 - Auto-discover and load Providers via dependency injection
     builder.Services.AddChatServices(builder.Configuration);
 
-    // 注册对话助手服务
-    // Requirements: 2.4, 3.1, 9.1 - 对话助手API服务
+    // Register chat assistant services
+    // Requirements: 2.4, 3.1, 9.1 - Chat assistant API services
     builder.Services.AddScoped<IMcpToolConverter, McpToolConverter>();
     builder.Services.AddScoped<ISkillToolConverter, SkillToolConverter>();
     builder.Services.AddScoped<IChatAssistantService, ChatAssistantService>();
     builder.Services.AddScoped<IChatShareService, ChatShareService>();
 
-    // 注册用户应用管理服务
-    // Requirements: 12.2, 12.6, 12.7 - 用户应用CRUD和密钥管理
+    // Register user app management service
+    // Requirements: 12.2, 12.6, 12.7 - User app CRUD and secret key management
     builder.Services.AddScoped<IChatAppService, ChatAppService>();
 
-    // 注册应用统计服务
-    // Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.7 - 统计数据记录和查询
+    // Register app statistics service
+    // Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.7 - Statistics recording and querying
     builder.Services.AddScoped<IAppStatisticsService, AppStatisticsService>();
 
-    // 注册提问记录服务
-    // Requirements: 16.1, 16.2, 16.3, 16.4, 16.5 - 提问记录和查询
+    // Register chat log service
+    // Requirements: 16.1, 16.2, 16.3, 16.4, 16.5 - Chat log recording and querying
     builder.Services.AddScoped<IChatLogService, ChatLogService>();
 
-    // 注册嵌入服务
-    // Requirements: 13.5, 13.6, 14.2, 14.7, 17.1, 17.2, 17.4 - 嵌入脚本验证和对话
+    // Register embed service
+    // Requirements: 13.5, 13.6, 14.2, 14.7, 17.1, 17.2, 17.4 - Embed script validation and chat
     builder.Services.AddScoped<IEmbedService, EmbedService>();
 
     // MCP server registration (requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
@@ -393,18 +394,22 @@ try
 
     var app = builder.Build();
 
-    // 初始化数据库
+    // Initialize database
     await DbInitializer.InitializeAsync(app.Services);
 
-    // 应用数据库中的系统设置到配置（覆盖环境变量和appsettings.json的值）
+    // Apply system settings from database to configuration (overrides environment variables and appsettings.json values)
     using (var scope = app.Services.CreateScope())
     {
         var settingsService = scope.ServiceProvider.GetRequiredService<IAdminSettingsService>();
         var wikiOptions = scope.ServiceProvider.GetRequiredService<IOptions<WikiGeneratorOptions>>();
         await SystemSettingDefaults.ApplyToWikiGeneratorOptions(wikiOptions.Value, settingsService);
+
+        // Load GitHub App credentials from DB into the in-memory cache
+        var githubCache = app.Services.GetRequiredService<GitHubAppCredentialCache>();
+        await githubCache.LoadFromDbAsync(settingsService);
     }
 
-    // 启用 CORS
+    // Enable CORS
     app.UseCors("AllowAll");
 
     // Add Serilog request logging
@@ -453,12 +458,12 @@ finally
 }
 
 /// <summary>
-/// 加载 .env 文件到 Configuration
-/// 支持从当前目录或应用程序目录加载 .env 文件
+/// Load .env file into Configuration
+/// Supports loading .env file from the current directory or application directory
 /// </summary>
 static void LoadEnvFile(IConfigurationBuilder configuration)
 {
-    // 尝试多个路径查找 .env 文件
+    // Try multiple paths to find .env file
     var envPaths = new[]
     {
         Path.Combine(Directory.GetCurrentDirectory(), ".env"),
@@ -476,7 +481,7 @@ static void LoadEnvFile(IConfigurationBuilder configuration)
         {
             var trimmedLine = line.Trim();
             
-            // 跳过空行和注释
+            // Skip empty lines and comments
             if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith('#'))
                 continue;
 
@@ -486,7 +491,7 @@ static void LoadEnvFile(IConfigurationBuilder configuration)
             var key = trimmedLine[..separatorIndex].Trim();
             var value = trimmedLine[(separatorIndex + 1)..].Trim();
             
-            // 移除引号
+            // Remove quotes
             if ((value.StartsWith('"') && value.EndsWith('"')) ||
                 (value.StartsWith('\'') && value.EndsWith('\'')))
             {
@@ -495,11 +500,11 @@ static void LoadEnvFile(IConfigurationBuilder configuration)
             
             envVars[key] = value;
             
-            // 同时设置到环境变量，以便其他地方使用
+            // Also set as environment variable for use elsewhere
             Environment.SetEnvironmentVariable(key, value);
         }
         
-        // 添加到 Configuration
+        // Add to Configuration
         configuration.AddInMemoryCollection(envVars);
         Log.Information("Loaded {Count} environment variables from .env file", envVars.Count);
         return;

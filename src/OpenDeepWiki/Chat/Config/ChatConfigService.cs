@@ -6,8 +6,8 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Chat.Config;
 
 /// <summary>
-/// Chat 配置服务实现
-/// 支持数据库配置存储、敏感配置加密和热重载
+/// Chat configuration service implementation
+/// Supports database configuration storage, sensitive configuration encryption, and hot-reload
 /// </summary>
 public class ChatConfigService : IChatConfigService
 {
@@ -18,7 +18,7 @@ public class ChatConfigService : IChatConfigService
     private readonly List<Action<string>> _changeCallbacks = new();
     private readonly object _callbackLock = new();
 
-    // 必需的配置字段（按平台）
+    // Required configuration fields (by platform)
     private static readonly Dictionary<string, string[]> RequiredFields = new()
     {
         ["feishu"] = new[] { "AppId", "AppSecret" },
@@ -70,7 +70,7 @@ public class ChatConfigService : IChatConfigService
             
         if (existing == null)
         {
-            // 新增
+            // Create new
             var entity = new ChatProviderConfig
             {
                 Id = Guid.NewGuid(),
@@ -89,7 +89,7 @@ public class ChatConfigService : IChatConfigService
         }
         else
         {
-            // 更新
+            // Update
             existing.DisplayName = config.DisplayName;
             existing.IsEnabled = config.IsEnabled;
             existing.ConfigData = _encryption.Encrypt(config.ConfigData);
@@ -102,7 +102,7 @@ public class ChatConfigService : IChatConfigService
         
         await _context.SaveChangesAsync(cancellationToken);
         
-        // 触发变更通知
+        // Trigger change notification
         NotifyConfigChanged(config.Platform);
     }
     
@@ -118,7 +118,7 @@ public class ChatConfigService : IChatConfigService
             await _context.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Deleted config for platform: {Platform}", platform);
 
-            // 触发变更通知
+            // Trigger change notification
             NotifyConfigChanged(platform, ConfigChangeType.Deleted);
         }
     }
@@ -129,7 +129,7 @@ public class ChatConfigService : IChatConfigService
         var errors = new List<string>();
         var missingFields = new List<string>();
         
-        // 验证基本字段
+        // Validate basic fields
         if (string.IsNullOrWhiteSpace(config.Platform))
         {
             errors.Add("Platform is required");
@@ -152,7 +152,7 @@ public class ChatConfigService : IChatConfigService
             errors.Add("MaxRetryCount must be non-negative");
         }
         
-        // 验证平台特定的必需字段
+        // Validate platform-specific required fields
         if (!string.IsNullOrWhiteSpace(config.Platform) && !string.IsNullOrWhiteSpace(config.ConfigData))
         {
             var requiredFields = GetRequiredFieldsForPlatform(config.Platform);
@@ -221,7 +221,7 @@ public class ChatConfigService : IChatConfigService
     }
     
     /// <summary>
-    /// 将实体映射为 DTO（解密配置数据）
+    /// Map entity to DTO (decrypt configuration data)
     /// </summary>
     private ProviderConfigDto MapToDto(ChatProviderConfig entity)
     {
@@ -238,18 +238,18 @@ public class ChatConfigService : IChatConfigService
     }
     
     /// <summary>
-    /// 获取平台的必需字段
+    /// Get required fields for a platform
     /// </summary>
     private static string[] GetRequiredFieldsForPlatform(string platform)
     {
         var normalizedPlatform = platform.ToLowerInvariant();
         return RequiredFields.TryGetValue(normalizedPlatform, out var fields) 
             ? fields 
-            : Array.Empty<string>(); // 自定义平台不要求特定字段
+            : Array.Empty<string>(); // Custom platforms do not require specific fields
     }
     
     /// <summary>
-    /// 解析配置数据 JSON
+    /// Parse configuration data JSON
     /// </summary>
     private static Dictionary<string, object?> ParseConfigData(string configData)
     {
@@ -265,7 +265,7 @@ public class ChatConfigService : IChatConfigService
     }
     
     /// <summary>
-    /// 通知配置变更
+    /// Notify configuration changes
     /// </summary>
     private void NotifyConfigChanged(string platform, ConfigChangeType changeType = ConfigChangeType.Updated)
     {
@@ -300,7 +300,7 @@ public class ChatConfigService : IChatConfigService
     }
     
     /// <summary>
-    /// 回调取消注册辅助类
+    /// Callback unregistration helper class
     /// </summary>
     private class CallbackDisposable : IDisposable
     {

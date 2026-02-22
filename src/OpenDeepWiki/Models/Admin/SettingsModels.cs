@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// 系统设置 DTO
+/// System setting DTO
 /// </summary>
 public class SystemSettingDto
 {
@@ -13,7 +13,7 @@ public class SystemSettingDto
 }
 
 /// <summary>
-/// 更新设置请求
+/// Update setting request
 /// </summary>
 public class UpdateSettingRequest
 {

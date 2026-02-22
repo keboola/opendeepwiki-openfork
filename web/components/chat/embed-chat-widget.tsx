@@ -6,23 +6,23 @@ import { MessageCircle, X, Send, Loader2, Trash2, RefreshCw } from "lucide-react
 import { cn } from "@/lib/utils"
 
 /**
- * 嵌入对话组件属性
+ * Embed chat widget props
  */
 export interface EmbedChatWidgetProps {
-  /** 应用ID */
+  /** App ID */
   appId: string
-  /** 自定义图标URL */
+  /** Custom icon URL */
   iconUrl?: string
-  /** 位置 */
+  /** Position */
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
-  /** 主题 */
+  /** Theme */
   theme?: 'light' | 'dark'
-  /** API基础URL */
+  /** API base URL */
   apiBaseUrl?: string
 }
 
 /**
- * 嵌入配置响应
+ * Embed config response
  */
 interface EmbedConfig {
   valid: boolean
@@ -35,7 +35,7 @@ interface EmbedConfig {
 }
 
 /**
- * 对话消息
+ * Chat message
  */
 interface ChatMessage {
   id: string
@@ -45,7 +45,7 @@ interface ChatMessage {
 }
 
 /**
- * SSE事件
+ * SSE event
  */
 interface SSEEvent {
   type: 'content' | 'tool_call' | 'tool_result' | 'done' | 'error'
@@ -53,7 +53,7 @@ interface SSEEvent {
 }
 
 /**
- * 错误信息
+ * Error info
  */
 interface ErrorInfo {
   code?: string
@@ -63,27 +63,27 @@ interface ErrorInfo {
 }
 
 /**
- * 默认超时时间（毫秒）
+ * Default timeout (milliseconds)
  */
 const DEFAULT_TIMEOUT_MS = 30000
 
 /**
- * 默认重试次数
+ * Default max retries
  */
 const DEFAULT_MAX_RETRIES = 2
 
 /**
- * 默认重试延迟（毫秒）
+ * Default retry delay (milliseconds)
  */
 const DEFAULT_RETRY_DELAY_MS = 1000
 
 /**
- * 嵌入对话组件
- * 
- * 独立的悬浮球和对话面板，用于嵌入到外部网站
- * 使用应用配置的模型进行对话
- * 支持错误处理、超时和重试
- * 
+ * Embed chat widget
+ *
+ * Standalone floating button and chat panel for embedding in external websites.
+ * Uses application-configured models for conversation.
+ * Supports error handling, timeouts and retries.
+ *
  * Requirements: 14.5, 14.6, 11.1, 11.2, 11.3, 11.4
  */
 export function EmbedChatWidget({
@@ -113,10 +113,10 @@ export function EmbedChatWidget({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const abortControllerRef = React.useRef<AbortController | null>(null)
 
-  // 获取图标URL
+  // Get icon URL
   const iconUrl = propIconUrl || config?.iconUrl
 
-  // 加载配置
+  // Load config
   React.useEffect(() => {
     const loadConfig = async () => {
       try {
@@ -143,19 +143,19 @@ export function EmbedChatWidget({
     loadConfig()
   }, [appId, apiBaseUrl])
 
-  // 滚动到底部
+  // Scroll to bottom
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // 聚焦输入框
+  // Focus input
   React.useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus()
     }
   }, [isOpen])
 
-  // 组件卸载时取消请求
+  // Cancel request on component unmount
   React.useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -164,15 +164,15 @@ export function EmbedChatWidget({
     }
   }, [])
 
-  // 生成消息ID
+  // Generate message ID
   const generateId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
 
-  // 切换面板
+  // Toggle panel
   const handleToggle = React.useCallback(() => {
     setIsOpen(prev => !prev)
   }, [])
 
-  // 清空对话
+  // Clear conversation
   const handleClear = React.useCallback(() => {
     setMessages([])
     setError(null)
@@ -180,7 +180,7 @@ export function EmbedChatWidget({
   }, [])
 
   /**
-   * 带超时的fetch请求
+   * Fetch request with timeout
    */
   const fetchWithTimeout = async (
     url: string,
@@ -202,13 +202,13 @@ export function EmbedChatWidget({
   }
 
   /**
-   * 延迟函数
+   * Delay function
    */
   const delay = (ms: number): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
-  // 发送消息
+  // Send message
   const handleSend = React.useCallback(async () => {
     const content = input.trim()
     if (!content || isSending) return
@@ -216,10 +216,10 @@ export function EmbedChatWidget({
     setError(null)
     setIsSending(true)
 
-    // 创建新的AbortController
+    // Create new AbortController
     abortControllerRef.current = new AbortController()
 
-    // 添加用户消息
+    // Add user message
     const userMessage: ChatMessage = {
       id: generateId(),
       role: 'user',
@@ -229,7 +229,7 @@ export function EmbedChatWidget({
     setMessages(prev => [...prev, userMessage])
     setInput("")
 
-    // 添加助手消息占位
+    // Add assistant message placeholder
     const assistantMessage: ChatMessage = {
       id: generateId(),
       role: 'assistant',
@@ -238,7 +238,7 @@ export function EmbedChatWidget({
     }
     setMessages(prev => [...prev, assistantMessage])
 
-    // 保存请求信息以便重试
+    // Save request info for retry
     setLastRequest({
       content,
       userMessageId: userMessage.id,
@@ -282,12 +282,12 @@ export function EmbedChatWidget({
             continue
           }
           
-          throw new Error(`请求失败: ${response.status}`)
+          throw new Error(`Request failed: ${response.status}`)
         }
 
         const reader = response.body?.getReader()
         if (!reader) {
-          throw new Error('无法读取响应')
+          throw new Error('Unable to read response')
         }
 
         const decoder = new TextDecoder()
@@ -321,14 +321,14 @@ export function EmbedChatWidget({
                     )
                   )
                 } else if (event.type === 'done') {
-                  // 对话完成，清除重试信息
+                  // Conversation complete, clear retry info
                   setLastRequest(null)
                 } else if (event.type === 'error') {
                   const errorData = event.data as ErrorInfo
-                  throw new Error(errorData.message || '对话失败')
+                  throw new Error(errorData.message || 'Chat failed')
                 }
               } catch (parseError) {
-                // 可能是纯文本内容
+                // May be plain text content
                 if (typeof dataStr === 'string' && dataStr.trim()) {
                   assistantContent += dataStr
                   setMessages(prev => 
@@ -344,11 +344,11 @@ export function EmbedChatWidget({
           }
         }
         
-        // 成功完成，退出重试循环
+        // Completed successfully, exit retry loop
         break
         
       } catch (err) {
-        // 处理超时错误
+        // Handle timeout error
         if (err instanceof Error && err.name === 'AbortError') {
           if (retryCount < maxRetries) {
             retryCount++
@@ -357,17 +357,17 @@ export function EmbedChatWidget({
           }
           
           setError({
-            message: '请求超时，请重试',
+            message: 'Request timed out, please try again',
             code: 'REQUEST_TIMEOUT',
             retryable: true,
             retryAfterMs: retryDelayMs,
           })
-          // 移除空的助手消息
+          // Remove empty assistant message
           setMessages(prev => prev.filter(m => m.id !== assistantMessage.id))
           break
         }
-        
-        // 处理网络错误
+
+        // Handle network error
         if (err instanceof TypeError && err.message.includes('fetch')) {
           if (retryCount < maxRetries) {
             retryCount++
@@ -376,44 +376,44 @@ export function EmbedChatWidget({
           }
           
           setError({
-            message: '连接失败，请检查网络',
+            message: 'Connection failed, please check your network',
             code: 'CONNECTION_FAILED',
             retryable: true,
             retryAfterMs: retryDelayMs,
           })
-          // 移除空的助手消息
+          // Remove empty assistant message
           setMessages(prev => prev.filter(m => m.id !== assistantMessage.id))
           break
         }
-        
-        console.error('[EmbedChatWidget] 发送失败:', err)
+
+        console.error('[EmbedChatWidget] Send failed:', err)
         setError({
-          message: err instanceof Error ? err.message : '发送失败，请重试',
+          message: err instanceof Error ? err.message : 'Send failed, please try again',
           retryable: true,
         })
-        // 移除空的助手消息
+        // Remove empty assistant message
         setMessages(prev => prev.filter(m => m.id !== assistantMessage.id))
         break
       }
     }
-    
+
     setIsSending(false)
     abortControllerRef.current = null
   }, [input, isSending, messages, appId, selectedModel, apiBaseUrl])
 
-  // 重试发送
+  // Retry send
   const handleRetry = React.useCallback(() => {
     if (!lastRequest) return
-    
-    // 恢复输入状态
+
+    // Restore input state
     setInput(lastRequest.content)
     setError(null)
     
-    // 重新发送
+    // Resend
     handleSend()
   }, [lastRequest, handleSend])
 
-  // 处理键盘事件
+  // Handle keyboard events
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -421,7 +421,7 @@ export function EmbedChatWidget({
     }
   }
 
-  // 获取位置样式
+  // Get position classes
   const getPositionClasses = () => {
     const positions = {
       'bottom-right': 'right-6 bottom-6',
@@ -432,7 +432,7 @@ export function EmbedChatWidget({
     return positions[position]
   }
 
-  // 获取面板位置样式
+  // Get panel position classes
   const getPanelPositionClasses = () => {
     const positions = {
       'bottom-right': 'right-6 bottom-24',
@@ -443,7 +443,7 @@ export function EmbedChatWidget({
     return positions[position]
   }
 
-  // 加载中或未启用时不显示
+  // Don't show when loading or not enabled
   if (isLoading || !isEnabled) {
     return null
   }
@@ -453,7 +453,7 @@ export function EmbedChatWidget({
 
   return (
     <>
-      {/* 悬浮球 */}
+      {/* Floating button */}
       <button
         type="button"
         onClick={handleToggle}
@@ -484,7 +484,7 @@ export function EmbedChatWidget({
         )}
       </button>
 
-      {/* 对话面板 */}
+      {/* Chat panel */}
       {isOpen && (
         <div
           className={cn(
@@ -496,7 +496,7 @@ export function EmbedChatWidget({
             getPanelPositionClasses()
           )}
         >
-          {/* 头部 */}
+          {/* Header */}
           <div
             className={cn(
               "flex items-center justify-between px-4 py-3 border-b",
@@ -555,7 +555,7 @@ export function EmbedChatWidget({
             </div>
           </div>
 
-          {/* 消息列表 */}
+          {/* Message list */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
@@ -592,7 +592,7 @@ export function EmbedChatWidget({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* 错误提示 */}
+          {/* Error message */}
           {error && (
             <div className="mx-4 mb-2 px-3 py-2 bg-red-50 text-red-600 text-sm rounded-lg">
               <div className="flex items-center justify-between">
@@ -619,7 +619,7 @@ export function EmbedChatWidget({
             </div>
           )}
 
-          {/* 输入区域 */}
+          {/* Input area */}
           <div
             className={cn(
               "p-4 border-t flex items-end gap-2",
@@ -677,31 +677,31 @@ export function EmbedChatWidget({
 }
 
 /**
- * 消息内容组件 - 简单的Markdown渲染
+ * Message content component - simple Markdown rendering
  */
 function MessageContent({ content, isDark }: { content: string; isDark: boolean }) {
   if (!content) return null
 
-  // 简单的Markdown处理
+  // Simple Markdown processing
   const processedContent = React.useMemo(() => {
     let html = content
-      // 转义HTML
+      // Escape HTML
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      // 代码块
+      // Code blocks
       .replace(/```(\w*)\n([\s\S]*?)```/g, (_, _lang, code) => 
         `<pre class="my-2 p-3 rounded-md text-xs overflow-x-auto ${isDark ? 'bg-gray-800' : 'bg-gray-800 text-gray-100'}"><code>${code}</code></pre>`
       )
-      // 行内代码
+      // Inline code
       .replace(/`([^`]+)`/g, `<code class="px-1.5 py-0.5 rounded text-xs ${isDark ? 'bg-gray-600' : 'bg-gray-200'}">$1</code>`)
-      // 粗体
+      // Bold
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      // 斜体
+      // Italic
       .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-      // 链接
+      // Links
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-indigo-400 underline">$1</a>')
-      // 换行
+      // Line breaks
       .replace(/\n/g, '<br>')
 
     return html

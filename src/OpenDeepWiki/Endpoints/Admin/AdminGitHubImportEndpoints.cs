@@ -1,6 +1,7 @@
 using OpenDeepWiki.Models.Admin;
 using OpenDeepWiki.Services.Admin;
 using OpenDeepWiki.Services.Auth;
+using OpenDeepWiki.Services.GitHub;
 
 namespace OpenDeepWiki.Endpoints.Admin;
 
@@ -19,9 +20,51 @@ public static class AdminGitHubImportEndpoints
             return Results.Ok(new { success = true, data = result });
         });
 
-        github.MapGet("/install-url", (Microsoft.Extensions.Configuration.IConfiguration configuration) =>
+        github.MapGet("/config", async (
+            IAdminGitHubImportService service,
+            CancellationToken cancellationToken) =>
         {
-            var appName = configuration["GitHub:App:Name"]
+            var result = await service.GetGitHubConfigAsync(cancellationToken);
+            return Results.Ok(new { success = true, data = result });
+        });
+
+        github.MapPost("/config", async (
+            SaveGitHubConfigRequest request,
+            IAdminGitHubImportService service,
+            CancellationToken cancellationToken) =>
+        {
+            try
+            {
+                var result = await service.SaveGitHubConfigAsync(request, cancellationToken);
+                return Results.Ok(new { success = true, data = result });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { success = false, message = ex.Message });
+            }
+        });
+
+        github.MapDelete("/config", async (
+            IAdminGitHubImportService service,
+            CancellationToken cancellationToken) =>
+        {
+            try
+            {
+                await service.ResetGitHubConfigAsync(cancellationToken);
+                return Results.Ok(new { success = true });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { success = false, message = ex.Message });
+            }
+        });
+
+        github.MapGet("/install-url", async (
+            Microsoft.Extensions.Configuration.IConfiguration configuration,
+            GitHubAppCredentialCache cache) =>
+        {
+            var appName = cache.AppName
+                ?? configuration["GitHub:App:Name"]
                 ?? Environment.GetEnvironmentVariable("GitHub__App__Name")
                 ?? Environment.GetEnvironmentVariable("GITHUB_APP_NAME")
                 ?? "deepwiki-keboola";
@@ -38,6 +81,22 @@ public static class AdminGitHubImportEndpoints
             {
                 var result = await service.StoreInstallationAsync(request.InstallationId, cancellationToken);
                 return Results.Ok(new { success = true, data = result });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { success = false, message = ex.Message });
+            }
+        });
+
+        github.MapDelete("/installations/{installationId}", async (
+            string installationId,
+            IAdminGitHubImportService service,
+            CancellationToken cancellationToken) =>
+        {
+            try
+            {
+                await service.DisconnectInstallationAsync(installationId, cancellationToken);
+                return Results.Ok(new { success = true });
             }
             catch (InvalidOperationException ex)
             {

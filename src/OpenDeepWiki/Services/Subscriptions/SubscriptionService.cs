@@ -7,16 +7,16 @@ using OpenDeepWiki.Models.Subscription;
 namespace OpenDeepWiki.Services.Subscriptions;
 
 /// <summary>
-/// 订阅服务
-/// 处理用户订阅仓库相关业务逻辑
+/// Subscription service
+/// Handles user repository subscription business logic
 /// </summary>
 [MiniApi(Route = "/api/v1/subscriptions")]
-[Tags("订阅")]
+[Tags("Subscriptions")]
 public class SubscriptionService(IContext context)
 {
     /// <summary>
-    /// 添加订阅
-    /// 原子性增加仓库订阅计数
+    /// Add subscription
+    /// Atomically increment repository subscription count
     /// </summary>
     [HttpPost("/")]
     public async Task<IResult> AddSubscriptionAsync([FromBody] AddSubscriptionRequest request)
@@ -32,7 +32,7 @@ public class SubscriptionService(IContext context)
                 return Results.NotFound(new SubscriptionResponse
                 {
                     Success = false,
-                    ErrorMessage = "仓库不存在"
+                    ErrorMessage = "Repository does not exist"
                 });
             }
 
@@ -45,7 +45,7 @@ public class SubscriptionService(IContext context)
                 return Results.NotFound(new SubscriptionResponse
                 {
                     Success = false,
-                    ErrorMessage = "用户不存在"
+                    ErrorMessage = "User does not exist"
                 });
             }
 
@@ -59,7 +59,7 @@ public class SubscriptionService(IContext context)
                 return Results.Conflict(new SubscriptionResponse
                 {
                     Success = false,
-                    ErrorMessage = "已订阅该仓库"
+                    ErrorMessage = "Already subscribed to this repository"
                 });
             }
 
@@ -69,7 +69,7 @@ public class SubscriptionService(IContext context)
                 return Results.Json(new SubscriptionResponse
                 {
                     Success = false,
-                    ErrorMessage = "服务器内部错误"
+                    ErrorMessage = "Internal server error"
                 }, statusCode: StatusCodes.Status500InternalServerError);
             }
 
@@ -109,15 +109,15 @@ public class SubscriptionService(IContext context)
             return Results.Json(new SubscriptionResponse
             {
                 Success = false,
-                ErrorMessage = "服务器内部错误"
+                ErrorMessage = "Internal server error"
             }, statusCode: StatusCodes.Status500InternalServerError);
         }
     }
 
 
     /// <summary>
-    /// 取消订阅
-    /// 原子性减少仓库订阅计数
+    /// Remove subscription
+    /// Atomically decrement repository subscription count
     /// </summary>
     [HttpDelete("{repositoryId}")]
     public async Task<IResult> RemoveSubscriptionAsync(string repositoryId, [FromQuery] string userId)
@@ -132,7 +132,7 @@ public class SubscriptionService(IContext context)
                 return Results.NotFound(new SubscriptionResponse
                 {
                     Success = false,
-                    ErrorMessage = "订阅记录不存在"
+                    ErrorMessage = "Subscription record does not exist"
                 });
             }
 
@@ -142,7 +142,7 @@ public class SubscriptionService(IContext context)
                 return Results.Json(new SubscriptionResponse
                 {
                     Success = false,
-                    ErrorMessage = "服务器内部错误"
+                    ErrorMessage = "Internal server error"
                 }, statusCode: StatusCodes.Status500InternalServerError);
             }
 
@@ -175,14 +175,14 @@ public class SubscriptionService(IContext context)
             return Results.Json(new SubscriptionResponse
             {
                 Success = false,
-                ErrorMessage = "服务器内部错误"
+                ErrorMessage = "Internal server error"
             }, statusCode: StatusCodes.Status500InternalServerError);
         }
     }
 
 
     /// <summary>
-    /// 检查订阅状态
+    /// Check subscription status
     /// </summary>
     [HttpGet("{repositoryId}/status")]
     public async Task<SubscriptionStatusResponse> GetSubscriptionStatusAsync(
@@ -210,7 +210,7 @@ public class SubscriptionService(IContext context)
     }
 
     /// <summary>
-    /// 获取用户订阅列表
+    /// Get user subscription list
     /// </summary>
     [HttpGet("/")]
     public async Task<SubscriptionListResponse> GetUserSubscriptionsAsync(

@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// MCP 配置请求
+/// MCP configuration request
 /// </summary>
 public class McpConfigRequest
 {
@@ -14,7 +14,7 @@ public class McpConfigRequest
 }
 
 /// <summary>
-/// MCP 配置 DTO
+/// MCP configuration DTO
 /// </summary>
 public class McpConfigDto
 {
@@ -29,7 +29,7 @@ public class McpConfigDto
 }
 
 /// <summary>
-/// Skill 配置 DTO（遵循 Agent Skills 标准）
+/// Skill configuration DTO (follows Agent Skills standard)
 /// </summary>
 public class SkillConfigDto
 {
@@ -59,7 +59,7 @@ public class SkillConfigDto
 }
 
 /// <summary>
-/// Skill 详情 DTO（包含 SKILL.md 内容）
+/// Skill detail DTO (includes SKILL.md content)
 /// </summary>
 public class SkillDetailDto : SkillConfigDto
 {
@@ -92,28 +92,28 @@ public class SkillDetailDto : SkillConfigDto
     }
 
     /// <summary>
-    /// SKILL.md 完整内容
+    /// Full SKILL.md content
     /// </summary>
     public string SkillMdContent { get; set; } = string.Empty;
 
     /// <summary>
-    /// scripts 目录下的文件列表
+    /// List of files in the scripts directory
     /// </summary>
     public List<SkillFileInfo> Scripts { get; set; } = new();
 
     /// <summary>
-    /// references 目录下的文件列表
+    /// List of files in the references directory
     /// </summary>
     public List<SkillFileInfo> References { get; set; } = new();
 
     /// <summary>
-    /// assets 目录下的文件列表
+    /// List of files in the assets directory
     /// </summary>
     public List<SkillFileInfo> Assets { get; set; } = new();
 }
 
 /// <summary>
-/// Skill 文件信息
+/// Skill file information
 /// </summary>
 public class SkillFileInfo
 {
@@ -124,7 +124,7 @@ public class SkillFileInfo
 }
 
 /// <summary>
-/// Skill 更新请求（仅更新管理字段）
+/// Skill update request (updates management fields only)
 /// </summary>
 public class SkillUpdateRequest
 {
@@ -133,7 +133,7 @@ public class SkillUpdateRequest
 }
 
 /// <summary>
-/// 模型配置请求
+/// Model configuration request
 /// </summary>
 public class ModelConfigRequest
 {
@@ -148,7 +148,7 @@ public class ModelConfigRequest
 }
 
 /// <summary>
-/// 模型配置 DTO
+/// Model configuration DTO
 /// </summary>
 public class ModelConfigDto
 {

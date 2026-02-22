@@ -1,80 +1,80 @@
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 仓库分支和语言响应（从数据库获取）
+/// Repository branches and languages response (fetched from database)
 /// </summary>
 public class RepositoryBranchesResponse
 {
     /// <summary>
-    /// 分支列表
+    /// List of branches
     /// </summary>
     public List<BranchItem> Branches { get; set; } = [];
 
     /// <summary>
-    /// 所有可用语言
+    /// All available languages
     /// </summary>
     public List<string> Languages { get; set; } = [];
 
     /// <summary>
-    /// 默认分支
+    /// Default branch
     /// </summary>
     public string DefaultBranch { get; set; } = string.Empty;
 
     /// <summary>
-    /// 默认语言
+    /// Default language
     /// </summary>
     public string DefaultLanguage { get; set; } = string.Empty;
 }
 
 /// <summary>
-/// 分支项
+/// Branch item
 /// </summary>
 public class BranchItem
 {
     /// <summary>
-    /// 分支名称
+    /// Branch name
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 该分支支持的语言列表
+    /// List of languages supported by this branch
     /// </summary>
     public List<string> Languages { get; set; } = [];
 }
 
 /// <summary>
-/// Git平台分支列表响应（从远程API获取）
+/// Git platform branches list response (fetched from remote API)
 /// </summary>
 public class GitBranchesResponse
 {
     /// <summary>
-    /// 分支列表
+    /// List of branches
     /// </summary>
     public List<GitBranchItem> Branches { get; set; } = [];
 
     /// <summary>
-    /// 默认分支
+    /// Default branch
     /// </summary>
     public string? DefaultBranch { get; set; }
 
     /// <summary>
-    /// 是否支持获取分支（平台是否支持）
+    /// Whether fetching branches is supported (platform support)
     /// </summary>
     public bool IsSupported { get; set; }
 }
 
 /// <summary>
-/// Git分支项
+/// Git branch item
 /// </summary>
 public class GitBranchItem
 {
     /// <summary>
-    /// 分支名称
+    /// Branch name
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否为默认分支
+    /// Whether this is the default branch
     /// </summary>
     public bool IsDefault { get; set; }
 }

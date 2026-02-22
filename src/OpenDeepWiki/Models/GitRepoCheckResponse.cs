@@ -1,52 +1,52 @@
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// GitHub仓库检查响应
+/// GitHub repository check response
 /// </summary>
 public class GitRepoCheckResponse
 {
     /// <summary>
-    /// 仓库是否存在
+    /// Whether the repository exists
     /// </summary>
     public bool Exists { get; set; }
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     public string? Name { get; set; }
 
     /// <summary>
-    /// 仓库描述
+    /// Repository description
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// 默认分支
+    /// Default branch
     /// </summary>
     public string? DefaultBranch { get; set; }
 
     /// <summary>
-    /// Star数量
+    /// Star count
     /// </summary>
     public int StarCount { get; set; }
 
     /// <summary>
-    /// Fork数量
+    /// Fork count
     /// </summary>
     public int ForkCount { get; set; }
 
     /// <summary>
-    /// 主要语言
+    /// Primary language
     /// </summary>
     public string? Language { get; set; }
 
     /// <summary>
-    /// 头像URL
+    /// Avatar URL
     /// </summary>
     public string? AvatarUrl { get; set; }
 
     /// <summary>
-    /// Git仓库地址
+    /// Git repository URL
     /// </summary>
     public string? GitUrl { get; set; }
 }

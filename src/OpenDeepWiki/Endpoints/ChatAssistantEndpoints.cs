@@ -8,8 +8,8 @@ using OpenDeepWiki.Services.Chat;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// 对话助手端点
-/// 提供文档对话助手的SSE流式API
+/// Chat assistant endpoints
+/// Provides SSE streaming API for document chat assistant
 /// </summary>
 public static class ChatAssistantEndpoints
 {
@@ -19,51 +19,51 @@ public static class ChatAssistantEndpoints
     };
 
     /// <summary>
-    /// 注册对话助手端点
+    /// Register chat assistant endpoints
     /// </summary>
     public static IEndpointRouteBuilder MapChatAssistantEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/chat")
-            .WithTags("对话助手");
+            .WithTags("Chat Assistant");
 
-        // 获取助手配置
+        // Get assistant configuration
         group.MapGet("/config", GetChatConfigAsync)
             .WithName("GetChatAssistantConfig")
-            .WithSummary("获取对话助手配置");
+            .WithSummary("Get chat assistant configuration");
 
-        // 获取可用模型列表
+        // Get available model list
         group.MapGet("/models", GetAvailableModelsAsync)
             .WithName("GetChatAssistantModels")
-            .WithSummary("获取可用模型列表");
+            .WithSummary("Get available model list");
 
-        // SSE流式对话
+        // SSE streaming chat
         group.MapPost("/stream", StreamChatAsync)
             .WithName("StreamChat")
-            .WithSummary("SSE流式对话");
+            .WithSummary("SSE streaming chat");
 
-        // 创建分享
+        // Create share
         group.MapPost("/share", CreateChatShareAsync)
             .WithName("CreateChatShare")
-            .WithSummary("创建对话分享")
+            .WithSummary("Create chat share")
             .RequireAuthorization();
 
-        // 获取分享详情
+        // Get share details
         group.MapGet("/share/{shareId}", GetChatShareAsync)
             .WithName("GetChatShare")
-            .WithSummary("获取对话分享详情")
+            .WithSummary("Get chat share details")
             .AllowAnonymous();
 
-        // 撤销分享
+        // Revoke share
         group.MapDelete("/share/{shareId}", RevokeChatShareAsync)
             .WithName("RevokeChatShare")
-            .WithSummary("撤销对话分享")
+            .WithSummary("Revoke chat share")
             .RequireAuthorization();
 
         return app;
     }
 
     /// <summary>
-    /// 获取对话助手配置
+    /// Get chat assistant configuration
     /// </summary>
     private static async Task<IResult> GetChatConfigAsync(
         [FromServices] IChatAssistantService chatAssistantService,
@@ -74,7 +74,7 @@ public static class ChatAssistantEndpoints
     }
 
     /// <summary>
-    /// 获取可用模型列表
+    /// Get available model list
     /// </summary>
     private static async Task<IResult> GetAvailableModelsAsync(
         [FromServices] IChatAssistantService chatAssistantService,
@@ -85,7 +85,7 @@ public static class ChatAssistantEndpoints
     }
 
     /// <summary>
-    /// 创建对话分享
+    /// Create chat share
     /// </summary>
     private static async Task<IResult> CreateChatShareAsync(
         [FromBody] CreateChatShareRequest request,
@@ -104,7 +104,7 @@ public static class ChatAssistantEndpoints
     }
 
     /// <summary>
-    /// 获取对话分享
+    /// Get chat share
     /// </summary>
     private static async Task<IResult> GetChatShareAsync(
         string shareId,
@@ -114,14 +114,14 @@ public static class ChatAssistantEndpoints
         var share = await chatShareService.GetShareAsync(shareId, cancellationToken);
         if (share == null)
         {
-            return Results.NotFound(new { message = "分享不存在或已失效" });
+            return Results.NotFound(new { message = "Share not found or has expired" });
         }
 
         return Results.Ok(share);
     }
 
     /// <summary>
-    /// 撤销对话分享
+    /// Revoke chat share
     /// </summary>
     private static async Task<IResult> RevokeChatShareAsync(
         string shareId,
@@ -137,7 +137,7 @@ public static class ChatAssistantEndpoints
         var success = await chatShareService.RevokeShareAsync(shareId, userContext.UserId, cancellationToken);
         if (!success)
         {
-            return Results.NotFound(new { message = "分享不存在或无权限撤销" });
+            return Results.NotFound(new { message = "Share not found or you do not have permission to revoke it" });
         }
 
         return Results.NoContent();
@@ -145,7 +145,7 @@ public static class ChatAssistantEndpoints
 
 
     /// <summary>
-    /// SSE流式对话
+    /// SSE streaming chat
     /// </summary>
     private static async Task StreamChatAsync(
         HttpContext httpContext,
@@ -153,7 +153,7 @@ public static class ChatAssistantEndpoints
         [FromServices] IChatAssistantService chatAssistantService,
         CancellationToken cancellationToken)
     {
-        // 设置SSE响应头
+        // Set SSE response headers
         httpContext.Response.ContentType = "text/event-stream";
         httpContext.Response.Headers.CacheControl = "no-cache";
         httpContext.Response.Headers.Connection = "keep-alive";
@@ -169,13 +169,13 @@ public static class ChatAssistantEndpoints
         }
         catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
         {
-            // 请求超时（非客户端取消）
+            // Request timeout (not client cancellation)
             var errorEvent = new SSEEvent
             {
                 Type = SSEEventType.Error,
                 Data = SSEErrorResponse.CreateRetryable(
                     ChatErrorCodes.REQUEST_TIMEOUT,
-                    "请求超时，请重试",
+                    "Request timed out, please retry",
                     2000)
             };
             var eventData = FormatSSEEvent(errorEvent);
@@ -184,17 +184,17 @@ public static class ChatAssistantEndpoints
         }
         catch (OperationCanceledException)
         {
-            // 客户端断开连接，正常退出
+            // Client disconnected, normal exit
         }
         catch (HttpRequestException ex)
         {
-            // 连接失败
+            // Connection failed
             var errorEvent = new SSEEvent
             {
                 Type = SSEEventType.Error,
                 Data = SSEErrorResponse.CreateRetryable(
                     ChatErrorCodes.CONNECTION_FAILED,
-                    $"连接失败: {ex.Message}",
+                    $"Connection failed: {ex.Message}",
                     1000)
             };
             var eventData = FormatSSEEvent(errorEvent);
@@ -203,7 +203,7 @@ public static class ChatAssistantEndpoints
         }
         catch (Exception ex)
         {
-            // 发送错误事件
+            // Send error event
             var errorEvent = new SSEEvent
             {
                 Type = SSEEventType.Error,
@@ -219,14 +219,14 @@ public static class ChatAssistantEndpoints
     }
 
     /// <summary>
-    /// 格式化SSE事件
+    /// Format SSE event
     /// </summary>
     private static string FormatSSEEvent(SSEEvent sseEvent)
     {
         var sb = new StringBuilder();
         sb.Append("data: ");
         
-        // 统一使用JSON格式，包含type和data字段
+        // Use unified JSON format containing type and data fields
         var eventPayload = new
         {
             type = sseEvent.Type,
@@ -234,7 +234,7 @@ public static class ChatAssistantEndpoints
         };
         sb.AppendLine(JsonSerializer.Serialize(eventPayload, JsonOptions));
         
-        sb.AppendLine(); // SSE事件之间需要空行分隔
+        sb.AppendLine(); // SSE events require blank line separator
         return sb.ToString();
     }
 }

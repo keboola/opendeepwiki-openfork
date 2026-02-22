@@ -3,7 +3,7 @@ using OpenDeepWiki.Models;
 namespace OpenDeepWiki.Services.Organizations;
 
 /// <summary>
-/// 组织服务接口
+/// Organization service interface
 /// </summary>
 public interface IOrganizationService
 {
@@ -12,7 +12,7 @@ public interface IOrganizationService
 }
 
 /// <summary>
-/// 用户部门信息
+/// User department information
 /// </summary>
 public class UserDepartmentInfo
 {
@@ -23,7 +23,7 @@ public class UserDepartmentInfo
 }
 
 /// <summary>
-/// 部门仓库信息
+/// Department repository information
 /// </summary>
 public class DepartmentRepositoryInfo
 {

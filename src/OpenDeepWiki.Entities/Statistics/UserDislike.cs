@@ -4,39 +4,39 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 用户不感兴趣记录
-/// 用于排除用户明确表示不感兴趣的仓库
+/// User dislike record
+/// Used to exclude repositories that users have explicitly marked as not interested
 /// </summary>
 public class UserDislike : AggregateRoot<string>
 {
     /// <summary>
-    /// 用户ID
+    /// User ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 不感兴趣原因（可选）
+    /// Dislike reason (optional)
     /// </summary>
     [StringLength(500)]
     public string? Reason { get; set; }
 
     /// <summary>
-    /// 用户导航属性
+    /// User navigation property
     /// </summary>
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }
 
     /// <summary>
-    /// 仓库导航属性
+    /// Repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }

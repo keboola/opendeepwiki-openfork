@@ -7,7 +7,7 @@ using OpenDeepWiki.Models.Auth;
 namespace OpenDeepWiki.Services.Auth;
 
 /// <summary>
-/// 认证服务实现
+/// Authentication service implementation
 /// </summary>
 public class AuthService : IAuthService
 {
@@ -29,28 +29,28 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            throw new UnauthorizedAccessException("邮箱或密码错误");
+            throw new UnauthorizedAccessException("Invalid email or password");
         }
 
-        // 验证密码
+        // Verify password
         if (!VerifyPassword(request.Password, user.Password))
         {
-            throw new UnauthorizedAccessException("邮箱或密码错误");
+            throw new UnauthorizedAccessException("Invalid email or password");
         }
 
         if (user.Status != 1)
         {
-            throw new UnauthorizedAccessException("账号已被禁用或待验证");
+            throw new UnauthorizedAccessException("Account is disabled or pending verification");
         }
 
-        // 更新最后登录时间
+        // Update last login time
         user.LastLoginAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        // 获取用户角色
+        // Get user roles
         var roles = await GetUserRolesAsync(user.Id);
 
-        // 生成JWT令牌
+        // Generate JWT token
         var token = _jwtService.GenerateToken(user, roles);
 
         return new LoginResponse
@@ -70,16 +70,16 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponse> RegisterAsync(RegisterRequest request)
     {
-        // 检查邮箱是否已存在
+        // Check if email already exists
         var existingUser = await _context.Users
             .FirstOrDefaultAsync(u => u.Email == request.Email && !u.IsDeleted);
 
         if (existingUser != null)
         {
-            throw new InvalidOperationException("该邮箱已被注册");
+            throw new InvalidOperationException("Email already registered");
         }
 
-        // 创建新用户
+        // Create new user
         var user = new User
         {
             Id = Guid.NewGuid().ToString(),
@@ -92,7 +92,7 @@ public class AuthService : IAuthService
 
         _context.Users.Add(user);
 
-        // 分配默认角色（User）
+        // Assign default role (User)
         var defaultRole = await _context.Roles
             .FirstOrDefaultAsync(r => r.Name == "User" && !r.IsDeleted);
 
@@ -110,7 +110,7 @@ public class AuthService : IAuthService
 
         await _context.SaveChangesAsync();
 
-        // 生成JWT令牌
+        // Generate JWT token
         var roles = await GetUserRolesAsync(user.Id);
         var token = _jwtService.GenerateToken(user, roles);
 
@@ -161,7 +161,7 @@ public class AuthService : IAuthService
 
     private static string HashPassword(string password)
     {
-        // 使用BCrypt进行密码哈希
+        // Hash password using BCrypt
         return BCrypt.Net.BCrypt.HashPassword(password);
     }
 

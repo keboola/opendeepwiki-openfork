@@ -4,8 +4,8 @@ using System.Text;
 namespace OpenDeepWiki.Chat.Providers.WeChat;
 
 /// <summary>
-/// 微信消息加解密工具类
-/// 实现微信公众平台消息加解密方案
+/// WeChat message encryption/decryption utility class
+/// Implements the WeChat Official Platform message encryption/decryption scheme
 /// </summary>
 public class WeChatCrypto
 {
@@ -15,30 +15,30 @@ public class WeChatCrypto
     private readonly byte[] _iv;
     
     /// <summary>
-    /// 初始化微信加解密工具
+    /// Initialize WeChat encryption/decryption utility
     /// </summary>
-    /// <param name="token">微信服务器配置的 Token</param>
-    /// <param name="encodingAesKey">消息加解密密钥（43位字符）</param>
-    /// <param name="appId">微信 AppID</param>
+    /// <param name="token">Token configured in WeChat server settings</param>
+    /// <param name="encodingAesKey">Message encryption/decryption key (43 characters)</param>
+    /// <param name="appId">WeChat AppID</param>
     public WeChatCrypto(string token, string encodingAesKey, string appId)
     {
         _token = token;
         _appId = appId;
         
-        // EncodingAESKey 是 Base64 编码的 AES 密钥（43位字符 + "=" = 44位 Base64）
+        // EncodingAESKey is a Base64-encoded AES key (43 chars + "=" = 44-char Base64)
         _aesKey = Convert.FromBase64String(encodingAesKey + "=");
-        // IV 是 AES 密钥的前 16 字节
+        // IV is the first 16 bytes of the AES key
         _iv = _aesKey[..16];
     }
     
     /// <summary>
-    /// 验证消息签名
+    /// Verify message signature
     /// </summary>
-    /// <param name="signature">微信加密签名</param>
-    /// <param name="timestamp">时间戳</param>
-    /// <param name="nonce">随机数</param>
-    /// <param name="encrypt">加密的消息体（可选，用于消息加密模式）</param>
-    /// <returns>签名是否有效</returns>
+    /// <param name="signature">WeChat encrypted signature</param>
+    /// <param name="timestamp">Timestamp</param>
+    /// <param name="nonce">Nonce</param>
+    /// <param name="encrypt">Encrypted message body (optional, for message encryption mode)</param>
+    /// <returns>Whether the signature is valid</returns>
     public bool VerifySignature(string signature, string timestamp, string nonce, string? encrypt = null)
     {
         var calculatedSignature = CalculateSignature(timestamp, nonce, encrypt);
@@ -46,22 +46,22 @@ public class WeChatCrypto
     }
     
     /// <summary>
-    /// 计算消息签名
+    /// Calculate message signature
     /// </summary>
-    /// <param name="timestamp">时间戳</param>
-    /// <param name="nonce">随机数</param>
-    /// <param name="encrypt">加密的消息体（可选）</param>
-    /// <returns>签名字符串</returns>
+    /// <param name="timestamp">Timestamp</param>
+    /// <param name="nonce">Nonce</param>
+    /// <param name="encrypt">Encrypted message body (optional)</param>
+    /// <returns>Signature string</returns>
     public string CalculateSignature(string timestamp, string nonce, string? encrypt = null)
     {
         var items = encrypt != null 
             ? new[] { _token, timestamp, nonce, encrypt }
             : new[] { _token, timestamp, nonce };
         
-        // 字典序排序
+        // Lexicographic sort
         Array.Sort(items, StringComparer.Ordinal);
         
-        // 拼接后 SHA1 哈希
+        // Concatenate and compute SHA1 hash
         var combined = string.Concat(items);
         var hash = SHA1.HashData(Encoding.UTF8.GetBytes(combined));
         
@@ -69,10 +69,10 @@ public class WeChatCrypto
     }
     
     /// <summary>
-    /// 解密消息
+    /// Decrypt message
     /// </summary>
-    /// <param name="encryptedContent">加密的消息内容（Base64 编码）</param>
-    /// <returns>解密后的消息内容，如果解密失败返回 null</returns>
+    /// <param name="encryptedContent">Encrypted message content (Base64 encoded)</param>
+    /// <returns>Decrypted message content, or null if decryption fails</returns>
     public string? Decrypt(string encryptedContent)
     {
         try
@@ -88,30 +88,30 @@ public class WeChatCrypto
             using var decryptor = aes.CreateDecryptor();
             var decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
             
-            // 解析解密后的数据
-            // 格式：random(16字节) + msg_len(4字节) + msg + appid
+            // Parse the decrypted data
+            // Format: random(16 bytes) + msg_len(4 bytes) + msg + appid
             
-            // 跳过前 16 字节随机数
+            // Skip the first 16 bytes of random data
             var msgLenBytes = decryptedBytes[16..20];
-            // 网络字节序（大端）转换为消息长度
+            // Convert network byte order (big-endian) to message length
             if (BitConverter.IsLittleEndian)
             {
                 Array.Reverse(msgLenBytes);
             }
             var msgLen = BitConverter.ToInt32(msgLenBytes, 0);
             
-            // 提取消息内容
+            // Extract message content
             var msgBytes = decryptedBytes[20..(20 + msgLen)];
             var message = Encoding.UTF8.GetString(msgBytes);
             
-            // 提取并验证 AppID
+            // Extract and verify AppID
             var appIdStart = 20 + msgLen;
             var appIdBytes = RemovePkcs7Padding(decryptedBytes[appIdStart..]);
             var appId = Encoding.UTF8.GetString(appIdBytes);
             
             if (appId != _appId)
             {
-                return null; // AppID 不匹配
+                return null; // AppID mismatch
             }
             
             return message;
@@ -123,30 +123,30 @@ public class WeChatCrypto
     }
     
     /// <summary>
-    /// 加密消息
+    /// Encrypt message
     /// </summary>
-    /// <param name="message">要加密的消息内容</param>
-    /// <returns>加密后的消息（Base64 编码）</returns>
+    /// <param name="message">Message content to encrypt</param>
+    /// <returns>Encrypted message (Base64 encoded)</returns>
     public string Encrypt(string message)
     {
-        // 生成 16 字节随机数
+        // Generate 16 bytes of random data
         var random = new byte[16];
         RandomNumberGenerator.Fill(random);
         
-        // 消息内容字节
+        // Message content bytes
         var msgBytes = Encoding.UTF8.GetBytes(message);
         
-        // 消息长度（4字节，网络字节序）
+        // Message length (4 bytes, network byte order)
         var msgLenBytes = BitConverter.GetBytes(msgBytes.Length);
         if (BitConverter.IsLittleEndian)
         {
             Array.Reverse(msgLenBytes);
         }
         
-        // AppID 字节
+        // AppID bytes
         var appIdBytes = Encoding.UTF8.GetBytes(_appId);
         
-        // 组装明文：random(16) + msg_len(4) + msg + appid
+        // Assemble plaintext: random(16) + msg_len(4) + msg + appid
         var plainBytes = new byte[random.Length + msgLenBytes.Length + msgBytes.Length + appIdBytes.Length];
         var offset = 0;
         
@@ -161,10 +161,10 @@ public class WeChatCrypto
         
         Buffer.BlockCopy(appIdBytes, 0, plainBytes, offset, appIdBytes.Length);
         
-        // PKCS7 填充
+        // PKCS7 padding
         var paddedBytes = AddPkcs7Padding(plainBytes);
         
-        // AES 加密
+        // AES encryption
         using var aes = Aes.Create();
         aes.Key = _aesKey;
         aes.IV = _iv;
@@ -178,12 +178,12 @@ public class WeChatCrypto
     }
     
     /// <summary>
-    /// 生成加密消息的 XML 响应
+    /// Generate XML response for encrypted message
     /// </summary>
-    /// <param name="encryptedContent">加密后的消息内容</param>
-    /// <param name="timestamp">时间戳</param>
-    /// <param name="nonce">随机数</param>
-    /// <returns>XML 格式的加密响应</returns>
+    /// <param name="encryptedContent">Encrypted message content</param>
+    /// <param name="timestamp">Timestamp</param>
+    /// <param name="nonce">Nonce</param>
+    /// <returns>XML formatted encrypted response</returns>
     public string GenerateEncryptedXml(string encryptedContent, string timestamp, string nonce)
     {
         var signature = CalculateSignature(timestamp, nonce, encryptedContent);
@@ -197,11 +197,11 @@ public class WeChatCrypto
     }
     
     /// <summary>
-    /// 添加 PKCS7 填充
+    /// Add PKCS7 padding
     /// </summary>
     private static byte[] AddPkcs7Padding(byte[] data)
     {
-        const int blockSize = 32; // 微信使用 32 字节块大小
+        const int blockSize = 32; // WeChat uses 32-byte block size
         var paddingLength = blockSize - (data.Length % blockSize);
         
         var paddedData = new byte[data.Length + paddingLength];
@@ -216,7 +216,7 @@ public class WeChatCrypto
     }
     
     /// <summary>
-    /// 移除 PKCS7 填充
+    /// Remove PKCS7 padding
     /// </summary>
     private static byte[] RemovePkcs7Padding(byte[] data)
     {

@@ -1,22 +1,22 @@
 namespace OpenDeepWiki.Models.Subscription;
 
 /// <summary>
-/// 订阅操作响应
+/// Subscription operation response
 /// </summary>
 public class SubscriptionResponse
 {
     /// <summary>
-    /// 操作是否成功
+    /// Whether the operation was successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 错误消息（仅在失败时有值）
+    /// Error message (only has value on failure)
     /// </summary>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
-    /// 订阅记录ID（仅在成功时有值）
+    /// Subscription record ID (only has value on success)
     /// </summary>
     public string? SubscriptionId { get; set; }
 }

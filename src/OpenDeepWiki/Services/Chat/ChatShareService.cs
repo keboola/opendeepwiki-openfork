@@ -10,7 +10,7 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Chat;
 
 /// <summary>
-/// 分享内容中的 Token 使用情况
+/// Token usage in shared content
 /// </summary>
 public class ChatShareTokenUsageDto
 {
@@ -19,7 +19,7 @@ public class ChatShareTokenUsageDto
 }
 
 /// <summary>
-/// 分享内容中的工具结果
+/// Tool result in shared content
 /// </summary>
 public class ChatShareToolResultDto
 {
@@ -29,7 +29,7 @@ public class ChatShareToolResultDto
 }
 
 /// <summary>
-/// 分享内容中的工具调用
+/// Tool call in shared content
 /// </summary>
 public class ChatShareToolCallDto
 {
@@ -39,7 +39,7 @@ public class ChatShareToolCallDto
 }
 
 /// <summary>
-/// 分享内容中的引用文本
+/// Quoted text in shared content
 /// </summary>
 public class ChatShareQuotedTextDto
 {
@@ -48,7 +48,7 @@ public class ChatShareQuotedTextDto
 }
 
 /// <summary>
-/// 分享内容块
+/// Shared content block
 /// </summary>
 public class ChatShareContentBlockDto
 {
@@ -58,7 +58,7 @@ public class ChatShareContentBlockDto
 }
 
 /// <summary>
-/// 分享的对话消息
+/// Shared conversation message
 /// </summary>
 public class ChatShareMessageDto
 {
@@ -76,7 +76,7 @@ public class ChatShareMessageDto
 }
 
 /// <summary>
-/// 创建分享请求
+/// Create share request
 /// </summary>
 public class CreateChatShareRequest
 {
@@ -91,7 +91,7 @@ public class CreateChatShareRequest
 }
 
 /// <summary>
-/// 分享详情响应
+/// Share details response
 /// </summary>
 public class ChatShareResponse
 {
@@ -106,7 +106,7 @@ public class ChatShareResponse
 }
 
 /// <summary>
-/// 聊天分享服务接口
+/// Chat share service interface
 /// </summary>
 public interface IChatShareService
 {
@@ -116,11 +116,11 @@ public interface IChatShareService
 }
 
 /// <summary>
-/// 聊天分享服务实现
+/// Chat share service implementation
 /// </summary>
 public class ChatShareService : IChatShareService
 {
-    private const int DefaultExpireMinutes = 60 * 24 * 30; // 30天
+    private const int DefaultExpireMinutes = 60 * 24 * 30; // 30 days
     private const int MaxMessages = 400;
     private const int MaxSnapshotSizeBytes = 512 * 1024; // 512KB
 
@@ -146,17 +146,17 @@ public class ChatShareService : IChatShareService
 
         if (request.Messages.Count == 0)
         {
-            throw new InvalidOperationException("无法分享空对话");
+            throw new InvalidOperationException("Cannot share an empty conversation");
         }
 
         if (request.Messages.Count > MaxMessages)
         {
-            throw new InvalidOperationException($"单次分享最多支持 {MaxMessages} 条消息");
+            throw new InvalidOperationException($"Maximum {MaxMessages} messages per share");
         }
 
         if (string.IsNullOrWhiteSpace(request.ModelId))
         {
-            throw new InvalidOperationException("缺少模型信息，无法创建分享");
+            throw new InvalidOperationException("Missing model information, cannot create share");
         }
 
         var snapshotPayload = new ChatShareSnapshotPayload
@@ -169,7 +169,7 @@ public class ChatShareService : IChatShareService
         var snapshotJson = JsonSerializer.Serialize(snapshotPayload, SerializerOptions);
         if (snapshotJson.Length > MaxSnapshotSizeBytes)
         {
-            throw new InvalidOperationException("分享内容过大，请精简对话后重试");
+            throw new InvalidOperationException("Share content too large, please reduce the conversation and try again");
         }
 
         var title = !string.IsNullOrWhiteSpace(request.Title)
@@ -239,7 +239,7 @@ public class ChatShareService : IChatShareService
         var payload = JsonSerializer.Deserialize<ChatShareSnapshotPayload>(snapshot.SnapshotJson, SerializerOptions);
         if (payload == null)
         {
-            _logger.LogWarning("分享 {ShareId} 的快照数据无法解析", shareId);
+            _logger.LogWarning("Share {ShareId} snapshot data could not be parsed", shareId);
             return null;
         }
 
@@ -292,7 +292,7 @@ public class ChatShareService : IChatShareService
             return content.Length > 40 ? content[..40] + "…" : content;
         }
 
-        return "AI 对话分享";
+        return "AI Conversation Share";
     }
 
     private async Task<string> GenerateShareIdAsync(CancellationToken cancellationToken)
@@ -309,7 +309,7 @@ public class ChatShareService : IChatShareService
             }
         }
 
-        throw new InvalidOperationException("无法生成唯一的分享ID，请稍后重试");
+        throw new InvalidOperationException("Unable to generate unique share ID, please try again later");
     }
 
     private class ChatShareSnapshotPayload

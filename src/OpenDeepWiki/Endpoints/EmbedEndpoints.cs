@@ -7,8 +7,8 @@ using OpenDeepWiki.Services.Chat;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// 嵌入脚本API端点
-/// 提供嵌入模式的配置获取和SSE流式对话
+/// Embed script API endpoints
+/// Provides embed mode configuration retrieval and SSE streaming chat
 /// </summary>
 public static class EmbedEndpoints
 {
@@ -18,29 +18,29 @@ public static class EmbedEndpoints
     };
 
     /// <summary>
-    /// 注册嵌入脚本端点
+    /// Register embed script endpoints
     /// </summary>
     public static IEndpointRouteBuilder MapEmbedEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/embed")
-            .WithTags("嵌入脚本");
+            .WithTags("Embed Scripts");
 
-        // 获取嵌入配置
+        // Get embed configuration
         group.MapGet("/config", GetEmbedConfigAsync)
             .WithName("GetEmbedConfig")
-            .WithSummary("获取嵌入配置（验证AppId和域名）");
+            .WithSummary("Get embed configuration (validate AppId and domain)");
 
-        // 嵌入模式SSE流式对话
+        // Embed mode SSE streaming chat
         group.MapPost("/stream", StreamEmbedChatAsync)
             .WithName("StreamEmbedChat")
-            .WithSummary("嵌入模式SSE流式对话");
+            .WithSummary("Embed mode SSE streaming chat");
 
         return app;
     }
 
     /// <summary>
-    /// 获取嵌入配置
-    /// 验证AppId和域名，返回应用配置
+    /// Get embed configuration
+    /// Validate AppId and domain, return application configuration
     /// </summary>
     private static async Task<IResult> GetEmbedConfigAsync(
         HttpContext httpContext,
@@ -64,8 +64,8 @@ public static class EmbedEndpoints
     }
 
     /// <summary>
-    /// 嵌入模式SSE流式对话
-    /// 使用应用配置的模型和API进行对话
+    /// Embed mode SSE streaming chat
+    /// Uses the application-configured model and API for conversation
     /// </summary>
     private static async Task StreamEmbedChatAsync(
         HttpContext httpContext,
@@ -73,12 +73,12 @@ public static class EmbedEndpoints
         [FromServices] IEmbedService embedService,
         CancellationToken cancellationToken)
     {
-        // 设置SSE响应头
+        // Set SSE response headers
         httpContext.Response.ContentType = "text/event-stream";
         httpContext.Response.Headers.CacheControl = "no-cache";
         httpContext.Response.Headers.Connection = "keep-alive";
 
-        // 添加CORS头以支持跨域请求
+        // Add CORS headers to support cross-origin requests
         httpContext.Response.Headers.AccessControlAllowOrigin = "*";
         httpContext.Response.Headers.AccessControlAllowMethods = "POST, OPTIONS";
         httpContext.Response.Headers.AccessControlAllowHeaders = "Content-Type";
@@ -99,13 +99,13 @@ public static class EmbedEndpoints
         }
         catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
         {
-            // 请求超时（非客户端取消）
+            // Request timed out (not client cancellation)
             var errorEvent = new SSEEvent
             {
                 Type = SSEEventType.Error,
                 Data = SSEErrorResponse.CreateRetryable(
                     ChatErrorCodes.REQUEST_TIMEOUT,
-                    "请求超时，请重试",
+                    "Request timed out, please retry",
                     2000)
             };
             var eventData = FormatSSEEvent(errorEvent);
@@ -114,17 +114,17 @@ public static class EmbedEndpoints
         }
         catch (OperationCanceledException)
         {
-            // 客户端断开连接，正常退出
+            // Client disconnected, exit normally
         }
         catch (HttpRequestException ex)
         {
-            // 连接失败
+            // Connection failed
             var errorEvent = new SSEEvent
             {
                 Type = SSEEventType.Error,
                 Data = SSEErrorResponse.CreateRetryable(
                     ChatErrorCodes.CONNECTION_FAILED,
-                    $"连接失败: {ex.Message}",
+                    $"Connection failed: {ex.Message}",
                     1000)
             };
             var eventData = FormatSSEEvent(errorEvent);
@@ -133,7 +133,7 @@ public static class EmbedEndpoints
         }
         catch (Exception ex)
         {
-            // 发送错误事件
+            // Send error event
             var errorEvent = new SSEEvent
             {
                 Type = SSEEventType.Error,
@@ -149,7 +149,7 @@ public static class EmbedEndpoints
     }
 
     /// <summary>
-    /// 从URL中提取域名
+    /// Extract domain from URL
     /// </summary>
     private static string? ExtractDomain(string? url)
     {
@@ -170,7 +170,7 @@ public static class EmbedEndpoints
     }
 
     /// <summary>
-    /// 格式化SSE事件
+    /// Format SSE event
     /// </summary>
     private static string FormatSSEEvent(SSEEvent sseEvent)
     {
@@ -188,7 +188,7 @@ public static class EmbedEndpoints
             sb.AppendLine(JsonSerializer.Serialize(sseEvent.Data, JsonOptions));
         }
 
-        sb.AppendLine(); // SSE事件之间需要空行分隔
+        sb.AppendLine(); // SSE events require an empty line separator
         return sb.ToString();
     }
 }

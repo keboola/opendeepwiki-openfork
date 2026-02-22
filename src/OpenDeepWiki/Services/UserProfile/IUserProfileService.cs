@@ -4,27 +4,27 @@ using OpenDeepWiki.Models.UserProfile;
 namespace OpenDeepWiki.Services.UserProfile;
 
 /// <summary>
-/// 用户资料服务接口
+/// User profile service interface
 /// </summary>
 public interface IUserProfileService
 {
     /// <summary>
-    /// 更新用户资料
+    /// Update user profile
     /// </summary>
     Task<UserInfo> UpdateProfileAsync(string userId, UpdateProfileRequest request);
 
     /// <summary>
-    /// 修改密码
+    /// Change password
     /// </summary>
     Task ChangePasswordAsync(string userId, ChangePasswordRequest request);
 
     /// <summary>
-    /// 获取用户设置
+    /// Get user settings
     /// </summary>
     Task<UserSettingsDto> GetSettingsAsync(string userId);
 
     /// <summary>
-    /// 更新用户设置
+    /// Update user settings
     /// </summary>
     Task<UserSettingsDto> UpdateSettingsAsync(string userId, UserSettingsDto settings);
 }

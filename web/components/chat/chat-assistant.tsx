@@ -7,22 +7,22 @@ import { ChatPanel } from "./chat-panel"
 import { getChatConfig, DocContext, CatalogItem } from "@/lib/chat-api"
 
 /**
- * 对话助手属性
+ * Chat assistant props
  */
 export interface ChatAssistantProps {
-  /** 文档上下文 */
+  /** Document context */
   context: DocContext
-  /** 应用ID（嵌入模式） */
+  /** App ID (embedded mode) */
   appId?: string
-  /** 自定义图标URL */
+  /** Custom icon URL */
   iconUrl?: string
 }
 
 /**
- * 对话助手组件
- * 
- * 整合悬浮球和对话面板，管理展开/收起状态
- * 
+ * Chat assistant component
+ *
+ * Integrates floating ball and chat panel, manages expand/collapse state
+ *
  * Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 5.1, 5.2
  */
 export function ChatAssistant({
@@ -35,7 +35,7 @@ export function ChatAssistant({
   const [isEnabled, setIsEnabled] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(true)
 
-  // 加载配置检查是否启用
+  // Load config to check if enabled
   React.useEffect(() => {
     const checkEnabled = async () => {
       try {
@@ -60,7 +60,7 @@ export function ChatAssistant({
     setIsOpen(false)
   }, [])
 
-  // 加载中不显示
+  // Don't show while loading
   if (isLoading) {
     return null
   }
@@ -84,7 +84,7 @@ export function ChatAssistant({
 }
 
 /**
- * 从RepoTreeNode构建CatalogItem
+ * Build CatalogItem from RepoTreeNode
  */
 export interface RepoTreeNode {
   title: string

@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Chat.Providers;
 
 /// <summary>
-/// 发送结果
+/// Send result
 /// </summary>
 public record SendResult(
     bool Success,

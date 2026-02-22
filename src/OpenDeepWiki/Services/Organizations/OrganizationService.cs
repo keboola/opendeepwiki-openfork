@@ -4,7 +4,7 @@ using OpenDeepWiki.EFCore;
 namespace OpenDeepWiki.Services.Organizations;
 
 /// <summary>
-/// 组织服务实现
+/// Organization service implementation
 /// </summary>
 public class OrganizationService : IOrganizationService
 {
@@ -39,7 +39,7 @@ public class OrganizationService : IOrganizationService
 
     public async Task<List<DepartmentRepositoryInfo>> GetDepartmentRepositoriesAsync(string userId)
     {
-        // 获取用户所属的部门
+        // Get departments the user belongs to
         var userDeptIds = await _context.UserDepartments
             .Where(ud => ud.UserId == userId && !ud.IsDeleted)
             .Select(ud => ud.DepartmentId)
@@ -48,12 +48,12 @@ public class OrganizationService : IOrganizationService
         if (userDeptIds.Count == 0)
             return new List<DepartmentRepositoryInfo>();
 
-        // 获取部门信息
+        // Get department information
         var depts = await _context.Departments
             .Where(d => userDeptIds.Contains(d.Id) && d.IsActive)
             .ToDictionaryAsync(d => d.Id);
 
-        // 获取这些部门分配的仓库
+        // Get repositories assigned to these departments
         var assignments = await _context.RepositoryAssignments
             .Where(ra => userDeptIds.Contains(ra.DepartmentId) && !ra.IsDeleted)
             .ToListAsync();

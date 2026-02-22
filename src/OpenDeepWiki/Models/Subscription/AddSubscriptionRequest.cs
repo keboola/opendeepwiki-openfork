@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models.Subscription;
 
 /// <summary>
-/// 添加订阅请求
+/// Add subscription request
 /// </summary>
 public class AddSubscriptionRequest
 {
     /// <summary>
-    /// 用户ID
+    /// User ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]

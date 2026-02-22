@@ -4,110 +4,110 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 翻译任务状态
+/// Translation task status
 /// </summary>
 public enum TranslationTaskStatus
 {
     /// <summary>
-    /// 待处理
+    /// Pending
     /// </summary>
     Pending = 0,
 
     /// <summary>
-    /// 处理中
+    /// Processing
     /// </summary>
     Processing = 1,
 
     /// <summary>
-    /// 已完成
+    /// Completed
     /// </summary>
     Completed = 2,
 
     /// <summary>
-    /// 失败
+    /// Failed
     /// </summary>
     Failed = 3
 }
 
 /// <summary>
-/// 翻译任务实体
-/// 用于存储待翻译的 Wiki 任务，由后台服务异步处理
+/// Translation task entity
+/// Stores pending Wiki translation tasks, processed asynchronously by background services
 /// </summary>
 public class TranslationTask : AggregateRoot<string>
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库分支ID
+    /// Repository branch ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryBranchId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 源语言分支ID
+    /// Source language branch ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string SourceBranchLanguageId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 目标语言代码
+    /// Target language code
     /// </summary>
     [Required]
     [StringLength(10)]
     public string TargetLanguageCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// 任务状态
+    /// Task status
     /// </summary>
     public TranslationTaskStatus Status { get; set; } = TranslationTaskStatus.Pending;
 
     /// <summary>
-    /// 错误信息（失败时记录）
+    /// Error message (recorded on failure)
     /// </summary>
     [StringLength(2000)]
     public string? ErrorMessage { get; set; }
 
     /// <summary>
-    /// 重试次数
+    /// Retry count
     /// </summary>
     public int RetryCount { get; set; } = 0;
 
     /// <summary>
-    /// 最大重试次数
+    /// Maximum retry count
     /// </summary>
     public int MaxRetryCount { get; set; } = 3;
 
     /// <summary>
-    /// 开始处理时间
+    /// Processing start time
     /// </summary>
     public DateTime? StartedAt { get; set; }
 
     /// <summary>
-    /// 完成时间
+    /// Completion time
     /// </summary>
     public DateTime? CompletedAt { get; set; }
 
     /// <summary>
-    /// 仓库导航属性
+    /// Repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }
 
     /// <summary>
-    /// 仓库分支导航属性
+    /// Repository branch navigation property
     /// </summary>
     [ForeignKey("RepositoryBranchId")]
     public virtual RepositoryBranch? RepositoryBranch { get; set; }
 
     /// <summary>
-    /// 源语言分支导航属性
+    /// Source language branch navigation property
     /// </summary>
     [ForeignKey("SourceBranchLanguageId")]
     public virtual BranchLanguage? SourceBranchLanguage { get; set; }

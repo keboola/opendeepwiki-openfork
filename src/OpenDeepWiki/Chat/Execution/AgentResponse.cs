@@ -3,11 +3,11 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Execution;
 
 /// <summary>
-/// Agent 响应
+/// Agent response
 /// </summary>
-/// <param name="Success">是否成功</param>
-/// <param name="Messages">响应消息列表</param>
-/// <param name="ErrorMessage">错误消息（如果失败）</param>
+/// <param name="Success">Whether successful</param>
+/// <param name="Messages">Response message list</param>
+/// <param name="ErrorMessage">Error message (if failed)</param>
 public record AgentResponse(
     bool Success,
     IEnumerable<IChatMessage> Messages,
@@ -15,30 +15,30 @@ public record AgentResponse(
 )
 {
     /// <summary>
-    /// 创建成功响应
+    /// Create a success response
     /// </summary>
     public static AgentResponse CreateSuccess(IEnumerable<IChatMessage> messages)
         => new(true, messages);
     
     /// <summary>
-    /// 创建成功响应（单条消息）
+    /// Create a success response (single message)
     /// </summary>
     public static AgentResponse CreateSuccess(IChatMessage message)
         => new(true, new[] { message });
     
     /// <summary>
-    /// 创建失败响应
+    /// Create a failure response
     /// </summary>
     public static AgentResponse CreateFailure(string errorMessage)
         => new(false, Enumerable.Empty<IChatMessage>(), errorMessage);
 }
 
 /// <summary>
-/// Agent 响应块（流式）
+/// Agent response chunk (streaming)
 /// </summary>
-/// <param name="Content">内容块</param>
-/// <param name="IsComplete">是否完成</param>
-/// <param name="ErrorMessage">错误消息（如果有）</param>
+/// <param name="Content">Content chunk</param>
+/// <param name="IsComplete">Whether complete</param>
+/// <param name="ErrorMessage">Error message (if any)</param>
 public record AgentResponseChunk(
     string Content,
     bool IsComplete,
@@ -46,19 +46,19 @@ public record AgentResponseChunk(
 )
 {
     /// <summary>
-    /// 创建内容块
+    /// Create a content chunk
     /// </summary>
     public static AgentResponseChunk CreateContent(string content)
         => new(content, false);
     
     /// <summary>
-    /// 创建完成块
+    /// Create a completion chunk
     /// </summary>
     public static AgentResponseChunk CreateComplete()
         => new(string.Empty, true);
     
     /// <summary>
-    /// 创建错误块
+    /// Create an error chunk
     /// </summary>
     public static AgentResponseChunk CreateError(string errorMessage)
         => new(string.Empty, true, errorMessage);

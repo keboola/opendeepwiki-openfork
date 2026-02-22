@@ -129,7 +129,7 @@ export default function AdminRolesPage() {
         </div>
       </div>
 
-      {/* 角色列表 */}
+      {/* Role list */}
       {loading ? (
         <div className="flex h-64 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -186,7 +186,7 @@ export default function AdminRolesPage() {
         </div>
       )}
 
-      {/* 新增/编辑对话框 */}
+      {/* Create/edit dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
@@ -223,7 +223,7 @@ export default function AdminRolesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 删除确认对话框 */}
+      {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

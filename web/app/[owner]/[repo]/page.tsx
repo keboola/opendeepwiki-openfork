@@ -30,27 +30,27 @@ export default async function RepoIndex({ params }: RepoIndexProps) {
   
   const tree = await getTreeData(owner, repo);
   
-  // API错误，layout会处理
+  // API error, layout will handle
   if (!tree) {
     return null;
   }
   
-  // 仓库不存在，layout会处理
+  // Repository does not exist, layout will handle
   if (!tree.exists) {
     return null;
   }
 
-  // 仓库正在处理中、等待处理或失败，layout会处理显示
+  // Repository is processing, pending, or failed, layout will handle display
   if (tree.statusName !== "Completed") {
     return null;
   }
 
-  // 有默认文档，重定向
+  // Has default document, redirect
   if (tree.defaultSlug) {
     redirect(`/${owner}/${repo}/${encodeSlug(tree.defaultSlug)}`);
   }
 
-  // 没有默认文档但有目录，显示提示
+  // No default document but has catalog, show prompt
   if (tree.nodes.length > 0) {
     return (
       <DocsPage toc={[]}>
@@ -61,6 +61,6 @@ export default async function RepoIndex({ params }: RepoIndexProps) {
     );
   }
 
-  // 空仓库，layout会处理
+  // Empty repository, layout will handle
   return null;
 }

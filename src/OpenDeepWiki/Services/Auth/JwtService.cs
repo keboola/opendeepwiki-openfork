@@ -8,7 +8,7 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Auth;
 
 /// <summary>
-/// JWT服务实现
+/// JWT service implementation
 /// </summary>
 public class JwtService : IJwtService
 {
@@ -29,7 +29,7 @@ public class JwtService : IJwtService
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        // 添加角色声明
+        // Add role claims
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));

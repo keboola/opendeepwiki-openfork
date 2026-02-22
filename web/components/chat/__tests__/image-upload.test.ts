@@ -1,10 +1,10 @@
 /**
- * 图片编码属性测试
- * 
- * Property 6: 图片编码正确性
+ * Image encoding property tests
+ *
+ * Property 6: Image encoding correctness
  * Validates: Requirements 4.3, 4.4
- * 
- * Feature: doc-chat-assistant, Property 6: 图片编码正确性
+ *
+ * Feature: doc-chat-assistant, Property 6: Image encoding correctness
  */
 import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
@@ -16,10 +16,10 @@ import {
   MAX_IMAGE_SIZE,
 } from '../image-upload'
 
-// 支持的MIME类型
+// Supported MIME types
 const supportedMimeTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'] as const
 
-// 不支持的MIME类型
+// Unsupported MIME types
 const unsupportedMimeTypes = [
   'image/bmp',
   'image/tiff',
@@ -29,26 +29,26 @@ const unsupportedMimeTypes = [
   'video/mp4',
 ]
 
-// 生成有效的Base64图片字符串
+// Generate valid Base64 image strings
 const validBase64ImageArb = fc.constantFrom(...supportedMimeTypes).map(mimeType => {
-  // 生成一个最小的有效图片数据
+  // Generate a minimal valid image data
   const minimalImageData = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
   return `data:${mimeType};base64,${minimalImageData}`
 })
 
-// 生成无效的Base64图片字符串（不支持的格式）
+// Generate invalid Base64 image strings (unsupported formats)
 const invalidBase64ImageArb = fc.constantFrom(...unsupportedMimeTypes).map(mimeType => {
   const minimalData = 'SGVsbG8gV29ybGQ='
   return `data:${mimeType};base64,${minimalData}`
 })
 
-// 生成有效文件大小（小于10MB）
+// Generate valid file size (less than 10MB)
 const validFileSizeArb = fc.integer({ min: 1, max: MAX_IMAGE_SIZE - 1 })
 
-// 生成无效文件大小（大于10MB）
+// Generate invalid file size (greater than 10MB)
 const invalidFileSizeArb = fc.integer({ min: MAX_IMAGE_SIZE + 1, max: MAX_IMAGE_SIZE * 2 })
 
-// 创建模拟File对象
+// Create mock File object
 function createMockFile(type: string, size: number): File {
   const content = new Uint8Array(size)
   const blob = new Blob([content], { type })
@@ -57,13 +57,13 @@ function createMockFile(type: string, size: number): File {
 
 describe('ImageUpload Property Tests', () => {
   /**
-   * Property 6: 图片编码正确性
-   * 
-   * 对于任意包含图片的消息，图片必须被正确编码为Base64格式，
-   * 且格式必须是PNG、JPG、GIF或WebP之一
+   * Property 6: Image encoding correctness
+   *
+   * For any message containing images, images must be correctly encoded in Base64 format,
+   * and the format must be one of PNG, JPG, GIF or WebP
    */
-  describe('Property 6: 图片编码正确性', () => {
-    it('支持的图片格式应该通过验证', () => {
+  describe('Property 6: Image encoding correctness', () => {
+    it('supported image formats should pass validation', () => {
       fc.assert(
         fc.property(
           fc.constantFrom(...supportedMimeTypes),
@@ -82,7 +82,7 @@ describe('ImageUpload Property Tests', () => {
       )
     })
 
-    it('不支持的图片格式应该被拒绝', () => {
+    it('unsupported image formats should be rejected', () => {
       fc.assert(
         fc.property(
           fc.constantFrom(...unsupportedMimeTypes),
@@ -93,8 +93,8 @@ describe('ImageUpload Property Tests', () => {
             
             expect(result.valid).toBe(false)
             expect(result.error).toBeDefined()
-            expect(result.error).toContain('不支持的图片格式')
-            
+            expect(result.error).toContain('Unsupported image format')
+
             return true
           }
         ),
@@ -102,7 +102,7 @@ describe('ImageUpload Property Tests', () => {
       )
     })
 
-    it('超过大小限制的图片应该被拒绝', () => {
+    it('images exceeding size limit should be rejected', () => {
       fc.assert(
         fc.property(
           fc.constantFrom(...supportedMimeTypes),
@@ -113,7 +113,7 @@ describe('ImageUpload Property Tests', () => {
             
             expect(result.valid).toBe(false)
             expect(result.error).toBeDefined()
-            expect(result.error).toContain('超过限制')
+            expect(result.error).toContain('exceeds limit')
             
             return true
           }
@@ -122,7 +122,7 @@ describe('ImageUpload Property Tests', () => {
       )
     })
 
-    it('有效的Base64图片应该通过验证', () => {
+    it('valid Base64 images should pass validation', () => {
       fc.assert(
         fc.property(
           validBase64ImageArb,
@@ -139,7 +139,7 @@ describe('ImageUpload Property Tests', () => {
       )
     })
 
-    it('无效格式的Base64图片应该被拒绝', () => {
+    it('Base64 images with invalid format should be rejected', () => {
       fc.assert(
         fc.property(
           invalidBase64ImageArb,
@@ -148,8 +148,8 @@ describe('ImageUpload Property Tests', () => {
             
             expect(result.valid).toBe(false)
             expect(result.error).toBeDefined()
-            expect(result.error).toContain('不支持的图片格式')
-            
+            expect(result.error).toContain('Unsupported image format')
+
             return true
           }
         ),
@@ -157,7 +157,7 @@ describe('ImageUpload Property Tests', () => {
       )
     })
 
-    it('应该正确提取Base64图片的MIME类型', () => {
+    it('should correctly extract MIME type from Base64 images', () => {
       fc.assert(
         fc.property(
           fc.constantFrom(...supportedMimeTypes),
@@ -174,7 +174,7 @@ describe('ImageUpload Property Tests', () => {
       )
     })
 
-    it('无效的Base64字符串应该返回null', () => {
+    it('invalid Base64 strings should return null', () => {
       fc.assert(
         fc.property(
           fc.string().filter(s => !s.startsWith('data:')),
@@ -188,7 +188,7 @@ describe('ImageUpload Property Tests', () => {
       )
     })
 
-    it('SUPPORTED_IMAGE_TYPES应该包含所有必需的格式', () => {
+    it('SUPPORTED_IMAGE_TYPES should contain all required formats', () => {
       const requiredTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
       
       requiredTypes.forEach(type => {
@@ -196,7 +196,7 @@ describe('ImageUpload Property Tests', () => {
       })
     })
 
-    it('MAX_IMAGE_SIZE应该是10MB', () => {
+    it('MAX_IMAGE_SIZE should be 10MB', () => {
       expect(MAX_IMAGE_SIZE).toBe(10 * 1024 * 1024)
     })
   })

@@ -40,21 +40,21 @@ const DEFAULT_WIDTH = 420
 const STORAGE_KEY = "chat-panel-width"
 
 /**
- * 对话面板属性
+ * Chat panel props
  */
 export interface ChatPanelProps {
-  /** 是否展开 */
+  /** Whether the panel is expanded */
   isOpen: boolean
-  /** 关闭回调 */
+  /** Close callback */
   onClose: () => void
-  /** 文档上下文 */
+  /** Document context */
   context: DocContext
-  /** 应用ID（嵌入模式） */
+  /** App ID (embed mode) */
   appId?: string
 }
 
 /**
- * 错误状态
+ * Error state
  */
 interface ErrorState {
   message: string
@@ -64,11 +64,11 @@ interface ErrorState {
 }
 
 /**
- * 对话面板组件
- * 
- * 包含消息列表、输入框、发送按钮、模型选择器
- * 支持Markdown渲染、工具调用显示、错误处理和重试
- * 
+ * Chat panel component
+ *
+ * Contains message list, input box, send button, model selector.
+ * Supports Markdown rendering, tool call display, error handling and retry.
+ *
  * Requirements: 2.1, 2.2, 2.3, 2.5, 2.6, 11.1, 11.2, 11.3, 11.4
  */
 export function ChatPanel({
@@ -96,7 +96,7 @@ export function ChatPanel({
   const [shareResult, setShareResult] = React.useState<ChatShareResponse | null>(null)
   const [shareError, setShareError] = React.useState<string | null>(null)
   const [shareCopied, setShareCopied] = React.useState(false)
-  // 引用的选中文本（包含标题）
+  // Quoted selected text (including title)
   const [quotedText, setQuotedText] = React.useState<{ title?: string; text: string } | null>(null)
   const [lastRequest, setLastRequest] = React.useState<{
     input: string
@@ -105,7 +105,7 @@ export function ChatPanel({
     assistantMessageId: string
   } | null>(null)
   
-  // 面板宽度状态
+  // Panel width state
   const [panelWidth, setPanelWidth] = React.useState(DEFAULT_WIDTH)
   const panelRef = React.useRef<HTMLDivElement>(null)
   const isDraggingRef = React.useRef(false)
@@ -168,13 +168,13 @@ export function ChatPanel({
 
   const handleCreateShare = React.useCallback(async () => {
     if (messages.length === 0) {
-      setShareError("暂无可分享的对话")
+      setShareError("No conversation to share")
       return
     }
 
     const shareModelId = selectedModelId || models.find(m => m.isEnabled)?.id || models[0]?.id
     if (!shareModelId) {
-      setShareError("请先选择模型")
+      setShareError("Please select a model first")
       return
     }
 
@@ -195,13 +195,13 @@ export function ChatPanel({
       const result = await createChatShare(payload)
       setShareResult(result)
     } catch (err) {
-      setShareError(err instanceof Error ? err.message : "分享失败，请稍后重试")
+      setShareError(err instanceof Error ? err.message : "Share failed, please try again")
     } finally {
       setShareLoading(false)
     }
   }, [messages, selectedModelId, models, context, locale, shareTitle, shareDescription, shareExpireMinutes])
 
-  // 从 localStorage 加载保存的宽度
+  // Load saved width from localStorage
   React.useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
@@ -212,7 +212,7 @@ export function ChatPanel({
     }
   }, [])
 
-  // 拖动调整宽度
+  // Drag to resize width
   const handleResizeStart = React.useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     isDraggingRef.current = true
@@ -240,7 +240,7 @@ export function ChatPanel({
         isDraggingRef.current = false
         document.body.style.cursor = ""
         document.body.style.userSelect = ""
-        // 保存到 localStorage
+        // Save to localStorage
         localStorage.setItem(STORAGE_KEY, panelWidth.toString())
       }
       if (rafRef.current) {
@@ -261,7 +261,7 @@ export function ChatPanel({
     }
   }, [panelWidth])
 
-  // 加载配置和模型列表
+  // Load config and model list
   React.useEffect(() => {
     if (!isOpen) return
 
@@ -275,7 +275,7 @@ export function ChatPanel({
         setEnableImageUpload(config.enableImageUpload)
         setModels(modelList)
         
-        // 设置默认模型
+        // Set default model
         if (config.defaultModelId) {
           setSelectedModelId(config.defaultModelId)
         } else if (modelList.length > 0) {
@@ -297,7 +297,7 @@ export function ChatPanel({
     loadConfig()
   }, [isOpen])
 
-  // 组件卸载时取消请求
+  // Cancel request on component unmount
   React.useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -306,7 +306,7 @@ export function ChatPanel({
     }
   }, [])
 
-  // 滚动到底部的函数
+  // Function to scroll to bottom
   const scrollToBottom = React.useCallback((smooth = true) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ 
@@ -316,15 +316,15 @@ export function ChatPanel({
     }
   }, [])
 
-  // 消息变化时滚动到底部
+  // Scroll to bottom when messages change
   React.useEffect(() => {
-    // 使用 requestAnimationFrame 确保 DOM 更新后再滚动
+    // Use requestAnimationFrame to ensure DOM is updated before scrolling
     requestAnimationFrame(() => {
       scrollToBottom()
     })
   }, [messages, scrollToBottom])
 
-  // AI 回复时持续滚动到底部
+  // Keep scrolling to bottom while AI is replying
   React.useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => scrollToBottom(false), 100)
@@ -332,7 +332,7 @@ export function ChatPanel({
     }
   }, [isLoading, scrollToBottom])
 
-  // 监听用户选中文本（只在文档内容区域）
+  // Listen for user text selection (only in document content area)
   React.useEffect(() => {
     if (!isOpen) return
 
@@ -340,7 +340,7 @@ export function ChatPanel({
       const selection = window.getSelection()
       const text = selection?.toString().trim()
       
-      // 如果没有选中文本，清除引用
+      // If no text is selected, clear the quote
       if (!text) {
         setQuotedText(null)
         return
@@ -349,7 +349,7 @@ export function ChatPanel({
       const anchorNode = selection?.anchorNode
       if (!anchorNode) return
       
-      // 检查选中的文本是否在文档内容区域
+      // Check if the selected text is in the document content area
       const docContentSelectors = [
         '[data-doc-content]',
         '.prose',
@@ -361,12 +361,12 @@ export function ChatPanel({
       const parentElement = anchorNode.parentElement
       if (!parentElement) return
       
-      // 检查是否在文档内容区域内
+      // Check if within document content area
       const isInDocContent = docContentSelectors.some(selector => 
         parentElement.closest(selector) !== null
       )
       
-      // 排除在对话面板内选中的文本
+      // Exclude text selected within the chat panel
       const isInChatPanel = panelRef.current?.contains(anchorNode as Node)
       
       if (isInDocContent && !isInChatPanel) {
@@ -376,7 +376,7 @@ export function ChatPanel({
     }
 
     document.addEventListener("mouseup", handleSelectionChange)
-    // 监听 selectionchange 事件来检测取消选择
+    // Listen for selectionchange event to detect deselection
     document.addEventListener("selectionchange", () => {
       const selection = window.getSelection()
       if (!selection?.toString().trim()) {
@@ -389,13 +389,13 @@ export function ChatPanel({
     }
   }, [isOpen, context.currentDocPath])
 
-  // 处理图片上传
+  // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
 
     Array.from(files).forEach(file => {
-      // 检查文件类型
+      // Check file type
       if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(file.type)) {
         setError({
           message: t("image.unsupportedFormat"),
@@ -404,7 +404,7 @@ export function ChatPanel({
         return
       }
 
-      // 检查文件大小 (10MB)
+      // Check file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
         setError({
           message: t("image.sizeTooLarge"),
@@ -421,16 +421,16 @@ export function ChatPanel({
       reader.readAsDataURL(file)
     })
 
-    // 清空input以便重复选择同一文件
+    // Clear input to allow re-selecting the same file
     e.target.value = ""
   }
 
-  // 移除图片
+  // Remove image
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
 
-  // 发送消息
+  // Send message
   const handleSend = async () => {
     const trimmedInput = input.trim()
     if (!trimmedInput && images.length === 0 && !quotedText) return
@@ -446,10 +446,10 @@ export function ChatPanel({
     setError(null)
     setIsLoading(true)
 
-    // 创建新的AbortController
+    // Create new AbortController
     abortControllerRef.current = new AbortController()
 
-    // 添加用户消息（引用文本单独存储，不合并到 content）
+    // Add user message (quoted text stored separately, not merged into content)
     const userMessageId = addMessage({
       role: "user",
       content: trimmedInput,
@@ -457,7 +457,7 @@ export function ChatPanel({
       quotedText: quotedText || undefined,
     })
 
-    // 清空输入
+    // Clear input
     const savedInput = input
     const savedImages = [...images]
     const savedQuotedText = quotedText
@@ -465,7 +465,7 @@ export function ChatPanel({
     setImages([])
     setQuotedText(null)
 
-    // 准备请求
+    // Prepare request
     const allMessages = [...messages, {
       id: userMessageId,
       role: "user" as const,
@@ -475,13 +475,13 @@ export function ChatPanel({
       timestamp: Date.now(),
     }]
 
-    // 添加AI消息占位
+    // Add AI message placeholder
     const assistantMessageId = addMessage({
       role: "assistant",
       content: "",
     })
 
-    // 保存请求信息以便重试
+    // Save request info for retry
     setLastRequest({
       input: savedInput,
       images: savedImages,
@@ -492,7 +492,7 @@ export function ChatPanel({
     let assistantContent = ""
     let contentBlocks: ContentBlock[] = []
     let currentToolCalls: ToolCall[] = []
-    // 用于跟踪当前正在构建的内容块
+    // Used to track the currently building content block
     let currentThinkingContent = ""
 
     try {
@@ -516,7 +516,7 @@ export function ChatPanel({
           case "content":
             const textContent = event.data as string
             assistantContent += textContent
-            // 添加或更新 text 内容块
+            // Add or update text content block
             const lastBlock = contentBlocks[contentBlocks.length - 1]
             if (lastBlock && lastBlock.type === "text") {
               lastBlock.content = (lastBlock.content || "") + textContent
@@ -533,12 +533,12 @@ export function ChatPanel({
           case "thinking":
             const thinkingEvent = event.data as ThinkingEvent
             if (thinkingEvent.type === "start") {
-              // 开始新的 thinking 块
+              // Start a new thinking block
               currentThinkingContent = ""
               contentBlocks.push({ type: "thinking", content: "" })
             } else if (thinkingEvent.type === "delta" && thinkingEvent.content) {
               currentThinkingContent += thinkingEvent.content
-              // 更新最后一个 thinking 块
+              // Update the last thinking block
               const thinkingBlock = contentBlocks.findLast(b => b.type === "thinking")
               if (thinkingBlock) {
                 thinkingBlock.content = currentThinkingContent
@@ -554,14 +554,14 @@ export function ChatPanel({
 
           case "tool_call":
             const toolCallEvent = event.data as ToolCallEvent
-            // 检查是否已存在相同 ID 的 tool call
+            // Check if a tool call with the same ID already exists
             const existingIndex = currentToolCalls.findIndex(t => t.id === toolCallEvent.id)
             
             if (existingIndex >= 0) {
-              // 更新已存在的 tool call（添加参数）
+              // Update existing tool call (add arguments)
               if (toolCallEvent.arguments) {
                 currentToolCalls[existingIndex].arguments = toolCallEvent.arguments
-                // 更新对应的 contentBlock
+                // Update corresponding contentBlock
                 const blockIndex = contentBlocks.findIndex(
                   b => b.type === "tool_call" && b.toolCall?.id === toolCallEvent.id
                 )
@@ -570,7 +570,7 @@ export function ChatPanel({
                 }
               }
             } else {
-              // 新的 tool call
+              // New tool call
               const newToolCall: ToolCall = {
                 id: toolCallEvent.id,
                 name: toolCallEvent.name,
@@ -589,7 +589,7 @@ export function ChatPanel({
 
           case "tool_result":
             const toolResult = event.data as ToolResult
-            // 添加工具结果消息
+            // Add tool result message
             addMessage({
               role: "tool",
               content: toolResult.result,
@@ -598,7 +598,7 @@ export function ChatPanel({
             break
 
           case "done":
-            // 对话完成，清除重试信息
+            // Conversation complete, clear retry info
             setLastRequest(null)
             break
 
@@ -625,20 +625,20 @@ export function ChatPanel({
     }
   }
 
-  // 重试发送
+  // Retry send
   const handleRetry = async () => {
     if (!lastRequest) return
-    
-    // 恢复输入状态
+
+    // Restore input state
     setInput(lastRequest.input)
     setImages(lastRequest.images)
     setError(null)
     
-    // 重新发送
+    // Resend
     handleSend()
   }
 
-  // 处理键盘事件
+  // Handle keyboard events
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
@@ -653,12 +653,12 @@ export function ChatPanel({
 
   return (
     <>
-      {/* 背景遮罩 - 不关闭面板，仅作为视觉分隔 */}
+      {/* Background overlay - does not close panel, visual separator only */}
       <div
         className="fixed inset-0 z-40 bg-black/20 pointer-events-none"
       />
 
-      {/* 对话面板 */}
+      {/* Chat panel */}
       <div
         ref={panelRef}
         style={{ width: panelWidth }}
@@ -669,7 +669,7 @@ export function ChatPanel({
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        {/* 左侧拖动条 */}
+        {/* Left drag handle */}
         <div
           onMouseDown={handleResizeStart}
           className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/30 transition-colors group flex items-center"
@@ -678,7 +678,7 @@ export function ChatPanel({
           <GripVertical className="h-6 w-6 text-muted-foreground/30 group-hover:text-muted-foreground/60 -ml-2.5" />
         </div>
 
-        {/* 头部 */}
+        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
           <h2 className="font-semibold">{t("assistant.title")}</h2>
           <div className="flex items-center gap-1">
@@ -686,7 +686,7 @@ export function ChatPanel({
               variant="ghost"
               size="icon"
               onClick={handleOpenShareDialog}
-              title="分享当前对话"
+              title="Share conversation"
               disabled={messages.length === 0}
             >
               <Share2 className="h-4 w-4" />
@@ -706,7 +706,7 @@ export function ChatPanel({
           </div>
         </div>
 
-        {/* 消息列表 - 底部留出空间给悬浮输入框 */}
+        {/* Message list - leave space at bottom for floating input box */}
         <ScrollArea className="flex-1 overflow-hidden w-full">
           <div className="flex flex-col w-full">
             {!isEnabled ? (
@@ -738,7 +738,7 @@ export function ChatPanel({
               </div>
             )}
 
-            {/* 加载指示器 */}
+            {/* Loading indicator */}
             {isLoading && (
               <div className="flex items-center gap-2 p-4 text-muted-foreground animate-in fade-in-0 duration-200">
                 <div className="flex gap-1">
@@ -750,12 +750,12 @@ export function ChatPanel({
               </div>
             )}
             
-            {/* 滚动锚点 + 底部空白区域，确保内容不被输入框遮挡 */}
+            {/* Scroll anchor + bottom whitespace to prevent content from being hidden by input box */}
             <div ref={messagesEndRef} className="h-52 shrink-0" />
           </div>
         </ScrollArea>
 
-        {/* 错误提示 */}
+        {/* Error message */}
         {error && (
           <div className="absolute bottom-44 left-4 right-4 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-lg">
             <div className="flex items-center justify-between">
@@ -768,24 +768,24 @@ export function ChatPanel({
                     disabled={isLoading}
                   >
                     <RefreshCw className="h-3 w-3" />
-                    重试
+                    Retry
                   </button>
                 )}
                 <button
                   className="underline hover:no-underline"
                   onClick={() => setError(null)}
                 >
-                  关闭
+                  Close
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 悬浮输入区域 - ChatGPT 风格 */}
+        {/* Floating input area - ChatGPT style */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
           <div className="rounded-2xl border border-border/50 bg-background/90 backdrop-blur-sm shadow-lg">
-            {/* 引用文本预览 */}
+            {/* Quoted text preview */}
             {quotedText && (
               <div className="border-b border-border/50 px-3 py-2">
                 <div className="flex items-start justify-between gap-2">
@@ -809,7 +809,7 @@ export function ChatPanel({
               </div>
             )}
 
-            {/* 图片预览 */}
+            {/* Image preview */}
             {images.length > 0 && (
               <div className="border-b border-border/50 px-3 py-2">
                 <div className="flex flex-wrap gap-2">
@@ -833,7 +833,7 @@ export function ChatPanel({
               </div>
             )}
 
-            {/* 输入框 */}
+            {/* Input box */}
             <div className="px-3 py-1.5">
               <Textarea
                 ref={inputRef}
@@ -847,9 +847,9 @@ export function ChatPanel({
               />
             </div>
 
-            {/* 底部工具栏 */}
+            {/* Bottom toolbar */}
             <div className="flex items-center justify-between border-t border-border/50 px-2 py-1">
-              {/* 左侧按钮 */}
+              {/* Left buttons */}
               <div className="flex items-center gap-1">
                 <input
                   ref={fileInputRef}
@@ -873,7 +873,7 @@ export function ChatPanel({
                 )}
               </div>
 
-              {/* 右侧：模型选择 + 发送按钮 */}
+              {/* Right side: model selector + send button */}
               <div className="flex items-center gap-1.5">
                 <ModelSelector
                   models={models}
@@ -904,30 +904,30 @@ export function ChatPanel({
       <Dialog open={isShareDialogOpen} onOpenChange={handleShareDialogChange}>
         <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
-            <DialogTitle>分享当前对话</DialogTitle>
+            <DialogTitle>Share Conversation</DialogTitle>
             <DialogDescription>
-              生成一个只读链接，公开展示当前对话的即时快照。
+              Generate a read-only link to publicly display an instant snapshot of the current conversation.
             </DialogDescription>
           </DialogHeader>
 
           {shareResult ? (
             <div className="space-y-4">
               <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm">
-                <div className="text-muted-foreground">分享链接</div>
+                <div className="text-muted-foreground">Share link</div>
                 <p className="mt-1 break-all text-foreground">{shareLink}</p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  分享ID：{shareResult.shareId} · 模型：{shareResult.modelId}
+                  Share ID: {shareResult.shareId} · Model: {shareResult.modelId}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={handleCopyShareLink} className="gap-2">
                   {shareCopied ? (
                     <>
-                      <Check className="h-4 w-4" /> 已复制
+                      <Check className="h-4 w-4" /> Copied
                     </>
                   ) : (
                     <>
-                      <Copy className="h-4 w-4" /> 复制链接
+                      <Copy className="h-4 w-4" /> Copy link
                     </>
                   )}
                 </Button>
@@ -936,10 +936,10 @@ export function ChatPanel({
                   onClick={() => window.open(shareLink, "_blank", "noopener,noreferrer")}
                   disabled={!shareLink}
                 >
-                  打开分享页
+                  Open share page
                 </Button>
                 <Button variant="ghost" onClick={() => handleShareDialogChange(false)}>
-                  关闭
+                  Close
                 </Button>
               </div>
             </div>
@@ -947,24 +947,24 @@ export function ChatPanel({
             <>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">分享标题</label>
+                  <label className="text-sm font-medium">Share title</label>
                   <Input
                     value={shareTitle}
-                    placeholder="给分享起个标题"
+                    placeholder="Enter a title for the share"
                     onChange={(e) => setShareTitle(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">补充说明（可选）</label>
+                  <label className="text-sm font-medium">Description (optional)</label>
                   <Textarea
                     value={shareDescription}
                     rows={3}
-                    placeholder="为查看者说明分享背景"
+                    placeholder="Provide context for viewers"
                     onChange={(e) => setShareDescription(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">有效期（分钟）</label>
+                  <label className="text-sm font-medium">Expiration (minutes)</label>
                   <Input
                     type="number"
                     min={10}
@@ -977,7 +977,7 @@ export function ChatPanel({
                       }
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">默认 7 天，最长 30 天。</p>
+                  <p className="text-xs text-muted-foreground">Default 7 days, maximum 30 days.</p>
                 </div>
                 {shareError && (
                   <p className="text-sm text-destructive">{shareError}</p>
@@ -985,13 +985,13 @@ export function ChatPanel({
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => handleShareDialogChange(false)}>
-                  取消
+                  Cancel
                 </Button>
                 <Button onClick={handleCreateShare} disabled={shareLoading}>
                   {shareLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : null}
-                  {shareLoading ? "生成中..." : "生成分享链接"}
+                  {shareLoading ? "Generating..." : "Generate share link"}
                 </Button>
               </DialogFooter>
             </>

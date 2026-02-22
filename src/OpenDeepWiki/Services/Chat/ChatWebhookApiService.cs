@@ -10,7 +10,7 @@ namespace OpenDeepWiki.Services.Chat;
 public class ChatWebhookApiService(IMessageRouter messageRouter, ILogger<ChatWebhookApiService> logger)
 {
     /// <summary>
-    /// 飞书 Webhook
+    /// Feishu (Lark) Webhook
     /// </summary>
     [HttpPost("/feishu")]
     [AllowAnonymous]
@@ -20,7 +20,7 @@ public class ChatWebhookApiService(IMessageRouter messageRouter, ILogger<ChatWeb
     }
 
     /// <summary>
-    /// QQ 机器人 Webhook
+    /// QQ Bot Webhook
     /// </summary>
     [HttpPost("/qq")]
     [AllowAnonymous]
@@ -30,7 +30,7 @@ public class ChatWebhookApiService(IMessageRouter messageRouter, ILogger<ChatWeb
     }
 
     /// <summary>
-    /// 微信 Webhook 验证
+    /// WeChat Webhook verification
     /// </summary>
     [HttpGet("/wechat")]
     [AllowAnonymous]
@@ -54,7 +54,7 @@ public class ChatWebhookApiService(IMessageRouter messageRouter, ILogger<ChatWeb
     }
 
     /// <summary>
-    /// 微信客服消息 Webhook
+    /// WeChat customer service message Webhook
     /// </summary>
     [HttpPost("/wechat")]
     [AllowAnonymous]
@@ -74,7 +74,7 @@ public class ChatWebhookApiService(IMessageRouter messageRouter, ILogger<ChatWeb
     }
 
     /// <summary>
-    /// 通用 Webhook
+    /// Generic Webhook
     /// </summary>
     [HttpPost("/{platform}")]
     [AllowAnonymous]

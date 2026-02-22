@@ -1,42 +1,42 @@
 namespace OpenDeepWiki.Services.Repositories;
 
 /// <summary>
-/// 增量更新配置选项
+/// Incremental update configuration options
 /// </summary>
 public class IncrementalUpdateOptions
 {
     /// <summary>
-    /// 配置节名称
+    /// Configuration section name
     /// </summary>
     public const string SectionName = "IncrementalUpdate";
 
     /// <summary>
-    /// 轮询间隔（秒）
+    /// Polling interval (seconds)
     /// </summary>
     public int PollingIntervalSeconds { get; set; } = 60;
 
     /// <summary>
-    /// 默认更新检查间隔（分钟）
+    /// Default update check interval (minutes)
     /// </summary>
     public int DefaultUpdateIntervalMinutes { get; set; } = 60;
 
     /// <summary>
-    /// 最小更新检查间隔（分钟）
+    /// Minimum update check interval (minutes)
     /// </summary>
     public int MinUpdateIntervalMinutes { get; set; } = 5;
 
     /// <summary>
-    /// 最大重试次数
+    /// Maximum retry attempts
     /// </summary>
     public int MaxRetryAttempts { get; set; } = 3;
 
     /// <summary>
-    /// 重试基础延迟（毫秒）
+    /// Retry base delay (milliseconds)
     /// </summary>
     public int RetryBaseDelayMs { get; set; } = 1000;
 
     /// <summary>
-    /// 手动触发任务优先级
+    /// Manual trigger task priority
     /// </summary>
     public int ManualTriggerPriority { get; set; } = 100;
 }

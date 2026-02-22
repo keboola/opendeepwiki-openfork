@@ -4,96 +4,96 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 用户OAuth登录关联实体
+/// User OAuth login association entity
 /// </summary>
 public class UserOAuth : AggregateRoot<string>
 {
     /// <summary>
-    /// 用户ID
+    /// User ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// OAuth提供商ID
+    /// OAuth provider ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string OAuthProviderId { get; set; } = string.Empty;
 
     /// <summary>
-    /// OAuth提供商用户ID（第三方平台的用户ID）
+    /// OAuth provider user ID (third-party platform user ID)
     /// </summary>
     [Required]
     [StringLength(200)]
     public string OAuthUserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// OAuth提供商用户名称
+    /// OAuth provider user name
     /// </summary>
     [StringLength(200)]
     public string? OAuthUserName { get; set; }
 
     /// <summary>
-    /// OAuth提供商用户邮箱
+    /// OAuth provider user email
     /// </summary>
     [StringLength(200)]
     public string? OAuthUserEmail { get; set; }
 
     /// <summary>
-    /// OAuth提供商用户头像
+    /// OAuth provider user avatar
     /// </summary>
     [StringLength(500)]
     public string? OAuthUserAvatar { get; set; }
 
     /// <summary>
-    /// 访问令牌（加密存储）
+    /// Access token (encrypted storage)
     /// </summary>
     [StringLength(1000)]
     public string? AccessToken { get; set; }
 
     /// <summary>
-    /// 刷新令牌（加密存储）
+    /// Refresh token (encrypted storage)
     /// </summary>
     [StringLength(1000)]
     public string? RefreshToken { get; set; }
 
     /// <summary>
-    /// 令牌过期时间
+    /// Token expiration time
     /// </summary>
     public DateTime? TokenExpiresAt { get; set; }
 
     /// <summary>
-    /// 令牌作用域
+    /// Token scope
     /// </summary>
     [StringLength(500)]
     public string? Scope { get; set; }
 
     /// <summary>
-    /// 令牌类型
+    /// Token type
     /// </summary>
     [StringLength(50)]
     public string? TokenType { get; set; }
 
     /// <summary>
-    /// 是否已绑定（true表示已绑定到现有用户，false表示临时绑定）
+    /// Whether bound (true means bound to an existing user, false means temporarily bound)
     /// </summary>
     public bool IsBound { get; set; } = false;
 
     /// <summary>
-    /// 最后登录时间
+    /// Last login time
     /// </summary>
     public DateTime? LastLoginAt { get; set; }
 
     /// <summary>
-    /// 用户实体导航属性
+    /// User entity navigation property
     /// </summary>
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }
 
     /// <summary>
-    /// OAuth提供商实体导航属性
+    /// OAuth provider entity navigation property
     /// </summary>
     [ForeignKey("OAuthProviderId")]
     public virtual OAuthProvider? OAuthProvider { get; set; }

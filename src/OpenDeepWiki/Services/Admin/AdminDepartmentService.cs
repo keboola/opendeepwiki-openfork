@@ -6,7 +6,7 @@ using OpenDeepWiki.Models.Admin;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端部门服务实现
+/// Admin department service implementation
 /// </summary>
 public class AdminDepartmentService : IAdminDepartmentService
 {
@@ -91,12 +91,12 @@ public class AdminDepartmentService : IAdminDepartmentService
     public async Task<AdminDepartmentDto> CreateDepartmentAsync(CreateDepartmentRequest request)
     {
         var exists = await _context.Departments.AnyAsync(d => d.Name == request.Name);
-        if (exists) throw new InvalidOperationException("部门名称已存在");
+        if (exists) throw new InvalidOperationException("Department name already exists");
 
         if (request.ParentId != null)
         {
             var parentExists = await _context.Departments.AnyAsync(d => d.Id == request.ParentId);
-            if (!parentExists) throw new InvalidOperationException("父部门不存在");
+            if (!parentExists) throw new InvalidOperationException("Parent department does not exist");
         }
 
         var department = new Department
@@ -124,15 +124,15 @@ public class AdminDepartmentService : IAdminDepartmentService
         if (request.Name != null)
         {
             var exists = await _context.Departments.AnyAsync(d => d.Name == request.Name && d.Id != id);
-            if (exists) throw new InvalidOperationException("部门名称已存在");
+            if (exists) throw new InvalidOperationException("Department name already exists");
             department.Name = request.Name;
         }
 
         if (request.ParentId != null)
         {
-            if (request.ParentId == id) throw new InvalidOperationException("不能将自己设为父部门");
+            if (request.ParentId == id) throw new InvalidOperationException("Cannot set self as parent department");
             var parentExists = await _context.Departments.AnyAsync(d => d.Id == request.ParentId);
-            if (!parentExists) throw new InvalidOperationException("父部门不存在");
+            if (!parentExists) throw new InvalidOperationException("Parent department does not exist");
             department.ParentId = request.ParentId;
         }
 
@@ -151,7 +151,7 @@ public class AdminDepartmentService : IAdminDepartmentService
         if (department == null) return false;
 
         var hasChildren = await _context.Departments.AnyAsync(d => d.ParentId == id);
-        if (hasChildren) throw new InvalidOperationException("该部门下还有子部门，不能删除");
+        if (hasChildren) throw new InvalidOperationException("Cannot delete department with child departments");
 
         _context.Departments.Remove(department);
         await _context.SaveChangesAsync();
@@ -184,14 +184,14 @@ public class AdminDepartmentService : IAdminDepartmentService
     public async Task<bool> AddUserToDepartmentAsync(string departmentId, string userId, bool isManager = false)
     {
         var deptExists = await _context.Departments.AnyAsync(d => d.Id == departmentId);
-        if (!deptExists) throw new InvalidOperationException("部门不存在");
+        if (!deptExists) throw new InvalidOperationException("Department does not exist");
 
         var userExists = await _context.Users.AnyAsync(u => u.Id == userId && !u.IsDeleted);
-        if (!userExists) throw new InvalidOperationException("用户不存在");
+        if (!userExists) throw new InvalidOperationException("User does not exist");
 
         var exists = await _context.UserDepartments.AnyAsync(ud => 
             ud.DepartmentId == departmentId && ud.UserId == userId && !ud.IsDeleted);
-        if (exists) throw new InvalidOperationException("用户已在该部门中");
+        if (exists) throw new InvalidOperationException("User is already in this department");
 
         var userDept = new UserDepartment
         {
@@ -252,14 +252,14 @@ public class AdminDepartmentService : IAdminDepartmentService
     public async Task<bool> AssignRepositoryToDepartmentAsync(string departmentId, string repositoryId, string assigneeUserId)
     {
         var deptExists = await _context.Departments.AnyAsync(d => d.Id == departmentId);
-        if (!deptExists) throw new InvalidOperationException("部门不存在");
+        if (!deptExists) throw new InvalidOperationException("Department does not exist");
 
         var repoExists = await _context.Repositories.AnyAsync(r => r.Id == repositoryId);
-        if (!repoExists) throw new InvalidOperationException("仓库不存在");
+        if (!repoExists) throw new InvalidOperationException("Repository does not exist");
 
         var exists = await _context.RepositoryAssignments.AnyAsync(ra =>
             ra.DepartmentId == departmentId && ra.RepositoryId == repositoryId && !ra.IsDeleted);
-        if (exists) throw new InvalidOperationException("该仓库已分配给此部门");
+        if (exists) throw new InvalidOperationException("Repository is already assigned to this department");
 
         var assignment = new RepositoryAssignment
         {

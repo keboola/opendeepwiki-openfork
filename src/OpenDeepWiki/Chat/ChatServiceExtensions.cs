@@ -16,58 +16,58 @@ using OpenDeepWiki.Chat.Sessions;
 namespace OpenDeepWiki.Chat;
 
 /// <summary>
-/// Chat 服务注册扩展方法
+/// Chat service registration extension methods
 /// Requirements: 2.2, 2.4
 /// </summary>
 public static class ChatServiceExtensions
 {
     /// <summary>
-    /// 添加 Chat 系统所有服务
+    /// Add all Chat system services
     /// </summary>
     public static IServiceCollection AddChatServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // 注册配置选项
+        // Register configuration options
         services.AddChatOptions(configuration);
-        
-        // 注册核心服务
+
+        // Register core services
         services.AddChatCoreServices();
-        
-        // 注册 Provider
+
+        // Register providers
         services.AddChatProviders(configuration);
-        
-        // 注册后台服务
+
+        // Register background services
         services.AddChatBackgroundServices(configuration);
-        
-        // 注册配置验证启动过滤器
+
+        // Register configuration validation startup filter
         services.AddChatStartupValidation(configuration);
         
         return services;
     }
     
     /// <summary>
-    /// 注册配置选项
+    /// Register configuration options
     /// </summary>
     private static IServiceCollection AddChatOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        // Chat 全局配置
+        // Chat global configuration
         services.Configure<ChatConfigOptions>(configuration.GetSection(ChatConfigOptions.SectionName));
-        
-        // 配置加密选项
+
+        // Configuration encryption options
         services.Configure<ConfigEncryptionOptions>(configuration.GetSection("Chat:Encryption"));
-        
-        // 会话管理配置
+
+        // Session management configuration
         services.Configure<SessionManagerOptions>(configuration.GetSection(SessionManagerOptions.SectionName));
-        
-        // 消息队列配置
+
+        // Message queue configuration
         services.Configure<MessageQueueOptions>(configuration.GetSection(MessageQueueOptions.SectionName));
-        
-        // Agent 执行器配置
+
+        // Agent executor configuration
         services.Configure<AgentExecutorOptions>(configuration.GetSection("Chat:AgentExecutor"));
-        
-        // 消息处理配置
+
+        // Message processing configuration
         services.Configure<ChatProcessingOptions>(configuration.GetSection(ChatProcessingOptions.SectionName));
-        
-        // Provider 配置
+
+        // Provider configuration
         services.Configure<FeishuProviderOptions>(configuration.GetSection("Chat:Providers:Feishu"));
         services.Configure<QQProviderOptions>(configuration.GetSection("Chat:Providers:QQ"));
         services.Configure<WeChatProviderOptions>(configuration.GetSection("Chat:Providers:WeChat"));
@@ -77,33 +77,33 @@ public static class ChatServiceExtensions
     }
     
     /// <summary>
-    /// 注册核心服务
+    /// Register core services
     /// </summary>
     private static IServiceCollection AddChatCoreServices(this IServiceCollection services)
     {
-        // 配置加密服务
+        // Configuration encryption service
         services.TryAddSingleton<IConfigEncryption, AesConfigEncryption>();
-        
-        // 配置管理服务
+
+        // Configuration management service
         services.TryAddScoped<IChatConfigService, ChatConfigService>();
-        
-        // 会话管理服务
+
+        // Session management service
         services.TryAddScoped<ISessionManager, SessionManager>();
-        
-        // 消息队列服务
+
+        // Message queue service
         services.TryAddScoped<IMessageQueue, DatabaseMessageQueue>();
-        
-        // 消息合并器
+
+        // Message merger
         services.TryAddSingleton<IMessageMerger, TextMessageMerger>();
         
         // User identity resolver (Singleton with in-memory cache)
         services.AddHttpClient<ChatUserResolver>();
         services.TryAddSingleton<IChatUserResolver, ChatUserResolver>();
 
-        // Agent 执行器
+        // Agent executor
         services.TryAddScoped<IAgentExecutor, AgentExecutor>();
-        
-        // 消息路由器（Singleton，因为需要维护 Provider 注册表）
+
+        // Message router (Singleton, because it needs to maintain the Provider registry)
         // Uses IServiceScopeFactory to resolve scoped deps (SessionManager, MessageQueue, etc.)
         services.TryAddSingleton<IMessageRouter>(sp =>
         {
@@ -112,7 +112,7 @@ public static class ChatServiceExtensions
             return new MessageRouter(logger, scopeFactory);
         });
         
-        // 消息回调管理器
+        // Message callback manager
         services.TryAddScoped<IMessageCallback>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<CallbackManager>>();
@@ -125,31 +125,31 @@ public static class ChatServiceExtensions
                 platform => router.GetProvider(platform));
         });
         
-        // 配置变更通知器（Singleton）
+        // Configuration change notifier (Singleton)
         services.TryAddSingleton<IConfigChangeNotifier, ConfigChangeNotifier>();
         
         return services;
     }
     
     /// <summary>
-    /// 注册 Provider
-    /// Requirements: 2.2 - 通过依赖注入自动发现并加载
+    /// Register providers
+    /// Requirements: 2.2 - Automatically discover and load via dependency injection
     /// </summary>
     private static IServiceCollection AddChatProviders(this IServiceCollection services, IConfiguration configuration)
     {
-        // 注册 HttpClient 工厂
+        // Register HttpClient factory
         services.AddHttpClient<FeishuProvider>();
         services.AddHttpClient<QQProvider>();
         services.AddHttpClient<WeChatProvider>();
         services.AddHttpClient<SlackProvider>();
         
-        // 注册 Provider 为 Scoped 服务
+        // Register providers as Scoped services
         services.TryAddScoped<FeishuProvider>();
         services.TryAddScoped<QQProvider>();
         services.TryAddScoped<WeChatProvider>();
         services.TryAddScoped<SlackProvider>();
         
-        // 注册 Provider 集合（用于自动发现）
+        // Register provider collection (for auto-discovery)
         services.TryAddScoped<IEnumerable<IMessageProvider>>(sp => new IMessageProvider[]
         {
             sp.GetRequiredService<FeishuProvider>(),
@@ -158,26 +158,26 @@ public static class ChatServiceExtensions
             sp.GetRequiredService<SlackProvider>()
         });
         
-        // 注册 Provider 初始化服务
+        // Register provider initialization service
         services.AddHostedService<ProviderInitializationService>();
         
         return services;
     }
     
     /// <summary>
-    /// 注册后台服务
+    /// Register background services
     /// </summary>
     private static IServiceCollection AddChatBackgroundServices(this IServiceCollection services, IConfiguration configuration)
     {
         var processingOptions = configuration.GetSection(ChatProcessingOptions.SectionName).Get<ChatProcessingOptions>();
         
-        // 只有启用时才注册消息处理 Worker
+        // Only register message processing Worker when enabled
         if (processingOptions?.Enabled ?? true)
         {
             services.AddHostedService<ChatMessageProcessingWorker>();
         }
         
-        // 配置热重载服务
+        // Configuration hot-reload service
         var chatOptions = configuration.GetSection(ChatConfigOptions.SectionName).Get<ChatConfigOptions>();
         if (chatOptions?.EnableHotReload ?? true)
         {
@@ -188,13 +188,13 @@ public static class ChatServiceExtensions
     }
     
     /// <summary>
-    /// 注册启动验证
+    /// Register startup validation
     /// </summary>
     private static IServiceCollection AddChatStartupValidation(this IServiceCollection services, IConfiguration configuration)
     {
         var chatOptions = configuration.GetSection(ChatConfigOptions.SectionName).Get<ChatConfigOptions>();
         
-        // 只有启用时才注册配置验证启动过滤器
+        // Only register configuration validation startup filter when enabled
         if (chatOptions?.ValidateOnStartup ?? true)
         {
             services.AddTransient<IStartupFilter, ConfigValidationStartupFilter>();

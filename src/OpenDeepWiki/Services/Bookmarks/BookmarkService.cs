@@ -7,25 +7,25 @@ using OpenDeepWiki.Models.Bookmark;
 namespace OpenDeepWiki.Services.Bookmarks;
 
 /// <summary>
-/// 收藏服务
-/// 处理用户收藏仓库相关业务逻辑
+/// Bookmark service
+/// Handles user repository bookmark business logic
 /// </summary>
 [MiniApi(Route = "/api/v1/bookmarks")]
-[Tags("收藏")]
+[Tags("Bookmarks")]
 public class BookmarkService(IContext context)
 {
     /// <summary>
-    /// 添加收藏
-    /// 原子性增加仓库收藏计数
+    /// Add bookmark
+    /// Atomically increment repository bookmark count
     /// </summary>
-    /// <param name="request">添加收藏请求</param>
-    /// <returns>收藏操作响应</returns>
+    /// <param name="request">Add bookmark request</param>
+    /// <returns>Bookmark operation response</returns>
     [HttpPost("/")]
     public async Task<IResult> AddBookmarkAsync([FromBody] AddBookmarkRequest request)
     {
         try
         {
-            // 验证仓库是否存在
+            // Verify repository exists
             var repository = await context.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == request.RepositoryId);
@@ -35,11 +35,11 @@ public class BookmarkService(IContext context)
                 return Results.NotFound(new BookmarkResponse
                 {
                     Success = false,
-                    ErrorMessage = "仓库不存在"
+                    ErrorMessage = "Repository not found"
                 });
             }
 
-            // 验证用户是否存在
+            // Verify user exists
             var user = await context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == request.UserId);
@@ -49,11 +49,11 @@ public class BookmarkService(IContext context)
                 return Results.NotFound(new BookmarkResponse
                 {
                     Success = false,
-                    ErrorMessage = "用户不存在"
+                    ErrorMessage = "User not found"
                 });
             }
 
-            // 检查是否已收藏
+            // Check if already bookmarked
             var existingBookmark = await context.UserBookmarks
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.UserId == request.UserId && b.RepositoryId == request.RepositoryId);
@@ -63,25 +63,25 @@ public class BookmarkService(IContext context)
                 return Results.Conflict(new BookmarkResponse
                 {
                     Success = false,
-                    ErrorMessage = "已收藏该仓库"
+                    ErrorMessage = "Repository already bookmarked"
                 });
             }
 
-            // 使用事务确保原子性
+            // Use transaction to ensure atomicity
             var dbContext = context as DbContext;
             if (dbContext is null)
             {
                 return Results.Json(new BookmarkResponse
                 {
                     Success = false,
-                    ErrorMessage = "服务器内部错误"
+                    ErrorMessage = "Internal server error"
                 }, statusCode: StatusCodes.Status500InternalServerError);
             }
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync();
             try
             {
-                // 创建收藏记录
+                // Create bookmark record
                 var bookmark = new UserBookmark
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -92,7 +92,7 @@ public class BookmarkService(IContext context)
                 context.UserBookmarks.Add(bookmark);
                 await context.SaveChangesAsync();
 
-                // 原子性增加收藏计数
+                // Atomically increment bookmark count
                 await dbContext.Database.ExecuteSqlRawAsync(
                     "UPDATE Repositories SET BookmarkCount = BookmarkCount + 1 WHERE Id = {0}",
                     request.RepositoryId);
@@ -116,24 +116,24 @@ public class BookmarkService(IContext context)
             return Results.Json(new BookmarkResponse
             {
                 Success = false,
-                ErrorMessage = "服务器内部错误"
+                ErrorMessage = "Internal server error"
             }, statusCode: StatusCodes.Status500InternalServerError);
         }
     }
 
     /// <summary>
-    /// 取消收藏
-    /// 原子性减少仓库收藏计数
+    /// Remove bookmark
+    /// Atomically decrement repository bookmark count
     /// </summary>
-    /// <param name="repositoryId">仓库ID</param>
-    /// <param name="userId">用户ID</param>
-    /// <returns>收藏操作响应</returns>
+    /// <param name="repositoryId">Repository ID</param>
+    /// <param name="userId">User ID</param>
+    /// <returns>Bookmark operation response</returns>
     [HttpDelete("{repositoryId}")]
     public async Task<IResult> RemoveBookmarkAsync(string repositoryId, [FromQuery] string userId)
     {
         try
         {
-            // 查找收藏记录
+            // Find bookmark record
             var bookmark = await context.UserBookmarks
                 .FirstOrDefaultAsync(b => b.UserId == userId && b.RepositoryId == repositoryId);
 
@@ -142,29 +142,29 @@ public class BookmarkService(IContext context)
                 return Results.NotFound(new BookmarkResponse
                 {
                     Success = false,
-                    ErrorMessage = "收藏记录不存在"
+                    ErrorMessage = "Bookmark not found"
                 });
             }
 
-            // 使用事务确保原子性
+            // Use transaction to ensure atomicity
             var dbContext = context as DbContext;
             if (dbContext is null)
             {
                 return Results.Json(new BookmarkResponse
                 {
                     Success = false,
-                    ErrorMessage = "服务器内部错误"
+                    ErrorMessage = "Internal server error"
                 }, statusCode: StatusCodes.Status500InternalServerError);
             }
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync();
             try
             {
-                // 删除收藏记录
+                // Remove bookmark record
                 context.UserBookmarks.Remove(bookmark);
                 await context.SaveChangesAsync();
 
-                // 原子性减少收藏计数（确保不会变为负数）
+                // Atomically decrement bookmark count (ensure it doesn't go negative)
                 await dbContext.Database.ExecuteSqlRawAsync(
                     "UPDATE Repositories SET BookmarkCount = CASE WHEN BookmarkCount > 0 THEN BookmarkCount - 1 ELSE 0 END WHERE Id = {0}",
                     repositoryId);
@@ -188,37 +188,37 @@ public class BookmarkService(IContext context)
             return Results.Json(new BookmarkResponse
             {
                 Success = false,
-                ErrorMessage = "服务器内部错误"
+                ErrorMessage = "Internal server error"
             }, statusCode: StatusCodes.Status500InternalServerError);
         }
     }
 
     /// <summary>
-    /// 获取用户收藏列表
-    /// 支持分页查询，按收藏时间降序排列
+    /// Get user bookmark list
+    /// Supports pagination, ordered by bookmark time descending
     /// </summary>
-    /// <param name="userId">用户ID</param>
-    /// <param name="page">页码（从1开始）</param>
-    /// <param name="pageSize">每页大小</param>
-    /// <returns>收藏列表响应</returns>
+    /// <param name="userId">User ID</param>
+    /// <param name="page">Page number (starting from 1)</param>
+    /// <param name="pageSize">Page size</param>
+    /// <returns>Bookmark list response</returns>
     [HttpGet("/")]
     public async Task<BookmarkListResponse> GetUserBookmarksAsync(
         [FromQuery] string userId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        // 参数验证
+        // Parameter validation
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 20;
         if (pageSize > 100) pageSize = 100;
 
-        // 查询用户收藏总数
+        // Query total user bookmarks count
         var total = await context.UserBookmarks
             .AsNoTracking()
             .Where(b => b.UserId == userId)
             .CountAsync();
 
-        // 分页查询收藏列表，按创建时间降序排列
+        // Paginated bookmark list query, ordered by creation time descending
         var bookmarks = await context.UserBookmarks
             .AsNoTracking()
             .Where(b => b.UserId == userId)
@@ -228,7 +228,7 @@ public class BookmarkService(IContext context)
             .Include(b => b.Repository)
             .ToListAsync();
 
-        // 转换为响应模型
+        // Convert to response model
         var items = bookmarks
             .Where(b => b.Repository is not null)
             .Select(b => new BookmarkItemResponse
@@ -237,7 +237,7 @@ public class BookmarkService(IContext context)
                 RepositoryId = b.RepositoryId,
                 RepoName = b.Repository!.RepoName,
                 OrgName = b.Repository.OrgName,
-                Description = null, // Repository 实体暂无 Description 字段
+                Description = null, // Repository entity does not have a Description field yet
                 StarCount = b.Repository.StarCount,
                 ForkCount = b.Repository.ForkCount,
                 BookmarkCount = b.Repository.BookmarkCount,
@@ -255,18 +255,18 @@ public class BookmarkService(IContext context)
     }
 
     /// <summary>
-    /// 检查收藏状态
-    /// 查询用户是否已收藏指定仓库
+    /// Check bookmark status
+    /// Query whether the user has bookmarked the specified repository
     /// </summary>
-    /// <param name="repositoryId">仓库ID</param>
-    /// <param name="userId">用户ID</param>
-    /// <returns>收藏状态响应</returns>
+    /// <param name="repositoryId">Repository ID</param>
+    /// <param name="userId">User ID</param>
+    /// <returns>Bookmark status response</returns>
     [HttpGet("{repositoryId}/status")]
     public async Task<BookmarkStatusResponse> GetBookmarkStatusAsync(
         string repositoryId,
         [FromQuery] string userId)
     {
-        // 如果用户ID为空，返回未收藏状态
+        // If user ID is empty, return not-bookmarked status
         if (string.IsNullOrWhiteSpace(userId))
         {
             return new BookmarkStatusResponse
@@ -276,7 +276,7 @@ public class BookmarkService(IContext context)
             };
         }
 
-        // 查询收藏记录
+        // Query bookmark record
         var bookmark = await context.UserBookmarks
             .AsNoTracking()
             .FirstOrDefaultAsync(b => b.UserId == userId && b.RepositoryId == repositoryId);

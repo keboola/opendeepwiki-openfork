@@ -186,7 +186,7 @@ export default function AdminSkillsPage() {
         </div>
       </div>
 
-      {/* 上传提示 */}
+      {/* Upload tip */}
       <Card className="p-4 bg-muted/50">
         <div className="flex items-start gap-3">
           <Package className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -199,7 +199,7 @@ export default function AdminSkillsPage() {
         </div>
       </Card>
 
-      {/* Skills 列表 */}
+      {/* Skills list */}
       {loading ? (
         <div className="flex h-64 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -246,7 +246,7 @@ export default function AdminSkillsPage() {
                 {config.description}
               </p>
 
-              {/* 目录标签 */}
+              {/* Directory tags */}
               <div className="mt-3 flex flex-wrap gap-1">
                 {config.hasScripts && (
                   <span className="inline-flex items-center gap-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
@@ -287,7 +287,7 @@ export default function AdminSkillsPage() {
         </div>
       )}
 
-      {/* 详情对话框 */}
+      {/* Detail dialog */}
       <Dialog open={detailDialog} onOpenChange={setDetailDialog}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -298,7 +298,7 @@ export default function AdminSkillsPage() {
           </DialogHeader>
           {selectedDetail && (
             <div className="space-y-4">
-              {/* 基本信息 */}
+              {/* Basic information */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">{t('admin.skills.version')}:</span>
@@ -330,13 +330,13 @@ export default function AdminSkillsPage() {
                 )}
               </div>
 
-              {/* 描述 */}
+              {/* Description */}
               <div>
                 <h4 className="font-medium mb-2">{t('admin.skills.description')}</h4>
                 <p className="text-sm text-muted-foreground">{selectedDetail.description}</p>
               </div>
 
-              {/* SKILL.md 内容 */}
+              {/* SKILL.md content */}
               <div>
                 <h4 className="font-medium mb-2">SKILL.md</h4>
                 <pre className="bg-muted p-4 rounded-lg text-xs overflow-x-auto max-h-64">
@@ -344,7 +344,7 @@ export default function AdminSkillsPage() {
                 </pre>
               </div>
 
-              {/* 文件列表 */}
+              {/* File list */}
               {selectedDetail.scripts.length > 0 && (
                 <div>
                   <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -393,7 +393,7 @@ export default function AdminSkillsPage() {
                 </div>
               )}
 
-              {/* 来源信息 */}
+              {/* Source information */}
               {selectedDetail.sourceUrl && (
                 <div className="flex items-center gap-2 text-sm">
                   <ExternalLink className="h-4 w-4" />
@@ -407,7 +407,7 @@ export default function AdminSkillsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 删除确认对话框 */}
+      {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

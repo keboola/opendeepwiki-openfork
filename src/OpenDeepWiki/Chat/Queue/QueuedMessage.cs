@@ -3,15 +3,15 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Queue;
 
 /// <summary>
-/// 队列消息记录类型
+/// Queued message record type
 /// </summary>
-/// <param name="Id">消息唯一标识</param>
-/// <param name="Message">聊天消息</param>
-/// <param name="SessionId">关联的会话ID</param>
-/// <param name="TargetUserId">目标用户ID</param>
-/// <param name="Type">队列消息类型</param>
-/// <param name="RetryCount">重试次数</param>
-/// <param name="ScheduledAt">计划执行时间</param>
+/// <param name="Id">Message unique identifier</param>
+/// <param name="Message">Chat message</param>
+/// <param name="SessionId">Associated session ID</param>
+/// <param name="TargetUserId">Target user ID</param>
+/// <param name="Type">Queue message type</param>
+/// <param name="RetryCount">Retry count</param>
+/// <param name="ScheduledAt">Scheduled execution time</param>
 public record QueuedMessage(
     string Id,
     IChatMessage Message,

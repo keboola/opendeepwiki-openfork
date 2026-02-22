@@ -73,7 +73,7 @@ content: '# Overview\n\nThis is the overview section...'")]
                 return $"ERROR: Catalog item with path '{_catalogPath}' not found. Please ensure the catalog item exists before writing content.";
             }
 
-            // 从 GitTool 获取读取的文件列表
+            // Get the list of read files from GitTool
             string? sourceFilesJson = null;
             if (_gitTool != null)
             {

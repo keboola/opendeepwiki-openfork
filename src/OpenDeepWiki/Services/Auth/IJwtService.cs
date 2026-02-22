@@ -3,17 +3,17 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Auth;
 
 /// <summary>
-/// JWT服务接口
+/// JWT service interface
 /// </summary>
 public interface IJwtService
 {
     /// <summary>
-    /// 生成JWT令牌
+    /// Generate JWT token
     /// </summary>
     string GenerateToken(User user, List<string> roles);
 
     /// <summary>
-    /// 验证JWT令牌
+    /// Validate JWT token
     /// </summary>
     bool ValidateToken(string token, out string userId);
 }

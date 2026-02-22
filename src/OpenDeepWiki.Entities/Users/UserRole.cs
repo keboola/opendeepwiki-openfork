@@ -4,32 +4,32 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 用户角色关联实体（多对多关系）
+/// User-Role association entity (many-to-many relationship)
 /// </summary>
 public class UserRole : AggregateRoot<string>
 {
     /// <summary>
-    /// 用户ID
+    /// User ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 角色ID
+    /// Role ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RoleId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 用户实体导航属性
+    /// User entity navigation property
     /// </summary>
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }
 
     /// <summary>
-    /// 角色实体导航属性
+    /// Role entity navigation property
     /// </summary>
     [ForeignKey("RoleId")]
     public virtual Role? Role { get; set; }

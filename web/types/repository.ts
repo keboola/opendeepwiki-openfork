@@ -75,7 +75,7 @@ export interface RepositoryItemResponse {
   status: number;
   statusName: RepositoryStatus;
   isPublic: boolean;
-  hasPassword: boolean;  // 新增：是否设置了密码，用于判断是否可设为私有
+  hasPassword: boolean;  // Whether a password is set, used to determine if it can be made private
   createdAt: string;
   updatedAt?: string;
   starCount?: number;
@@ -104,10 +104,10 @@ export interface UpdateVisibilityResponse {
 // Processing log types
 export type ProcessingStep = "Workspace" | "Catalog" | "Content" | "Complete";
 
-// 思维导图状态
+// Mind map status
 export type MindMapStatus = "Pending" | "Processing" | "Completed" | "Failed";
 
-// 思维导图状态数字到字符串的映射
+// Mind map status number to string mapping
 export const MindMapStatusMap: Record<number, MindMapStatus> = {
   0: "Pending",
   1: "Processing",
@@ -115,7 +115,7 @@ export const MindMapStatusMap: Record<number, MindMapStatus> = {
   3: "Failed",
 };
 
-// 思维导图响应
+// Mind map response
 export interface MindMapResponse {
   owner: string;
   repo: string;
@@ -126,7 +126,7 @@ export interface MindMapResponse {
   content: string | null;
 }
 
-// 思维导图节点（解析后的结构）
+// Mind map node (parsed structure)
 export interface MindMapNode {
   title: string;
   filePath?: string;
@@ -134,7 +134,7 @@ export interface MindMapNode {
   children: MindMapNode[];
 }
 
-// 步骤数字到字符串的映射
+// Step number to string mapping
 export const ProcessingStepMap: Record<number, ProcessingStep> = {
   0: "Workspace",
   1: "Catalog",

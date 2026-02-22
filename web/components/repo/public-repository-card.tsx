@@ -86,7 +86,7 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [subscribeLoading, setSubscribeLoading] = useState(false);
 
-  // 获取收藏和订阅状态
+  // Fetch bookmark and subscription status
   useEffect(() => {
     if (!user) return;
 
@@ -99,7 +99,7 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
         setIsBookmarked(bookmarkRes.isBookmarked);
         setIsSubscribed(subscribeRes.isSubscribed);
       } catch {
-        // 静默处理错误
+        // Silently handle errors
       }
     };
 
@@ -185,7 +185,7 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
                   </div>
                 )}
               </div>
-              {/* 收藏和订阅按钮 - 仅登录用户可见 */}
+              {/* Bookmark and subscribe buttons - visible to logged-in users only */}
               {user && (
                 <div className="flex items-center gap-1">
                   <Button

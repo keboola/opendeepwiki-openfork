@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Chat.Providers;
 
 /// <summary>
-/// Webhook 验证结果
+/// Webhook validation result
 /// </summary>
 public record WebhookValidationResult(
     bool IsValid,

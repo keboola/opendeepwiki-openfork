@@ -10,8 +10,8 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Chat.Sessions;
 
 /// <summary>
-/// 会话管理器实现
-/// 包含会话缓存和数据库持久化
+/// Session manager implementation
+/// Includes session caching and database persistence
 /// </summary>
 public class SessionManager : ISessionManager
 {
@@ -43,14 +43,14 @@ public class SessionManager : ISessionManager
         
         var cacheKey = GetCacheKey(userId, platform);
         
-        // 尝试从缓存获取
+        // Try to get from cache
         if (_options.EnableCache && TryGetFromCache(cacheKey, out var cachedSession))
         {
             _logger.LogDebug("Session found in cache for user {UserId} on platform {Platform}", userId, platform);
             return cachedSession!;
         }
 
-        // 从数据库查找
+        // Look up in database
         var entity = await _context.ChatSessions
             .Include(s => s.Messages.OrderBy(m => m.MessageTimestamp))
             .FirstOrDefaultAsync(s => s.UserId == userId && s.Platform == platform && s.State != "Closed", cancellationToken);
@@ -63,7 +63,7 @@ public class SessionManager : ISessionManager
             return session;
         }
         
-        // 创建新会话
+        // Create new session
         var newEntity = new ChatSession
         {
             Id = Guid.NewGuid(),
@@ -106,7 +106,7 @@ public class SessionManager : ISessionManager
             return null;
         }
         
-        // 尝试从缓存获取（按ID查找）
+        // Try to get from cache (lookup by ID)
         if (_options.EnableCache)
         {
             foreach (var entry in _cache.Values)
@@ -118,7 +118,7 @@ public class SessionManager : ISessionManager
             }
         }
         
-        // 从数据库查找
+        // Look up in database
         var entity = await _context.ChatSessions
             .Include(s => s.Messages.OrderBy(m => m.MessageTimestamp))
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
@@ -157,7 +157,7 @@ public class SessionManager : ISessionManager
             return;
         }
         
-        // 更新会话状态
+        // Update session state
         entity.State = session.State.ToString();
         entity.LastActivityAt = session.LastActivityAt.UtcDateTime;
         entity.UpdatedAt = DateTime.UtcNow;
@@ -165,7 +165,7 @@ public class SessionManager : ISessionManager
             ? JsonSerializer.Serialize(session.Metadata) 
             : null;
         
-        // 同步消息历史 - 只添加新消息
+        // Sync message history - only add new messages
         var existingMessageIds = entity.Messages.Select(m => m.MessageId).ToHashSet();
         var newMessages = new List<ChatMessageHistory>();
         
@@ -192,21 +192,21 @@ public class SessionManager : ISessionManager
             }
         }
         
-        // 添加新消息到数据库
+        // Add new messages to database
         if (newMessages.Count > 0)
         {
             _context.ChatMessageHistories.AddRange(newMessages);
             await _context.SaveChangesAsync(cancellationToken);
         }
         
-        // 重新加载实体以获取最新的消息列表
+        // Reload entity to get the latest message list
         entity = await _context.ChatSessions
             .Include(s => s.Messages)
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         
         if (entity == null) return;
         
-        // 限制历史消息数量
+        // Limit history message count
         if (entity.Messages.Count > _options.MaxHistoryCount)
         {
             var messagesToRemove = entity.Messages
@@ -218,7 +218,7 @@ public class SessionManager : ISessionManager
             await _context.SaveChangesAsync(cancellationToken);
         }
         
-        // 更新缓存
+        // Update cache
         var cacheKey = GetCacheKey(session.UserId, session.Platform);
         AddToCache(cacheKey, session);
         
@@ -252,7 +252,7 @@ public class SessionManager : ISessionManager
         
         await _context.SaveChangesAsync(cancellationToken);
         
-        // 从缓存移除
+        // Remove from cache
         var cacheKey = GetCacheKey(entity.UserId, entity.Platform);
         _cache.TryRemove(cacheKey, out _);
         
@@ -273,7 +273,7 @@ public class SessionManager : ISessionManager
             session.State = SessionState.Expired.ToString();
             session.UpdatedAt = DateTime.UtcNow;
             
-            // 从缓存移除
+            // Remove from cache
             var cacheKey = GetCacheKey(session.UserId, session.Platform);
             _cache.TryRemove(cacheKey, out _);
         }
@@ -284,7 +284,7 @@ public class SessionManager : ISessionManager
             _logger.LogInformation("Marked {Count} sessions as expired", expiredSessions.Count);
         }
         
-        // 清理过期的缓存条目
+        // Clean up expired cache entries
         CleanupExpiredCacheEntries();
     }
     

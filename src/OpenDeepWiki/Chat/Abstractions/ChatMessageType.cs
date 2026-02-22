@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Chat.Abstractions;
 
 /// <summary>
-/// 消息类型枚举
+/// Message type enumeration
 /// </summary>
 public enum ChatMessageType
 {

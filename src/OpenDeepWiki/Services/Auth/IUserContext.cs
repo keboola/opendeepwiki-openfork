@@ -3,32 +3,32 @@ using System.Security.Claims;
 namespace OpenDeepWiki.Services.Auth;
 
 /// <summary>
-/// 用户上下文接口，用于获取当前登录用户信息
+/// User context interface for retrieving current logged-in user information
 /// </summary>
 public interface IUserContext
 {
     /// <summary>
-    /// 当前用户ID，未登录时为null
+    /// Current user ID, null when not logged in
     /// </summary>
     string? UserId { get; }
 
     /// <summary>
-    /// 当前用户名称
+    /// Current user name
     /// </summary>
     string? UserName { get; }
 
     /// <summary>
-    /// 当前用户邮箱
+    /// Current user email
     /// </summary>
     string? Email { get; }
 
     /// <summary>
-    /// 是否已认证
+    /// Whether the user is authenticated
     /// </summary>
     bool IsAuthenticated { get; }
 
     /// <summary>
-    /// 获取当前用户的所有Claims
+    /// Get all Claims for the current user
     /// </summary>
     ClaimsPrincipal? User { get; }
 }

@@ -4,13 +4,13 @@ export const locales = ['en', 'zh', 'ko', 'ja'] as const;
 export type Locale = (typeof locales)[number];
 
 export const localeNames: Record<Locale, string> = {
-  zh: '简体中文',
+  zh: 'Simplified Chinese',
   en: 'English',
-  ko: '한국어',
-  ja: '日本語',
+  ko: 'Korean',
+  ja: 'Japanese',
 };
 
-// 动态加载所有翻译文件
+// Dynamically load all translation files
 async function loadMessages(locale: Locale) {
   const common = (await import(`./messages/${locale}/common.json`)).default;
   const theme = (await import(`./messages/${locale}/theme.json`)).default;
@@ -48,7 +48,7 @@ async function loadMessages(locale: Locale) {
 }
 
 export default getRequestConfig(async ({ requestLocale }) => {
-  // 从 requestLocale 获取 locale，如果没有则使用默认值
+  // Get locale from requestLocale, use default if not available
   let locale = await requestLocale;
   
   if (!locale || !locales.includes(locale as Locale)) {

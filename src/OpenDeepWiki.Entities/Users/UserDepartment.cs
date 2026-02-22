@@ -4,37 +4,37 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 用户-部门关联实体
+/// User-Department association entity
 /// </summary>
 public class UserDepartment : AggregateRoot<string>
 {
     /// <summary>
-    /// 用户ID
+    /// User ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 部门ID
+    /// Department ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string DepartmentId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否为部门主管
+    /// Whether department manager
     /// </summary>
     public bool IsManager { get; set; } = false;
 
     /// <summary>
-    /// 用户导航属性
+    /// User navigation property
     /// </summary>
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }
 
     /// <summary>
-    /// 部门导航属性
+    /// Department navigation property
     /// </summary>
     [ForeignKey("DepartmentId")]
     public virtual Department? Department { get; set; }

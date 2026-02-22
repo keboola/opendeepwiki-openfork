@@ -4,91 +4,91 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 用户活动类型
+/// User activity type
 /// </summary>
 public enum UserActivityType
 {
     /// <summary>
-    /// 浏览仓库
+    /// View repository
     /// </summary>
     View = 0,
 
     /// <summary>
-    /// 搜索
+    /// Search
     /// </summary>
     Search = 1,
 
     /// <summary>
-    /// 收藏
+    /// Bookmark
     /// </summary>
     Bookmark = 2,
 
     /// <summary>
-    /// 订阅
+    /// Subscribe
     /// </summary>
     Subscribe = 3,
 
     /// <summary>
-    /// 分析仓库
+    /// Analyze repository
     /// </summary>
     Analyze = 4
 }
 
 /// <summary>
-/// 用户活动记录实体
-/// 用于记录用户行为，支持推荐算法
+/// User activity record entity
+/// Records user behavior to support recommendation algorithms
 /// </summary>
 public class UserActivity : AggregateRoot<string>
 {
     /// <summary>
-    /// 用户ID
+    /// User ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库ID（可选，搜索行为可能没有）
+    /// Repository ID (optional, search behavior may not have one)
     /// </summary>
     [StringLength(36)]
     public string? RepositoryId { get; set; }
 
     /// <summary>
-    /// 活动类型
+    /// Activity type
     /// </summary>
     public UserActivityType ActivityType { get; set; }
 
     /// <summary>
-    /// 活动权重（用于推荐算法）
+    /// Activity weight (used for recommendation algorithms)
     /// View=1, Search=2, Bookmark=3, Subscribe=4, Analyze=5
     /// </summary>
     public int Weight { get; set; } = 1;
 
     /// <summary>
-    /// 浏览时长（秒），仅对 View 类型有效
+    /// Browse duration (seconds), only valid for View type
     /// </summary>
     public int? Duration { get; set; }
 
     /// <summary>
-    /// 搜索关键词，仅对 Search 类型有效
+    /// Search keywords, only valid for Search type
     /// </summary>
     [StringLength(500)]
     public string? SearchQuery { get; set; }
 
     /// <summary>
-    /// 相关语言（用于语言偏好统计）
+    /// Related language (used for language preference statistics)
     /// </summary>
     [StringLength(50)]
     public string? Language { get; set; }
 
     /// <summary>
-    /// 用户导航属性
+    /// User navigation property
     /// </summary>
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }
 
     /// <summary>
-    /// 仓库导航属性
+    /// Repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }

@@ -4,19 +4,19 @@ using OpenDeepWiki.Chat.Providers;
 namespace OpenDeepWiki.Chat.Callbacks;
 
 /// <summary>
-/// 消息回调接口
-/// 用于将 Agent 响应发送回用户
+/// Message callback interface
+/// Used to send Agent responses back to users
 /// </summary>
 public interface IMessageCallback
 {
     /// <summary>
-    /// 发送消息给用户
+    /// Send a message to a user
     /// </summary>
-    /// <param name="platform">平台标识</param>
-    /// <param name="userId">目标用户ID</param>
-    /// <param name="message">要发送的消息</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>发送结果</returns>
+    /// <param name="platform">Platform identifier</param>
+    /// <param name="userId">Target user ID</param>
+    /// <param name="message">Message to send</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Send result</returns>
     Task<SendResult> SendAsync(
         string platform, 
         string userId, 
@@ -24,13 +24,13 @@ public interface IMessageCallback
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// 批量发送消息给用户
+    /// Send messages to a user in batch
     /// </summary>
-    /// <param name="platform">平台标识</param>
-    /// <param name="userId">目标用户ID</param>
-    /// <param name="messages">要发送的消息集合</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>发送结果集合</returns>
+    /// <param name="platform">Platform identifier</param>
+    /// <param name="userId">Target user ID</param>
+    /// <param name="messages">Collection of messages to send</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Collection of send results</returns>
     Task<IEnumerable<SendResult>> SendBatchAsync(
         string platform, 
         string userId, 
@@ -38,13 +38,13 @@ public interface IMessageCallback
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// 发送流式消息（实时输出）
+    /// Send streaming messages (real-time output)
     /// </summary>
-    /// <param name="platform">平台标识</param>
-    /// <param name="userId">目标用户ID</param>
-    /// <param name="contentStream">内容流</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>发送结果流</returns>
+    /// <param name="platform">Platform identifier</param>
+    /// <param name="userId">Target user ID</param>
+    /// <param name="contentStream">Content stream</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Stream of send results</returns>
     IAsyncEnumerable<SendResult> SendStreamAsync(
         string platform, 
         string userId, 
@@ -52,48 +52,48 @@ public interface IMessageCallback
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// 追踪发送状态
+    /// Track send status
     /// </summary>
-    /// <param name="messageId">消息ID</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>发送状态</returns>
+    /// <param name="messageId">Message ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Send status</returns>
     Task<SendStatus> GetSendStatusAsync(
         string messageId, 
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// 发送状态
+/// Send status
 /// </summary>
 public enum SendStatus
 {
     /// <summary>
-    /// 等待发送
+    /// Pending send
     /// </summary>
     Pending,
     
     /// <summary>
-    /// 发送中
+    /// Sending
     /// </summary>
     Sending,
     
     /// <summary>
-    /// 发送成功
+    /// Sent successfully
     /// </summary>
     Sent,
     
     /// <summary>
-    /// 发送失败
+    /// Send failed
     /// </summary>
     Failed,
     
     /// <summary>
-    /// 重试中
+    /// Retrying
     /// </summary>
     Retrying,
     
     /// <summary>
-    /// 未知
+    /// Unknown
     /// </summary>
     Unknown
 }

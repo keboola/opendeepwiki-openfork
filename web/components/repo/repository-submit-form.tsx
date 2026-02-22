@@ -158,7 +158,7 @@ export function RepositorySubmitForm({ onSuccess }: RepositorySubmitFormProps) {
     setIsSubmitting(true);
 
     try {
-      // 如果设置了密码则 isPublic 为 false，否则为 true
+      // If a password is set, isPublic is false; otherwise true
       const effectiveIsPublic = !authPassword;
 
       const request: RepositorySubmitRequest = {

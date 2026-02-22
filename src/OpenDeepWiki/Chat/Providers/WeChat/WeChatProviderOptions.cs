@@ -1,42 +1,42 @@
 namespace OpenDeepWiki.Chat.Providers.WeChat;
 
 /// <summary>
-/// 微信客服 Provider 配置选项
+/// WeChat customer service Provider configuration options
 /// </summary>
 public class WeChatProviderOptions : ProviderOptions
 {
     /// <summary>
-    /// 微信公众号/小程序 AppID
+    /// WeChat Official Account / Mini Program AppID
     /// </summary>
     public string AppId { get; set; } = string.Empty;
     
     /// <summary>
-    /// 微信公众号/小程序 AppSecret
+    /// WeChat Official Account / Mini Program AppSecret
     /// </summary>
     public string AppSecret { get; set; } = string.Empty;
     
     /// <summary>
-    /// 微信服务器配置的 Token（用于验证消息来源）
+    /// Token configured in WeChat server settings (for verifying message origin)
     /// </summary>
     public string Token { get; set; } = string.Empty;
     
     /// <summary>
-    /// 消息加解密密钥（EncodingAESKey）
+    /// Message encryption/decryption key (EncodingAESKey)
     /// </summary>
     public string EncodingAesKey { get; set; } = string.Empty;
     
     /// <summary>
-    /// 微信 API 基础 URL
+    /// WeChat API base URL
     /// </summary>
     public string ApiBaseUrl { get; set; } = "https://api.weixin.qq.com";
     
     /// <summary>
-    /// Access Token 缓存时间（秒），默认 7000 秒（略小于微信的 7200 秒有效期）
+    /// Access Token cache duration (seconds), default 7000 seconds (slightly less than WeChat's 7200-second validity)
     /// </summary>
     public int TokenCacheSeconds { get; set; } = 7000;
     
     /// <summary>
-    /// 消息加密模式：plain（明文）、compatible（兼容）、safe（安全）
+    /// Message encryption mode: plain, compatible, safe
     /// </summary>
     public string EncryptMode { get; set; } = "safe";
 }

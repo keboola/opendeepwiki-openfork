@@ -19,9 +19,9 @@ public static class AdminSettingsEndpoints
     public static RouteGroupBuilder MapAdminSettingsEndpoints(this RouteGroupBuilder group)
     {
         var settingsGroup = group.MapGroup("/settings")
-            .WithTags("管理端-设置");
+            .WithTags("Admin - Settings");
 
-        // 获取设置列表
+        // Get settings list
         settingsGroup.MapGet("/", async (
             [FromQuery] string? category,
             [FromServices] IAdminSettingsService settingsService) =>
@@ -30,22 +30,22 @@ public static class AdminSettingsEndpoints
             return Results.Ok(new { success = true, data = settings });
         })
         .WithName("AdminGetSettings")
-        .WithSummary("获取设置列表");
+        .WithSummary("Get settings list");
 
-        // 获取单个设置
+        // Get single setting
         settingsGroup.MapGet("/{key}", async (
             string key,
             [FromServices] IAdminSettingsService settingsService) =>
         {
             var setting = await settingsService.GetSettingByKeyAsync(key);
             if (setting == null)
-                return Results.NotFound(new { success = false, message = "设置不存在" });
+                return Results.NotFound(new { success = false, message = "Setting not found" });
             return Results.Ok(new { success = true, data = setting });
         })
         .WithName("AdminGetSettingByKey")
-        .WithSummary("获取单个设置");
+        .WithSummary("Get single setting");
 
-        // 更新设置
+        // Update settings
         settingsGroup.MapPut("/", async (
             [FromBody] List<UpdateSettingRequest> requests,
             [FromServices] IAdminSettingsService settingsService,
@@ -53,13 +53,13 @@ public static class AdminSettingsEndpoints
         {
             await settingsService.UpdateSettingsAsync(requests);
 
-            // 刷新配置以应用新的设置
+            // Refresh configuration to apply new settings
             await configManager.RefreshWikiGeneratorOptionsAsync();
 
-            return Results.Ok(new { success = true, message = "设置更新成功" });
+            return Results.Ok(new { success = true, message = "Settings updated successfully" });
         })
         .WithName("AdminUpdateSettings")
-        .WithSummary("更新设置");
+        .WithSummary("Update settings");
 
         // List available models from a provider endpoint
         settingsGroup.MapPost("/list-provider-models", async (

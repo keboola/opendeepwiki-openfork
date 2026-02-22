@@ -9,8 +9,8 @@ using OpenDeepWiki.Chat.Queue;
 namespace OpenDeepWiki.Chat.Routing;
 
 /// <summary>
-/// 消息路由器实现
-/// 负责将消息路由到正确的 Provider，支持 Provider 注册和消息路由
+/// Message router implementation
+/// Responsible for routing messages to the correct Provider, supports Provider registration and message routing
 /// Registered as Singleton; uses IServiceScopeFactory to resolve scoped dependencies.
 /// </summary>
 public class MessageRouter : IMessageRouter
@@ -112,7 +112,7 @@ public class MessageRouter : IMessageRouter
         using var scope = _scopeFactory.CreateScope();
         var messageCallback = scope.ServiceProvider.GetRequiredService<IMessageCallback>();
 
-        // 通过回调管理器发送消息
+        // Send message through callback manager
         await messageCallback.SendAsync(platform, targetUserId, message, cancellationToken);
     }
 
@@ -151,7 +151,7 @@ public class MessageRouter : IMessageRouter
         }
         else
         {
-            // 如果已存在，则更新
+            // If already exists, update it
             _providers[provider.PlatformId] = provider;
             _logger.LogInformation("Provider {PlatformId} ({DisplayName}) updated",
                 provider.PlatformId, provider.DisplayName);
@@ -189,17 +189,17 @@ public class MessageRouter : IMessageRouter
 }
 
 /// <summary>
-/// MessageRouter 配置选项
+/// MessageRouter configuration options
 /// </summary>
 public class MessageRouterOptions
 {
     /// <summary>
-    /// 是否启用消息日志
+    /// Whether to enable message logging
     /// </summary>
     public bool EnableMessageLogging { get; set; } = true;
 
     /// <summary>
-    /// 路由超时时间（毫秒）
+    /// Routing timeout (milliseconds)
     /// </summary>
     public int RouteTimeoutMs { get; set; } = 30000;
 }

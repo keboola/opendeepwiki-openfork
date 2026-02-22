@@ -1,42 +1,42 @@
 namespace OpenDeepWiki.Services.Repositories;
 
 /// <summary>
-/// 增量更新服务接口
-/// 封装增量更新的核心业务逻辑
+/// Incremental update service interface
+/// Encapsulates the core business logic for incremental updates
 /// </summary>
 public interface IIncrementalUpdateService
 {
     /// <summary>
-    /// 处理单个仓库的增量更新
+    /// Process incremental update for a single repository
     /// </summary>
-    /// <param name="repositoryId">仓库ID</param>
-    /// <param name="branchId">分支ID</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>更新结果</returns>
+    /// <param name="repositoryId">Repository ID</param>
+    /// <param name="branchId">Branch ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Update result</returns>
     Task<IncrementalUpdateResult> ProcessIncrementalUpdateAsync(
         string repositoryId,
         string branchId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 检查仓库是否需要增量更新
+    /// Check if repository needs incremental update
     /// </summary>
-    /// <param name="repositoryId">仓库ID</param>
-    /// <param name="branchId">分支ID</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>是否需要更新及变更信息</returns>
+    /// <param name="repositoryId">Repository ID</param>
+    /// <param name="branchId">Branch ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Whether update is needed and change information</returns>
     Task<UpdateCheckResult> CheckForUpdatesAsync(
         string repositoryId,
         string branchId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 手动触发增量更新
+    /// Manually trigger incremental update
     /// </summary>
-    /// <param name="repositoryId">仓库ID</param>
-    /// <param name="branchId">分支ID</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>创建的任务ID</returns>
+    /// <param name="repositoryId">Repository ID</param>
+    /// <param name="branchId">Branch ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created task ID</returns>
     Task<string> TriggerManualUpdateAsync(
         string repositoryId,
         string branchId,
@@ -44,68 +44,68 @@ public interface IIncrementalUpdateService
 }
 
 /// <summary>
-/// 增量更新结果
+/// Incremental update result
 /// </summary>
 public class IncrementalUpdateResult
 {
     /// <summary>
-    /// 是否成功
+    /// Whether successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 错误信息
+    /// Error message
     /// </summary>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
-    /// 上次处理的 Commit ID
+    /// Previous commit ID
     /// </summary>
     public string? PreviousCommitId { get; set; }
 
     /// <summary>
-    /// 当前 Commit ID
+    /// Current commit ID
     /// </summary>
     public string? CurrentCommitId { get; set; }
 
     /// <summary>
-    /// 变更文件数量
+    /// Number of changed files
     /// </summary>
     public int ChangedFilesCount { get; set; }
 
     /// <summary>
-    /// 更新的文档数量
+    /// Number of updated documents
     /// </summary>
     public int UpdatedDocumentsCount { get; set; }
 
     /// <summary>
-    /// 处理耗时
+    /// Processing duration
     /// </summary>
     public TimeSpan Duration { get; set; }
 }
 
 /// <summary>
-/// 更新检查结果
+/// Update check result
 /// </summary>
 public class UpdateCheckResult
 {
     /// <summary>
-    /// 是否需要更新
+    /// Whether update is needed
     /// </summary>
     public bool NeedsUpdate { get; set; }
 
     /// <summary>
-    /// 上次处理的 Commit ID
+    /// Previous commit ID
     /// </summary>
     public string? PreviousCommitId { get; set; }
 
     /// <summary>
-    /// 当前 Commit ID
+    /// Current commit ID
     /// </summary>
     public string? CurrentCommitId { get; set; }
 
     /// <summary>
-    /// 变更文件列表
+    /// List of changed files
     /// </summary>
     public string[]? ChangedFiles { get; set; }
 }

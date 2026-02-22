@@ -88,8 +88,8 @@ function RepositoryCard({
   const t = useTranslations();
   const createdDate = new Date(repo.createdAt).toLocaleDateString();
 
-  // 生成正确编码的Wiki导航URL
-  // 使用encodeURIComponent处理特殊字符，确保URL安全
+  // Generate properly encoded Wiki navigation URL
+  // Use encodeURIComponent to handle special characters, ensuring URL safety
   const wikiUrl = `/${encodeURIComponent(repo.orgName)}/${encodeURIComponent(repo.repoName)}`;
 
   const handleVisibilityChange = (newIsPublic: boolean) => {
@@ -184,7 +184,7 @@ export function RepositoryList({ ownerId, refreshTrigger }: RepositoryListProps)
     }
   }, [ownerId]);
 
-  // 处理可见性变化，更新本地状态
+  // Handle visibility change, update local state
   const handleVisibilityChange = useCallback((repoId: string, newIsPublic: boolean) => {
     setRepositories((prev) =>
       prev.map((repo) =>

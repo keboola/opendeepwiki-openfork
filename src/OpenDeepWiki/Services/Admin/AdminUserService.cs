@@ -6,7 +6,7 @@ using OpenDeepWiki.Models.Admin;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端用户服务实现
+/// Admin user service implementation
 /// </summary>
 public class AdminUserService : IAdminUserService
 {
@@ -103,7 +103,7 @@ public class AdminUserService : IAdminUserService
     public async Task<AdminUserDto> CreateUserAsync(CreateUserRequest request)
     {
         var exists = await _context.Users.AnyAsync(u => u.Email == request.Email && !u.IsDeleted);
-        if (exists) throw new InvalidOperationException("该邮箱已被注册");
+        if (exists) throw new InvalidOperationException("Email already registered");
 
         var user = new User
         {
@@ -118,7 +118,7 @@ public class AdminUserService : IAdminUserService
 
         _context.Users.Add(user);
 
-        // 分配角色
+        // Assign roles
         if (request.RoleIds?.Any() == true)
         {
             foreach (var roleId in request.RoleIds)
@@ -156,7 +156,7 @@ public class AdminUserService : IAdminUserService
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return false;
-        if (user.IsSystem) throw new InvalidOperationException("系统用户不能删除");
+        if (user.IsSystem) throw new InvalidOperationException("System user cannot be deleted");
 
         user.IsDeleted = true;
         user.UpdatedAt = DateTime.UtcNow;
@@ -180,7 +180,7 @@ public class AdminUserService : IAdminUserService
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return false;
 
-        // 删除现有角色
+        // Remove existing roles
         var existingRoles = await _context.UserRoles
             .Where(ur => ur.UserId == id && !ur.IsDeleted)
             .ToListAsync();
@@ -189,7 +189,7 @@ public class AdminUserService : IAdminUserService
             role.IsDeleted = true;
         }
 
-        // 添加新角色
+        // Add new roles
         foreach (var roleId in roleIds)
         {
             _context.UserRoles.Add(new UserRole
@@ -218,9 +218,9 @@ public class AdminUserService : IAdminUserService
 
     private static string GetStatusText(int status) => status switch
     {
-        0 => "禁用",
-        1 => "正常",
-        2 => "待验证",
-        _ => "未知"
+        0 => "Disabled",
+        1 => "Active",
+        2 => "Pending verification",
+        _ => "Unknown"
     };
 }

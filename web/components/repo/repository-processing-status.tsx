@@ -19,7 +19,7 @@ import { useTranslations } from "@/hooks/use-translations";
 import { fetchRepoStatus, fetchProcessingLogs, regenerateRepository } from "@/lib/repository-api";
 import type { RepositoryStatus, ProcessingStep, ProcessingLogItem } from "@/types/repository";
 
-// 虚拟化列表项类型
+// Virtualized list item type
 type VirtualLogItem = 
   | { type: "header"; step: ProcessingStep; count: number }
   | { type: "log"; log: ProcessingLogItem };
@@ -62,7 +62,7 @@ const statusConfig = {
   },
 };
 
-// 处理步骤配置
+// Processing step configuration
 const processingSteps: { id: ProcessingStep; icon: typeof GitBranch; labelKey: string }[] = [
   { id: "Workspace", icon: GitBranch, labelKey: "workspace" },
   { id: "Catalog", icon: FileCode, labelKey: "catalog" },
@@ -92,7 +92,7 @@ export function RepositoryProcessingStatus({
   const logIdsRef = useRef<Set<string>>(new Set());
   const shouldScrollRef = useRef(false);
 
-  // 将日志转换为虚拟化列表项（包含分组标题）- 优化计算
+  // Convert logs to virtualized list items (including group headers) - optimized calculation
   const virtualItems = useMemo<VirtualLogItem[]>(() => {
     if (logs.length === 0) return [];
     
@@ -104,13 +104,13 @@ export function RepositoryProcessingStatus({
       const log = logs[i];
       
       if (log.stepName !== currentStepName) {
-        // 添加新的分组标题，先用 0 占位
+        // Add new group header, using 0 as placeholder
         headerIndex = items.length;
         items.push({ type: "header", step: log.stepName, count: 0 });
         currentStepName = log.stepName;
       }
       
-      // 更新当前分组的计数
+      // Update the current group count
       if (headerIndex >= 0) {
         (items[headerIndex] as { type: "header"; step: ProcessingStep; count: number }).count++;
       }
@@ -121,15 +121,15 @@ export function RepositoryProcessingStatus({
     return items;
   }, [logs]);
 
-  // 虚拟化配置
+  // Virtualization configuration
   const rowVirtualizer = useVirtualizer({
     count: virtualItems.length,
     getScrollElement: () => logsContainerRef.current,
-    estimateSize: () => 28, // 固定高度，避免重计算
-    overscan: 5, // 减少 overscan
+    estimateSize: () => 28, // Fixed height to avoid recalculation
+    overscan: 5, // Reduce overscan
   });
 
-  // 滚动到日志底部 - 使用 ref 避免依赖变化
+  // Scroll to bottom of logs - use ref to avoid dependency changes
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
       if (logsContainerRef.current) {
@@ -138,7 +138,7 @@ export function RepositoryProcessingStatus({
     });
   }, []);
 
-  // 处理滚动
+  // Handle scrolling
   useEffect(() => {
     if (shouldScrollRef.current) {
       shouldScrollRef.current = false;
@@ -146,18 +146,18 @@ export function RepositoryProcessingStatus({
     }
   }, [logs.length, scrollToBottom]);
 
-  // 轮询获取状态和日志
+  // Poll for status and logs
   const pollStatusAndLogs = useCallback(async () => {
     try {
-      // 获取状态
+      // Get status
       const statusResponse = await fetchRepoStatus(owner, repo);
       setStatus(statusResponse.statusName);
       setLastUpdated(new Date());
 
-      // 获取处理日志
+      // Get processing logs
       const logsResponse = await fetchProcessingLogs(owner, repo, undefined, 500);
       
-      // 更新进度信息
+      // Update progress information
       setTotalDocuments(logsResponse.totalDocuments);
       setCompletedDocuments(logsResponse.completedDocuments);
       if (logsResponse.startedAt) {
@@ -165,11 +165,11 @@ export function RepositoryProcessingStatus({
       }
       
       if (logsResponse.logs.length > 0) {
-        // 使用 ref 存储已有 ID，避免每次创建新 Set
+        // Use ref to store existing IDs, avoiding creating new Set each time
         const newLogs = logsResponse.logs.filter(l => !logIdsRef.current.has(l.id));
         
         if (newLogs.length > 0) {
-          // 更新 ID 集合
+          // Update ID set
           newLogs.forEach(l => logIdsRef.current.add(l.id));
           
           setLogs(prev => {
@@ -185,7 +185,7 @@ export function RepositoryProcessingStatus({
         setCurrentStep(logsResponse.currentStepName);
       }
 
-      // 如果完成了，跳转到文档页面
+      // If completed, redirect to the documentation page
       if (statusResponse.statusName === "Completed" && statusResponse.defaultSlug) {
         setIsPolling(false);
         setCurrentStep("Complete");
@@ -194,7 +194,7 @@ export function RepositoryProcessingStatus({
         }, 2000);
       }
 
-      // 如果失败了，停止轮询
+      // If failed, stop polling
       if (statusResponse.statusName === "Failed") {
         setIsPolling(false);
       }
@@ -203,13 +203,13 @@ export function RepositoryProcessingStatus({
     }
   }, [owner, repo]);
 
-  // 初始加载日志
+  // Load initial logs
   useEffect(() => {
     const loadInitialLogs = async () => {
       try {
         const logsResponse = await fetchProcessingLogs(owner, repo, undefined, 500);
         if (logsResponse.logs.length > 0) {
-          // 初始化 ID 集合
+          // Initialize ID set
           logsResponse.logs.forEach(l => logIdsRef.current.add(l.id));
           setLogs(logsResponse.logs);
           setCurrentStep(logsResponse.currentStepName);
@@ -227,7 +227,7 @@ export function RepositoryProcessingStatus({
     loadInitialLogs();
   }, [owner, repo]);
 
-  // 轮询定时器 - 5秒间隔减少请求频率
+  // Polling timer - 5 second interval to reduce request frequency
   useEffect(() => {
     if (!isPolling) return;
 
@@ -238,7 +238,7 @@ export function RepositoryProcessingStatus({
     return () => clearInterval(pollInterval);
   }, [isPolling, pollStatusAndLogs]);
 
-  // 动态点点点效果
+  // Dynamic dots animation effect
   useEffect(() => {
     if (status === "Processing" || status === "Pending") {
       const interval = setInterval(() => {
@@ -248,7 +248,7 @@ export function RepositoryProcessingStatus({
     }
   }, [status]);
 
-  // 计时器 - 基于后端开始时间计算
+  // Timer - calculated based on backend start time
   useEffect(() => {
     if ((status === "Processing" || status === "Pending") && startedAt) {
       const updateElapsed = () => {
@@ -257,10 +257,10 @@ export function RepositoryProcessingStatus({
         setElapsedTime(elapsed);
       };
       
-      // 立即更新一次
+      // Update immediately once
       updateElapsed();
       
-      // 每秒更新
+      // Update every second
       const timer = setInterval(updateElapsed, 1000);
       return () => clearInterval(timer);
     }
@@ -285,7 +285,7 @@ export function RepositoryProcessingStatus({
     try {
       const result = await regenerateRepository(owner, repo);
       if (result.success) {
-        // 重置状态，重新开始轮询
+        // Reset state and restart polling
         setStatus("Pending");
         setLogs([]);
         logIdsRef.current.clear();
@@ -297,7 +297,7 @@ export function RepositoryProcessingStatus({
         setIsPolling(true);
       } else {
         console.error("Regenerate failed:", result.errorMessage);
-        // 可以在这里显示错误提示
+        // Could show an error message here
       }
     } catch (error) {
       console.error("Failed to regenerate:", error);
@@ -310,7 +310,7 @@ export function RepositoryProcessingStatus({
     pollStatusAndLogs();
   };
 
-  // 获取步骤索引
+  // Get step index
   const getStepIndex = (step: ProcessingStep) => {
     return processingSteps.findIndex(s => s.id === step);
   };
@@ -322,7 +322,7 @@ export function RepositoryProcessingStatus({
       <div
         className={`w-[90%] max-w-6xl rounded-xl border-2 ${config.borderClass} ${config.bgClass} p-8 shadow-lg ${config.glowClass}`}
       >
-        {/* 头部图标和仓库信息 */}
+        {/* Header icon and repository info */}
         <div className="flex flex-col items-center mb-4">
           <div
             className={`rounded-full p-3 ${config.bgClass} border ${config.borderClass} mb-3`}
@@ -342,7 +342,7 @@ export function RepositoryProcessingStatus({
           </h2>
         </div>
 
-        {/* 状态标签 */}
+        {/* Status label */}
         <div className="flex justify-center mb-3">
           <span
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${config.bgClass} ${config.colorClass} border ${config.borderClass}`}
@@ -353,10 +353,10 @@ export function RepositoryProcessingStatus({
           </span>
         </div>
 
-        {/* 处理中的详细信息 */}
+        {/* Processing details */}
         {isProcessing && (
           <div className="space-y-4">
-            {/* 处理步骤 */}
+            {/* Processing steps */}
             <div className="bg-background/50 rounded-lg p-3 border border-border/50">
               <div className="text-xs text-muted-foreground mb-2">
                 {t("home.repository.status.processingSteps") || "Processing Steps"}
@@ -405,7 +405,7 @@ export function RepositoryProcessingStatus({
               </div>
             </div>
 
-            {/* 文档生成进度条 - 仅在 Content 步骤显示 */}
+            {/* Document generation progress bar - only shown during Content step */}
             {currentStep === "Content" && totalDocuments > 0 && (
               <div className="bg-background/50 rounded-lg p-3 border border-border/50">
                 <div className="flex items-center justify-between mb-2">
@@ -434,7 +434,7 @@ export function RepositoryProcessingStatus({
               </div>
             )}
 
-            {/* 日志输出 - 虚拟化列表 */}
+            {/* Log output - virtualized list */}
             {logs.length > 0 && (
               <div className="bg-background/80 rounded-lg border border-border/50 overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border/50">
@@ -488,13 +488,13 @@ export function RepositoryProcessingStatus({
                       }
 
                       const log = item.log;
-                      const time = new Date(log.createdAt).toLocaleTimeString('zh-CN', { 
+                      const time = new Date(log.createdAt).toLocaleTimeString('en-US', {
                         hour: '2-digit', 
                         minute: '2-digit', 
                         second: '2-digit' 
                       });
 
-                      // 工具调用
+                      // Tool call
                       if (log.toolName) {
                         return (
                           <div
@@ -516,7 +516,7 @@ export function RepositoryProcessingStatus({
                         );
                       }
 
-                      // AI 输出
+                      // AI output
                       if (log.isAiOutput) {
                         return (
                           <div
@@ -537,7 +537,7 @@ export function RepositoryProcessingStatus({
                         );
                       }
 
-                      // 普通状态消息
+                      // Normal status message
                       return (
                         <div
                           key={virtualRow.key}
@@ -562,7 +562,7 @@ export function RepositoryProcessingStatus({
               </div>
             )}
 
-            {/* 计时器和状态信息 */}
+            {/* Timer and status information */}
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
@@ -580,7 +580,7 @@ export function RepositoryProcessingStatus({
               </button>
             </div>
 
-            {/* 提示信息 */}
+            {/* Tip message */}
             <div className="bg-muted/50 rounded-lg p-2 text-xs text-muted-foreground text-center">
               <p>
                 {t("home.repository.status.processingTip") ||
@@ -590,7 +590,7 @@ export function RepositoryProcessingStatus({
           </div>
         )}
 
-        {/* 失败状态 */}
+        {/* Failed state */}
         {status === "Failed" && (
           <div className="space-y-4">
             {logs.length > 0 && (
@@ -627,7 +627,7 @@ export function RepositoryProcessingStatus({
           </div>
         )}
 
-        {/* 完成状态 */}
+        {/* Completed state */}
         {status === "Completed" && (
           <div className="text-center">
             <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-sm text-green-500">

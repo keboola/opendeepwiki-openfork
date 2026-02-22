@@ -51,7 +51,7 @@ export interface DepartmentRepository {
 }
 
 /**
- * 获取当前用户的部门列表
+ * Get the current user's department list
  */
 export async function getMyDepartments(): Promise<UserDepartment[]> {
   const url = buildApiUrl("/api/organizations/my-departments");
@@ -60,7 +60,7 @@ export async function getMyDepartments(): Promise<UserDepartment[]> {
 }
 
 /**
- * 获取当前用户部门下的仓库列表
+ * Get the repository list under the current user's departments
  */
 export async function getMyDepartmentRepositories(): Promise<DepartmentRepository[]> {
   const url = buildApiUrl("/api/organizations/my-repositories");

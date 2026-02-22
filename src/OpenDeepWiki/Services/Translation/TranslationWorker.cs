@@ -12,8 +12,8 @@ using OpenDeepWiki.Services.Wiki;
 namespace OpenDeepWiki.Services.Translation;
 
 /// <summary>
-/// 翻译后台服务
-/// 独立于文档生成流程，自动发现并处理翻译任务
+/// Translation background service
+/// Independent from document generation flow, automatically discovers and processes translation tasks
 /// </summary>
 public class TranslationWorker : BackgroundService
 {
@@ -73,10 +73,10 @@ public class TranslationWorker : BackgroundService
             return;
         }
 
-        // 先扫描并创建需要的翻译任务
+        // First scan and create needed translation tasks
         await ScanAndCreateTranslationTasksAsync(context, wikiOptions, stoppingToken);
 
-        // 然后处理待处理的任务
+        // Then process pending tasks
         while (!stoppingToken.IsCancellationRequested)
         {
             var task = await translationService.GetNextPendingTaskAsync(stoppingToken);
@@ -98,14 +98,14 @@ public class TranslationWorker : BackgroundService
     }
 
     /// <summary>
-    /// 扫描已完成的仓库，自动创建需要的翻译任务
+    /// Scan completed repositories and automatically create needed translation tasks
     /// </summary>
     private async Task ScanAndCreateTranslationTasksAsync(
         IContext context,
         WikiGeneratorOptions wikiOptions,
         CancellationToken stoppingToken)
     {
-        // 查询已完成处理的仓库的所有分支语言
+        // Query all branch languages from completed repositories
         var branchLanguages = await context.BranchLanguages
             .Include(bl => bl.RepositoryBranch)
             .ThenInclude(rb => rb!.Repository)
@@ -133,7 +133,7 @@ public class TranslationWorker : BackgroundService
 
             foreach (var targetLang in translationLanguages)
             {
-                // 检查目标语言是否已存在
+                // Check if target language already exists
                 var existingLang = await context.BranchLanguages
                     .AnyAsync(l => l.RepositoryBranchId == branchLanguage.RepositoryBranchId &&
                                    l.LanguageCode == targetLang &&
@@ -144,7 +144,7 @@ public class TranslationWorker : BackgroundService
                     continue;
                 }
 
-                // 检查是否已有翻译任务（任何状态）
+                // Check if a translation task already exists (any status)
                 var existingTask = await context.TranslationTasks
                     .FirstOrDefaultAsync(t => t.RepositoryBranchId == branchLanguage.RepositoryBranchId &&
                                               t.TargetLanguageCode == targetLang &&
@@ -152,20 +152,20 @@ public class TranslationWorker : BackgroundService
 
                 if (existingTask != null)
                 {
-                    // 如果是待处理或处理中的任务，跳过
+                    // Skip if task is pending or processing
                     if (existingTask.Status == TranslationTaskStatus.Pending ||
                         existingTask.Status == TranslationTaskStatus.Processing)
                     {
                         continue;
                     }
 
-                    // 如果是已完成的任务，跳过（目标语言应该已存在）
+                    // Skip if task is completed (target language should already exist)
                     if (existingTask.Status == TranslationTaskStatus.Completed)
                     {
                         continue;
                     }
 
-                    // 如果是失败的任务且未超过最大重试次数，重置为待处理
+                    // If task failed and hasn't exceeded max retry count, reset to pending
                     if (existingTask.Status == TranslationTaskStatus.Failed &&
                         existingTask.RetryCount < existingTask.MaxRetryCount)
                     {
@@ -180,7 +180,7 @@ public class TranslationWorker : BackgroundService
                     continue;
                 }
 
-                // 创建翻译任务
+                // Create translation task
                 var task = new TranslationTask
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -221,28 +221,28 @@ public class TranslationWorker : BackgroundService
             "Starting translation task. TaskId: {TaskId}, TargetLang: {TargetLang}, RetryCount: {RetryCount}",
             task.Id, task.TargetLanguageCode, task.RetryCount);
 
-        // 标记为处理中
+        // Mark as processing
         await translationService.MarkAsProcessingAsync(task.Id, stoppingToken);
 
-        // 设置当前仓库ID到WikiGenerator（用于日志记录）
+        // Set current repository ID on WikiGenerator (for logging)
         if (wikiGenerator is WikiGenerator generator)
         {
             generator.SetCurrentRepository(task.RepositoryId);
         }
 
-        // 记录开始翻译
+        // Log translation start
         if (processingLogService != null)
         {
             await processingLogService.LogAsync(
                 task.RepositoryId,
                 ProcessingStep.Translation,
-                $"开始翻译任务: {task.TargetLanguageCode}",
+                $"Starting translation task: {task.TargetLanguageCode}",
                 cancellationToken: stoppingToken);
         }
 
         try
         {
-            // 获取仓库信息
+            // Get repository information
             var repository = await context.Repositories
                 .FirstOrDefaultAsync(r => r.Id == task.RepositoryId && !r.IsDeleted, stoppingToken);
 
@@ -251,7 +251,7 @@ public class TranslationWorker : BackgroundService
                 throw new InvalidOperationException($"Repository not found: {task.RepositoryId}");
             }
 
-            // 获取分支信息
+            // Get branch information
             var branch = await context.RepositoryBranches
                 .FirstOrDefaultAsync(b => b.Id == task.RepositoryBranchId && !b.IsDeleted, stoppingToken);
 
@@ -260,7 +260,7 @@ public class TranslationWorker : BackgroundService
                 throw new InvalidOperationException($"Branch not found: {task.RepositoryBranchId}");
             }
 
-            // 获取源语言信息
+            // Get source language information
             var sourceBranchLanguage = await context.BranchLanguages
                 .FirstOrDefaultAsync(l => l.Id == task.SourceBranchLanguageId && !l.IsDeleted, stoppingToken);
 
@@ -269,7 +269,7 @@ public class TranslationWorker : BackgroundService
                 throw new InvalidOperationException($"Source branch language not found: {task.SourceBranchLanguageId}");
             }
 
-            // 准备工作区
+            // Prepare workspace
             var workspace = await repositoryAnalyzer.PrepareWorkspaceAsync(
                 repository,
                 branch.BranchName,
@@ -278,14 +278,14 @@ public class TranslationWorker : BackgroundService
 
             try
             {
-                // 执行翻译
+                // Execute translation
                 await wikiGenerator.TranslateWikiAsync(
                     workspace,
                     sourceBranchLanguage,
                     task.TargetLanguageCode,
                     stoppingToken);
 
-                // 标记为完成
+                // Mark as completed
                 await translationService.MarkAsCompletedAsync(task.Id, stoppingToken);
 
                 stopwatch.Stop();
@@ -293,25 +293,25 @@ public class TranslationWorker : BackgroundService
                     "Translation task completed. TaskId: {TaskId}, TargetLang: {TargetLang}, Duration: {Duration}ms",
                     task.Id, task.TargetLanguageCode, stopwatch.ElapsedMilliseconds);
 
-                // 记录完成
+                // Log completion
                 if (processingLogService != null)
                 {
                     await processingLogService.LogAsync(
                         task.RepositoryId,
                         ProcessingStep.Translation,
-                        $"翻译完成: {task.TargetLanguageCode}，耗时 {stopwatch.ElapsedMilliseconds}ms",
+                        $"Translation completed: {task.TargetLanguageCode}, elapsed: {stopwatch.ElapsedMilliseconds}ms",
                         cancellationToken: stoppingToken);
                 }
             }
             finally
             {
-                // 清理工作区
+                // Cleanup workspace
                 await repositoryAnalyzer.CleanupWorkspaceAsync(workspace, stoppingToken);
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            // 取消时重置为待处理
+            // Reset to pending on cancellation
             await translationService.MarkAsFailedAsync(task.Id, "Task cancelled", stoppingToken);
             throw;
         }
@@ -322,16 +322,16 @@ public class TranslationWorker : BackgroundService
                 "Translation task failed. TaskId: {TaskId}, TargetLang: {TargetLang}, Duration: {Duration}ms",
                 task.Id, task.TargetLanguageCode, stopwatch.ElapsedMilliseconds);
 
-            // 标记为失败（会自动重试）
+            // Mark as failed (will automatically retry)
             await translationService.MarkAsFailedAsync(task.Id, ex.Message, stoppingToken);
 
-            // 记录失败
+            // Log failure
             if (processingLogService != null)
             {
                 await processingLogService.LogAsync(
                     task.RepositoryId,
                     ProcessingStep.Translation,
-                    $"翻译失败: {task.TargetLanguageCode} - {ex.Message}",
+                    $"Translation failed: {task.TargetLanguageCode} - {ex.Message}",
                     cancellationToken: stoppingToken);
             }
         }

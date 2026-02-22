@@ -7,30 +7,30 @@ using OpenDeepWiki.Chat.Routing;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// Chat 端点日志类（用于泛型日志记录器）
+/// Chat endpoint logger class (used for generic logger)
 /// </summary>
 public class ChatEndpointsLogger { }
 
 /// <summary>
-/// Chat 系统端点
-/// 包含 Webhook 接收端点和管理端点
+/// Chat system endpoints
+/// Contains Webhook receiver endpoints and management endpoints
 /// </summary>
 public static class ChatEndpoints
 {
     /// <summary>
-    /// 注册所有 Chat 相关端点
+    /// Register all Chat-related endpoints
     /// </summary>
     public static IEndpointRouteBuilder MapChatEndpoints(this IEndpointRouteBuilder app)
     {
-        // Webhook 端点组
+        // Webhook endpoint group
         var webhookGroup = app.MapGroup("/api/chat/webhook")
             .WithTags("Chat Webhook");
         
         webhookGroup.MapWebhookEndpoints();
         
-        // 管理端点组
+        // Admin endpoint group
         var adminGroup = app.MapGroup("/api/chat/admin")
-            .WithTags("Chat 管理");
+            .WithTags("Chat Management");
         
         adminGroup.MapChatAdminEndpoints();
         
@@ -38,31 +38,31 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 注册 Webhook 端点
+    /// Register Webhook endpoints
     /// </summary>
     private static IEndpointRouteBuilder MapWebhookEndpoints(this IEndpointRouteBuilder app)
     {
-        // 飞书 Webhook
+        // Feishu Webhook
         app.MapPost("/feishu", HandleFeishuWebhookAsync)
             .WithName("FeishuWebhook")
-            .WithSummary("飞书消息 Webhook")
+            .WithSummary("Feishu message Webhook")
             .AllowAnonymous();
         
-        // QQ 机器人 Webhook
+        // QQ bot Webhook
         app.MapPost("/qq", HandleQQWebhookAsync)
             .WithName("QQWebhook")
-            .WithSummary("QQ机器人消息 Webhook")
+            .WithSummary("QQ bot message Webhook")
             .AllowAnonymous();
         
-        // 微信客服 Webhook (GET 用于验证，POST 用于接收消息)
+        // WeChat customer service Webhook (GET for verification, POST for receiving messages)
         app.MapGet("/wechat", HandleWeChatVerificationAsync)
             .WithName("WeChatVerification")
-            .WithSummary("微信 Webhook 验证")
+            .WithSummary("WeChat Webhook verification")
             .AllowAnonymous();
         
         app.MapPost("/wechat", HandleWeChatWebhookAsync)
             .WithName("WeChatWebhook")
-            .WithSummary("微信客服消息 Webhook")
+            .WithSummary("WeChat customer service message Webhook")
             .AllowAnonymous();
         
         // Slack Webhook
@@ -71,78 +71,78 @@ public static class ChatEndpoints
             .WithSummary("Slack message Webhook")
             .AllowAnonymous();
 
-        // 通用 Webhook（根据平台参数路由）
+        // Generic Webhook (routes based on platform parameter)
         app.MapPost("/{platform}", HandleGenericWebhookAsync)
             .WithName("GenericWebhook")
-            .WithSummary("通用消息 Webhook")
+            .WithSummary("Generic message Webhook")
             .AllowAnonymous();
         
         return app;
     }
     
     /// <summary>
-    /// 注册管理端点
+    /// Register admin endpoints
     /// </summary>
     private static IEndpointRouteBuilder MapChatAdminEndpoints(this IEndpointRouteBuilder app)
     {
-        // Provider 配置管理
+        // Provider configuration management
         app.MapGet("/providers", GetAllProvidersAsync)
             .WithName("GetAllProviders")
-            .WithSummary("获取所有 Provider 配置");
+            .WithSummary("Get all provider configurations");
         
         app.MapGet("/providers/{platform}", GetProviderConfigAsync)
             .WithName("GetProviderConfig")
-            .WithSummary("获取指定 Provider 配置");
+            .WithSummary("Get specific provider configuration");
         
         app.MapPost("/providers", SaveProviderConfigAsync)
             .WithName("SaveProviderConfig")
-            .WithSummary("保存 Provider 配置");
+            .WithSummary("Save provider configuration");
         
         app.MapDelete("/providers/{platform}", DeleteProviderConfigAsync)
             .WithName("DeleteProviderConfig")
-            .WithSummary("删除 Provider 配置");
+            .WithSummary("Delete provider configuration");
         
         app.MapPost("/providers/{platform}/enable", EnableProviderAsync)
             .WithName("EnableProvider")
-            .WithSummary("启用 Provider");
+            .WithSummary("Enable provider");
         
         app.MapPost("/providers/{platform}/disable", DisableProviderAsync)
             .WithName("DisableProvider")
-            .WithSummary("禁用 Provider");
+            .WithSummary("Disable provider");
         
         app.MapPost("/providers/{platform}/reload", ReloadProviderConfigAsync)
             .WithName("ReloadProviderConfig")
-            .WithSummary("重载 Provider 配置");
+            .WithSummary("Reload provider configuration");
         
-        // 队列状态监控
+        // Queue status monitoring
         app.MapGet("/queue/status", GetQueueStatusAsync)
             .WithName("GetQueueStatus")
-            .WithSummary("获取队列状态");
+            .WithSummary("Get queue status");
         
         app.MapGet("/queue/deadletter", GetDeadLetterMessagesAsync)
             .WithName("GetDeadLetterMessages")
-            .WithSummary("获取死信队列消息");
+            .WithSummary("Get dead letter queue messages");
         
         app.MapPost("/queue/deadletter/{messageId}/reprocess", ReprocessDeadLetterAsync)
             .WithName("ReprocessDeadLetter")
-            .WithSummary("重新处理死信消息");
+            .WithSummary("Reprocess dead letter message");
         
         app.MapDelete("/queue/deadletter/{messageId}", DeleteDeadLetterAsync)
             .WithName("DeleteDeadLetter")
-            .WithSummary("删除死信消息");
+            .WithSummary("Delete dead letter message");
         
         app.MapDelete("/queue/deadletter", ClearDeadLetterQueueAsync)
             .WithName("ClearDeadLetterQueue")
-            .WithSummary("清空死信队列");
+            .WithSummary("Clear dead letter queue");
         
         return app;
     }
 
     
-    #region Webhook 处理方法
+    #region Webhook handler methods
     
     /// <summary>
-    /// 处理飞书 Webhook
+    /// Handle Feishu Webhook
     /// </summary>
     private static async Task<IResult> HandleFeishuWebhookAsync(
         HttpContext httpContext,
@@ -153,7 +153,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 处理 QQ 机器人 Webhook
+    /// Handle QQ bot Webhook
     /// </summary>
     private static async Task<IResult> HandleQQWebhookAsync(
         HttpContext httpContext,
@@ -164,7 +164,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 处理微信验证请求 (GET)
+    /// Handle WeChat verification request (GET)
     /// </summary>
     private static async Task<IResult> HandleWeChatVerificationAsync(
         HttpContext httpContext,
@@ -182,7 +182,7 @@ public static class ChatEndpoints
         
         if (validationResult.IsValid && !string.IsNullOrEmpty(validationResult.Challenge))
         {
-            // 微信验证需要直接返回 echostr
+            // WeChat verification requires directly returning echostr
             return Results.Text(validationResult.Challenge);
         }
         
@@ -190,7 +190,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 处理微信消息 Webhook (POST)
+    /// Handle WeChat message Webhook (POST)
     /// </summary>
     private static async Task<IResult> HandleWeChatWebhookAsync(
         HttpContext httpContext,
@@ -212,7 +212,7 @@ public static class ChatEndpoints
     }
 
     /// <summary>
-    /// 处理通用 Webhook
+    /// Handle generic Webhook
     /// </summary>
     private static async Task<IResult> HandleGenericWebhookAsync(
         string platform,
@@ -224,7 +224,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 统一的平台 Webhook 处理逻辑
+    /// Unified platform Webhook handling logic
     /// </summary>
     private static async Task<IResult> HandlePlatformWebhookAsync(
         string platform,
@@ -247,10 +247,10 @@ public static class ChatEndpoints
                 return Results.BadRequest(new { error = $"Provider {platform} is disabled" });
             }
             
-            // 验证 Webhook 请求
+            // Validate Webhook request
             var validationResult = await provider.ValidateWebhookAsync(httpContext.Request);
             
-            // 处理验证请求（如飞书的 url_verification）
+            // Handle verification request (e.g. Feishu url_verification)
             if (validationResult.IsValid && !string.IsNullOrEmpty(validationResult.Challenge))
             {
                 logger.LogDebug("Webhook validation challenge for {Platform}", platform);
@@ -264,23 +264,23 @@ public static class ChatEndpoints
                 return Results.BadRequest(new { error = validationResult.ErrorMessage ?? "Validation failed" });
             }
             
-            // 读取请求体
+            // Read request body
             httpContext.Request.EnableBuffering();
             httpContext.Request.Body.Position = 0;
             using var reader = new StreamReader(httpContext.Request.Body, Encoding.UTF8);
             var rawMessage = await reader.ReadToEndAsync();
             
-            // 解析消息
+            // Parse message
             var message = await provider.ParseMessageAsync(rawMessage);
             
             if (message == null)
             {
-                // 可能是非消息事件，返回成功
+                // Possibly a non-message event, return success
                 logger.LogDebug("No message parsed from {Platform} webhook, possibly non-message event", platform);
                 return Results.Ok(new { status = "ok" });
             }
             
-            // 路由消息（异步处理，立即返回确认）
+            // Route message (async processing, immediately return acknowledgment)
             _ = Task.Run(async () =>
             {
                 try
@@ -311,10 +311,10 @@ public static class ChatEndpoints
     #endregion
 
     
-    #region 管理端点处理方法
+    #region Admin endpoint handler methods
     
     /// <summary>
-    /// 获取所有 Provider 配置
+    /// Get all provider configurations
     /// </summary>
     private static async Task<IResult> GetAllProvidersAsync(
         [FromServices] IChatConfigService configService,
@@ -338,7 +338,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 获取指定 Provider 配置
+    /// Get specific provider configuration
     /// </summary>
     private static async Task<IResult> GetProviderConfigAsync(
         string platform,
@@ -362,18 +362,18 @@ public static class ChatEndpoints
             WebhookUrl = config.WebhookUrl,
             MessageInterval = config.MessageInterval,
             MaxRetryCount = config.MaxRetryCount,
-            ConfigData = config.ConfigData // 注意：敏感信息应该脱敏
+            ConfigData = config.ConfigData // Note: sensitive information should be masked
         });
     }
     
     /// <summary>
-    /// 保存 Provider 配置
+    /// Save provider configuration
     /// </summary>
     private static async Task<IResult> SaveProviderConfigAsync(
         [FromBody] ProviderConfigDto config,
         [FromServices] IChatConfigService configService)
     {
-        // 验证配置
+        // Validate configuration
         var validationResult = configService.ValidateConfig(config);
         if (!validationResult.IsValid)
         {
@@ -391,7 +391,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 删除 Provider 配置
+    /// Delete provider configuration
     /// </summary>
     private static async Task<IResult> DeleteProviderConfigAsync(
         string platform,
@@ -409,7 +409,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 启用 Provider
+    /// Enable provider
     /// </summary>
     private static async Task<IResult> EnableProviderAsync(
         string platform,
@@ -424,14 +424,14 @@ public static class ChatEndpoints
         config.IsEnabled = true;
         await configService.SaveConfigAsync(config);
         
-        // 触发配置重载
+        // Trigger configuration reload
         await configService.ReloadConfigAsync(platform);
-        
+
         return Results.Ok(new { status = "ok", platform, isEnabled = true });
     }
     
     /// <summary>
-    /// 禁用 Provider
+    /// Disable provider
     /// </summary>
     private static async Task<IResult> DisableProviderAsync(
         string platform,
@@ -446,14 +446,14 @@ public static class ChatEndpoints
         config.IsEnabled = false;
         await configService.SaveConfigAsync(config);
         
-        // 触发配置重载
+        // Trigger configuration reload
         await configService.ReloadConfigAsync(platform);
-        
+
         return Results.Ok(new { status = "ok", platform, isEnabled = false });
     }
     
     /// <summary>
-    /// 重载 Provider 配置
+    /// Reload provider configuration
     /// </summary>
     private static async Task<IResult> ReloadProviderConfigAsync(
         string platform,
@@ -473,10 +473,10 @@ public static class ChatEndpoints
     #endregion
 
     
-    #region 队列监控端点处理方法
+    #region Queue monitoring endpoint handler methods
     
     /// <summary>
-    /// 获取队列状态
+    /// Get queue status
     /// </summary>
     private static async Task<IResult> GetQueueStatusAsync(
         [FromServices] IMessageQueue messageQueue)
@@ -493,7 +493,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 获取死信队列消息
+    /// Get dead letter queue messages
     /// </summary>
     private static async Task<IResult> GetDeadLetterMessagesAsync(
         [FromQuery] int skip,
@@ -527,7 +527,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 重新处理死信消息
+    /// Reprocess dead letter message
     /// </summary>
     private static async Task<IResult> ReprocessDeadLetterAsync(
         string messageId,
@@ -547,7 +547,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 删除死信消息
+    /// Delete dead letter message
     /// </summary>
     private static async Task<IResult> DeleteDeadLetterAsync(
         string messageId,
@@ -567,7 +567,7 @@ public static class ChatEndpoints
     }
     
     /// <summary>
-    /// 清空死信队列
+    /// Clear dead letter queue
     /// </summary>
     private static async Task<IResult> ClearDeadLetterQueueAsync(
         [FromServices] IMessageQueue messageQueue,
@@ -583,10 +583,10 @@ public static class ChatEndpoints
     #endregion
 }
 
-#region 响应模型
+#region Response models
 
 /// <summary>
-/// Provider 状态响应
+/// Provider status response
 /// </summary>
 public class ProviderStatusResponse
 {
@@ -601,7 +601,7 @@ public class ProviderStatusResponse
 }
 
 /// <summary>
-/// 队列状态响应
+/// Queue status response
 /// </summary>
 public class QueueStatusResponse
 {
@@ -611,7 +611,7 @@ public class QueueStatusResponse
 }
 
 /// <summary>
-/// 死信消息列表响应
+/// Dead letter message list response
 /// </summary>
 public class DeadLetterListResponse
 {
@@ -622,7 +622,7 @@ public class DeadLetterListResponse
 }
 
 /// <summary>
-/// 死信消息响应
+/// Dead letter message response
 /// </summary>
 public class DeadLetterMessageResponse
 {

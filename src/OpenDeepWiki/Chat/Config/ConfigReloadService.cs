@@ -6,8 +6,8 @@ using Microsoft.Extensions.Options;
 namespace OpenDeepWiki.Chat.Config;
 
 /// <summary>
-/// 配置热重载后台服务
-/// 定期检查配置变更并通知相关组件
+/// Configuration hot-reload background service
+/// Periodically checks for configuration changes and notifies relevant components
 /// </summary>
 public class ConfigReloadService : BackgroundService
 {
@@ -16,7 +16,7 @@ public class ConfigReloadService : BackgroundService
     private readonly ILogger<ConfigReloadService> _logger;
     private readonly ChatConfigOptions _options;
     
-    // 配置快照，用于检测变更
+    // Configuration snapshots, used to detect changes
     private Dictionary<string, string> _configSnapshots = new();
     private readonly object _snapshotLock = new();
     
@@ -42,10 +42,10 @@ public class ConfigReloadService : BackgroundService
         
         _logger.LogInformation("Config reload service started");
         
-        // 初始化快照
+        // Initialize snapshots
         await InitializeSnapshotsAsync(stoppingToken);
         
-        // 定期检查配置变更
+        // Periodically check for configuration changes
         var checkInterval = TimeSpan.FromSeconds(_options.CacheExpirationSeconds / 2);
         
         while (!stoppingToken.IsCancellationRequested)
@@ -69,7 +69,7 @@ public class ConfigReloadService : BackgroundService
     }
     
     /// <summary>
-    /// 初始化配置快照
+    /// Initialize configuration snapshots
     /// </summary>
     private async Task InitializeSnapshotsAsync(CancellationToken cancellationToken)
     {
@@ -90,7 +90,7 @@ public class ConfigReloadService : BackgroundService
     }
     
     /// <summary>
-    /// 检查配置变更
+    /// Check for configuration changes
     /// </summary>
     private async Task CheckForChangesAsync(CancellationToken cancellationToken)
     {
@@ -108,7 +108,7 @@ public class ConfigReloadService : BackgroundService
         
         var changes = new List<(string Platform, ConfigChangeType Type)>();
         
-        // 检查新增和更新
+        // Check for created and updated
         foreach (var config in currentConfigs)
         {
             var hash = ComputeConfigHash(config);
@@ -123,7 +123,7 @@ public class ConfigReloadService : BackgroundService
             }
         }
         
-        // 检查删除
+        // Check for deleted
         foreach (var platform in previousSnapshots.Keys)
         {
             if (!currentDict.ContainsKey(platform))
@@ -132,7 +132,7 @@ public class ConfigReloadService : BackgroundService
             }
         }
         
-        // 更新快照
+        // Update snapshots
         lock (_snapshotLock)
         {
             _configSnapshots = currentConfigs.ToDictionary(
@@ -141,7 +141,7 @@ public class ConfigReloadService : BackgroundService
             );
         }
         
-        // 通知变更
+        // Notify changes
         foreach (var (platform, changeType) in changes)
         {
             _logger.LogInformation("Detected config change: {Platform} - {Type}", platform, changeType);
@@ -150,7 +150,7 @@ public class ConfigReloadService : BackgroundService
     }
     
     /// <summary>
-    /// 计算配置哈希值
+    /// Compute configuration hash
     /// </summary>
     private static string ComputeConfigHash(ProviderConfigDto config)
     {

@@ -5,38 +5,38 @@ using OpenDeepWiki.Services.Admin;
 namespace OpenDeepWiki.Endpoints.Admin;
 
 /// <summary>
-/// 管理端角色管理端点
+/// Admin role management endpoints
 /// </summary>
 public static class AdminRoleEndpoints
 {
     public static RouteGroupBuilder MapAdminRoleEndpoints(this RouteGroupBuilder group)
     {
         var roleGroup = group.MapGroup("/roles")
-            .WithTags("管理端-角色管理");
+            .WithTags("Admin - Role Management");
 
-        // 获取角色列表
+        // Get role list
         roleGroup.MapGet("/", async ([FromServices] IAdminRoleService roleService) =>
         {
             var result = await roleService.GetRolesAsync();
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetRoles")
-        .WithSummary("获取角色列表");
+        .WithSummary("Get role list");
 
-        // 获取角色详情
+        // Get role details
         roleGroup.MapGet("/{id}", async (
             string id,
             [FromServices] IAdminRoleService roleService) =>
         {
             var result = await roleService.GetRoleByIdAsync(id);
             if (result == null)
-                return Results.NotFound(new { success = false, message = "角色不存在" });
+                return Results.NotFound(new { success = false, message = "Role not found" });
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetRole")
-        .WithSummary("获取角色详情");
+        .WithSummary("Get role details");
 
-        // 创建角色
+        // Create role
         roleGroup.MapPost("/", async (
             [FromBody] CreateRoleRequest request,
             [FromServices] IAdminRoleService roleService) =>
@@ -52,9 +52,9 @@ public static class AdminRoleEndpoints
             }
         })
         .WithName("AdminCreateRole")
-        .WithSummary("创建角色");
+        .WithSummary("Create role");
 
-        // 更新角色
+        // Update role
         roleGroup.MapPut("/{id}", async (
             string id,
             [FromBody] UpdateRoleRequest request,
@@ -64,8 +64,8 @@ public static class AdminRoleEndpoints
             {
                 var result = await roleService.UpdateRoleAsync(id, request);
                 if (!result)
-                    return Results.NotFound(new { success = false, message = "角色不存在" });
-                return Results.Ok(new { success = true, message = "更新成功" });
+                    return Results.NotFound(new { success = false, message = "Role not found" });
+                return Results.Ok(new { success = true, message = "Updated successfully" });
             }
             catch (Exception ex)
             {
@@ -73,9 +73,9 @@ public static class AdminRoleEndpoints
             }
         })
         .WithName("AdminUpdateRole")
-        .WithSummary("更新角色");
+        .WithSummary("Update role");
 
-        // 删除角色
+        // Delete role
         roleGroup.MapDelete("/{id}", async (
             string id,
             [FromServices] IAdminRoleService roleService) =>
@@ -84,8 +84,8 @@ public static class AdminRoleEndpoints
             {
                 var result = await roleService.DeleteRoleAsync(id);
                 if (!result)
-                    return Results.NotFound(new { success = false, message = "角色不存在" });
-                return Results.Ok(new { success = true, message = "删除成功" });
+                    return Results.NotFound(new { success = false, message = "Role not found" });
+                return Results.Ok(new { success = true, message = "Deleted successfully" });
             }
             catch (Exception ex)
             {
@@ -93,7 +93,7 @@ public static class AdminRoleEndpoints
             }
         })
         .WithName("AdminDeleteRole")
-        .WithSummary("删除角色");
+        .WithSummary("Delete role");
 
         return group;
     }

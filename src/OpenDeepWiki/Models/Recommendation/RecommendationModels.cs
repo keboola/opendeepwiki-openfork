@@ -1,90 +1,90 @@
 namespace OpenDeepWiki.Models.Recommendation;
 
 /// <summary>
-/// 推荐配置
+/// Recommendation configuration
 /// </summary>
 public class RecommendationConfig
 {
     /// <summary>
-    /// 热度权重 (stars, forks, watchers)
+    /// Popularity weight (stars, forks, watchers)
     /// </summary>
     public double PopularityWeight { get; set; } = 0.20;
 
     /// <summary>
-    /// 订阅数权重
+    /// Subscription count weight
     /// </summary>
     public double SubscriptionWeight { get; set; } = 0.15;
 
     /// <summary>
-    /// 时间衰减权重
+    /// Time decay weight
     /// </summary>
     public double TimeDecayWeight { get; set; } = 0.10;
 
     /// <summary>
-    /// 用户偏好权重（基于历史行为）
+    /// User preference weight (based on historical behavior)
     /// </summary>
     public double UserPreferenceWeight { get; set; } = 0.20;
 
     /// <summary>
-    /// 私有仓库语言匹配权重
+    /// Private repository language matching weight
     /// </summary>
     public double PrivateRepoLanguageWeight { get; set; } = 0.20;
 
     /// <summary>
-    /// 协同过滤权重
+    /// Collaborative filtering weight
     /// </summary>
     public double CollaborativeWeight { get; set; } = 0.15;
 }
 
 /// <summary>
-/// 推荐请求
+/// Recommendation request
 /// </summary>
 public class RecommendationRequest
 {
     /// <summary>
-    /// 用户ID（可选，匿名用户使用热度推荐）
+    /// User ID (optional, anonymous users use popularity-based recommendations)
     /// </summary>
     public string? UserId { get; set; }
 
     /// <summary>
-    /// 返回数量
+    /// Number of results to return
     /// </summary>
     public int Limit { get; set; } = 20;
 
     /// <summary>
-    /// 推荐策略：default, popular, personalized, explore
+    /// Recommendation strategy: default, popular, personalized, explore
     /// </summary>
     public string Strategy { get; set; } = "default";
 
     /// <summary>
-    /// 语言过滤（可选）
+    /// Language filter (optional)
     /// </summary>
     public string? LanguageFilter { get; set; }
 }
 
 /// <summary>
-/// 推荐响应
+/// Recommendation response
 /// </summary>
 public class RecommendationResponse
 {
     /// <summary>
-    /// 推荐仓库列表
+    /// List of recommended repositories
     /// </summary>
     public List<RecommendedRepository> Items { get; set; } = new();
 
     /// <summary>
-    /// 使用的推荐策略
+    /// Recommendation strategy used
     /// </summary>
     public string Strategy { get; set; } = string.Empty;
 
     /// <summary>
-    /// 总候选数量
+    /// Total number of candidates
     /// </summary>
     public int TotalCandidates { get; set; }
 }
 
 /// <summary>
-/// 推荐仓库项
+/// Recommended repository item
 /// </summary>
 public class RecommendedRepository
 {
@@ -101,23 +101,23 @@ public class RecommendedRepository
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
-    /// 综合推荐得分
+    /// Overall recommendation score
     /// </summary>
     public double Score { get; set; }
 
     /// <summary>
-    /// 得分明细
+    /// Score breakdown
     /// </summary>
     public ScoreBreakdown? ScoreBreakdown { get; set; }
 
     /// <summary>
-    /// 推荐理由
+    /// Recommendation reason
     /// </summary>
     public string? RecommendReason { get; set; }
 }
 
 /// <summary>
-/// 得分明细
+/// Score breakdown
 /// </summary>
 public class ScoreBreakdown
 {
@@ -130,7 +130,7 @@ public class ScoreBreakdown
 }
 
 /// <summary>
-/// 记录用户活动请求
+/// Record user activity request
 /// </summary>
 public class RecordActivityRequest
 {
@@ -143,7 +143,7 @@ public class RecordActivityRequest
 }
 
 /// <summary>
-/// 记录用户活动响应
+/// Record user activity response
 /// </summary>
 public class RecordActivityResponse
 {
@@ -152,7 +152,7 @@ public class RecordActivityResponse
 }
 
 /// <summary>
-/// 标记不感兴趣请求
+/// Mark as not interested request
 /// </summary>
 public class DislikeRequest
 {
@@ -162,7 +162,7 @@ public class DislikeRequest
 }
 
 /// <summary>
-/// 标记不感兴趣响应
+/// Mark as not interested response
 /// </summary>
 public class DislikeResponse
 {
@@ -171,7 +171,7 @@ public class DislikeResponse
 }
 
 /// <summary>
-/// 可用语言列表响应
+/// Available languages list response
 /// </summary>
 public class AvailableLanguagesResponse
 {
@@ -179,7 +179,7 @@ public class AvailableLanguagesResponse
 }
 
 /// <summary>
-/// 语言信息
+/// Language information
 /// </summary>
 public class LanguageInfo
 {

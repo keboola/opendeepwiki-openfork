@@ -3,85 +3,85 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models.UserProfile;
 
 /// <summary>
-/// 更新个人资料请求
+/// Update profile request
 /// </summary>
 public class UpdateProfileRequest
 {
     /// <summary>
-    /// 用户名
+    /// Username
     /// </summary>
-    [Required(ErrorMessage = "用户名不能为空")]
-    [StringLength(50, MinimumLength = 2, ErrorMessage = "用户名长度应在2-50个字符之间")]
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "Username length must be between 2 and 50 characters")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 邮箱
+    /// Email address
     /// </summary>
-    [Required(ErrorMessage = "邮箱不能为空")]
-    [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// 手机号
+    /// Phone number
     /// </summary>
     [StringLength(20)]
     public string? Phone { get; set; }
 
     /// <summary>
-    /// 头像URL
+    /// Avatar URL
     /// </summary>
     [StringLength(500)]
     public string? Avatar { get; set; }
 }
 
 /// <summary>
-/// 修改密码请求
+/// Change password request
 /// </summary>
 public class ChangePasswordRequest
 {
     /// <summary>
-    /// 当前密码
+    /// Current password
     /// </summary>
-    [Required(ErrorMessage = "当前密码不能为空")]
+    [Required(ErrorMessage = "Current password is required")]
     public string CurrentPassword { get; set; } = string.Empty;
 
     /// <summary>
-    /// 新密码
+    /// New password
     /// </summary>
-    [Required(ErrorMessage = "新密码不能为空")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "密码长度至少6位")]
+    [Required(ErrorMessage = "New password is required")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
     public string NewPassword { get; set; } = string.Empty;
 
     /// <summary>
-    /// 确认新密码
+    /// Confirm new password
     /// </summary>
-    [Required(ErrorMessage = "确认密码不能为空")]
-    [Compare("NewPassword", ErrorMessage = "两次密码输入不一致")]
+    [Required(ErrorMessage = "Confirm password is required")]
+    [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
 /// <summary>
-/// 用户设置DTO
+/// User settings DTO
 /// </summary>
 public class UserSettingsDto
 {
     /// <summary>
-    /// 主题：light, dark, system
+    /// Theme: light, dark, system
     /// </summary>
     public string Theme { get; set; } = "system";
 
     /// <summary>
-    /// 语言
+    /// Language
     /// </summary>
     public string Language { get; set; } = "zh";
 
     /// <summary>
-    /// 是否开启邮件通知
+    /// Whether email notifications are enabled
     /// </summary>
     public bool EmailNotifications { get; set; } = true;
 
     /// <summary>
-    /// 是否开启推送通知
+    /// Whether push notifications are enabled
     /// </summary>
     public bool PushNotifications { get; set; } = false;
 }

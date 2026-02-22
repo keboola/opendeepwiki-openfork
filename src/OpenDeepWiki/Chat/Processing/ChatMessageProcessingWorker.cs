@@ -11,8 +11,8 @@ using System.Threading.Channels;
 namespace OpenDeepWiki.Chat.Processing;
 
 /// <summary>
-/// 消息处理后台服务
-/// 负责从队列中取出消息、处理并发送回调
+/// Message processing background service
+/// Responsible for dequeuing messages, processing them, and sending callbacks
 /// Requirements: 10.1, 10.2, 10.3
 /// </summary>
 public class ChatMessageProcessingWorker : BackgroundService
@@ -45,7 +45,7 @@ public class ChatMessageProcessingWorker : BackgroundService
     {
         var concurrency = Math.Max(1, _options.MaxConcurrency);
 
-        _logger.LogInformation("消息处理 Worker 已启动，并发数: {Concurrency}", concurrency);
+        _logger.LogInformation("Message processing Worker started, concurrency: {Concurrency}", concurrency);
 
         var producer = ProduceMessagesAsync(stoppingToken);
 
@@ -55,7 +55,7 @@ public class ChatMessageProcessingWorker : BackgroundService
 
         await Task.WhenAll(consumers.Prepend(producer));
 
-        _logger.LogInformation("消息处理 Worker 已停止");
+        _logger.LogInformation("Message processing Worker stopped");
     }
 
     private async Task ProduceMessagesAsync(CancellationToken stoppingToken)
@@ -94,7 +94,7 @@ public class ChatMessageProcessingWorker : BackgroundService
 
         await foreach (var message in _channel.Reader.ReadAllAsync(stoppingToken))
         {
-            _logger.LogDebug("开始处理消息: {MessageId}, 类型: {Type}",
+            _logger.LogDebug("Starting to process message: {MessageId}, type: {Type}",
             message.Id, message.Type);
 
             try
@@ -108,11 +108,11 @@ public class ChatMessageProcessingWorker : BackgroundService
                     stoppingToken);
 
                 await messageQueue.CompleteAsync(message.Id, stoppingToken);
-                _logger.LogDebug("消息处理完成: {MessageId}", message.Id);
+                _logger.LogDebug("Message processing complete: {MessageId}", message.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "消息处理失败: {MessageId}", message.Id);
+                _logger.LogError(ex, "Message processing failed: {MessageId}", message.Id);
                 await HandleMessageFailureAsync(message, messageQueue, ex.Message, stoppingToken);
             }
         }
@@ -138,12 +138,12 @@ public class ChatMessageProcessingWorker : BackgroundService
                 break;
 
             case QueuedMessageType.Retry:
-                // 重试消息按原类型处理
+                // Retry messages are processed as their original type
                 await ProcessOutgoingMessageAsync(queuedMessage, messageCallback, stoppingToken);
                 break;
 
             default:
-                _logger.LogWarning("未知的消息类型: {Type}", queuedMessage.Type);
+                _logger.LogWarning("Unknown message type: {Type}", queuedMessage.Type);
                 break;
         }
     }
@@ -155,16 +155,16 @@ public class ChatMessageProcessingWorker : BackgroundService
         IMessageCallback messageCallback,
         CancellationToken stoppingToken)
     {
-        // 获取或创建会话
+        // Get or create session
         var session = await sessionManager.GetOrCreateSessionAsync(
             queuedMessage.Message.SenderId,
             queuedMessage.Message.Platform,
             stoppingToken);
 
-        // 添加用户消息到会话历史
+        // Add user message to session history
         session.AddMessage(queuedMessage.Message);
 
-        // 执行 Agent 处理
+        // Execute Agent processing
         var response = await agentExecutor.ExecuteAsync(
             queuedMessage.Message, session, stoppingToken);
 
@@ -175,7 +175,7 @@ public class ChatMessageProcessingWorker : BackgroundService
 
         if (response.Success && response.Messages.Any())
         {
-            // 发送响应消息
+            // Send response messages
             foreach (var responseMessage in response.Messages)
             {
                 // Propagate metadata from original message (e.g. thread_ts for Slack threading)
@@ -203,16 +203,16 @@ public class ChatMessageProcessingWorker : BackgroundService
 
                 if (!sendResult.Success)
                 {
-                    _logger.LogWarning("响应消息发送失败: {ErrorMessage}", sendResult.ErrorMessage);
+                    _logger.LogWarning("Response message send failed: {ErrorMessage}", sendResult.ErrorMessage);
                 }
 
-                // 添加 Agent 响应到会话历史
+                // Add Agent response to session history
                 session.AddMessage(responseMessage);
             }
         }
         else if (!response.Success)
         {
-            // 发送错误消息给用户
+            // Send error message to user
             var errorMessage = new ChatMessage
             {
                 MessageId = Guid.NewGuid().ToString(),
@@ -234,7 +234,7 @@ public class ChatMessageProcessingWorker : BackgroundService
                 stoppingToken);
         }
 
-        // 更新会话
+        // Update session
         await sessionManager.UpdateSessionAsync(session, stoppingToken);
     }
 
@@ -251,7 +251,7 @@ public class ChatMessageProcessingWorker : BackgroundService
 
         if (!result.Success && result.ShouldRetry)
         {
-            throw new InvalidOperationException(result.ErrorMessage ?? "消息发送失败");
+            throw new InvalidOperationException(result.ErrorMessage ?? "Message send failed");
         }
     }
 
@@ -263,27 +263,27 @@ public class ChatMessageProcessingWorker : BackgroundService
     {
         if (queuedMessage.RetryCount < _options.MaxRetryCount)
         {
-            // 加入重试队列
+            // Add to retry queue
             var delaySeconds = CalculateRetryDelay(queuedMessage.RetryCount);
             await messageQueue.RetryAsync(queuedMessage.Id, delaySeconds, stoppingToken);
-            _logger.LogInformation("消息已加入重试队列: {MessageId}, 延迟: {Delay}秒",
+            _logger.LogInformation("Message added to retry queue: {MessageId}, delay: {Delay}s",
                 queuedMessage.Id, delaySeconds);
         }
         else
         {
-            // 移入死信队列
+            // Move to dead letter queue
             await messageQueue.FailAsync(queuedMessage.Id, reason, stoppingToken);
-            _logger.LogWarning("消息已移入死信队列: {MessageId}, 原因: {Reason}",
+            _logger.LogWarning("Message moved to dead letter queue: {MessageId}, reason: {Reason}",
                 queuedMessage.Id, reason);
         }
     }
 
     /// <summary>
-    /// 计算重试延迟（指数退避）
+    /// Calculate retry delay (exponential backoff)
     /// </summary>
     private int CalculateRetryDelay(int retryCount)
     {
-        // 指数退避: 30s, 60s, 120s, ...
+        // Exponential backoff: 30s, 60s, 120s, ...
         return _options.BaseRetryDelaySeconds * (int)Math.Pow(2, retryCount);
     }
 }

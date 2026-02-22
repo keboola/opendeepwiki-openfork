@@ -3,133 +3,133 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Entities.Tools;
 
 /// <summary>
-/// Agent Skills 配置实体
-/// 遵循 Anthropic Agent Skills 开放标准 (agentskills.io)
-/// Skill 以文件夹形式存储，此实体仅记录元数据和管理信息
+/// Agent Skills configuration entity
+/// Follows the Anthropic Agent Skills open standard (agentskills.io)
+/// Skills are stored as folders; this entity only records metadata and management information
 /// </summary>
 public class SkillConfig : AggregateRoot<string>
 {
     /// <summary>
-    /// Skill 名称（唯一标识符，同时也是文件夹名）
-    /// 规范：最大64字符，仅小写字母、数字和连字符，不能以连字符开头或结尾
+    /// Skill name (unique identifier, also the folder name)
+    /// Specification: max 64 characters, only lowercase letters, digits, and hyphens; cannot start or end with a hyphen
     /// </summary>
     [Required]
     [StringLength(64)]
-    [RegularExpression(@"^[a-z0-9]+(-[a-z0-9]+)*$", 
-        ErrorMessage = "名称只能包含小写字母、数字和连字符，且不能以连字符开头或结尾")]
+    [RegularExpression(@"^[a-z0-9]+(-[a-z0-9]+)*$",
+        ErrorMessage = "Name can only contain lowercase letters, digits, and hyphens, and cannot start or end with a hyphen")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Skill 描述（从 SKILL.md frontmatter 解析）
-    /// 规范：最大1024字符
+    /// Skill description (parsed from SKILL.md frontmatter)
+    /// Specification: max 1024 characters
     /// </summary>
     [Required]
     [StringLength(1024)]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// 许可证信息（从 SKILL.md frontmatter 解析）
+    /// License information (parsed from SKILL.md frontmatter)
     /// </summary>
     [StringLength(100)]
     public string? License { get; set; }
 
     /// <summary>
-    /// 兼容性要求（从 SKILL.md frontmatter 解析）
-    /// 规范：最大500字符
+    /// Compatibility requirements (parsed from SKILL.md frontmatter)
+    /// Specification: max 500 characters
     /// </summary>
     [StringLength(500)]
     public string? Compatibility { get; set; }
 
     /// <summary>
-    /// 预批准的工具列表（空格分隔，从 SKILL.md frontmatter 解析）
+    /// Pre-approved tool list (space-separated, parsed from SKILL.md frontmatter)
     /// </summary>
     [StringLength(1000)]
     public string? AllowedTools { get; set; }
 
     /// <summary>
-    /// Skill 文件夹的相对路径（相对于 skills 根目录）
-    /// 例如：code-review、data-analysis
+    /// Skill folder relative path (relative to the skills root directory)
+    /// Example: code-review, data-analysis
     /// </summary>
     [Required]
     [StringLength(200)]
     public string FolderPath { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否启用
+    /// Whether enabled
     /// </summary>
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// 排序顺序
+    /// Sort order
     /// </summary>
     public int SortOrder { get; set; } = 0;
 
     /// <summary>
-    /// 作者
+    /// Author
     /// </summary>
     [StringLength(100)]
     public string? Author { get; set; }
 
     /// <summary>
-    /// 版本号
+    /// Version number
     /// </summary>
     [StringLength(20)]
     public new string Version { get; set; } = "1.0.0";
 
     /// <summary>
-    /// 来源类型
+    /// Source type
     /// </summary>
     public SkillSource Source { get; set; } = SkillSource.Local;
 
     /// <summary>
-    /// 来源 URL（如果是从远程导入的）
+    /// Source URL (if imported from remote)
     /// </summary>
     [StringLength(500)]
     public string? SourceUrl { get; set; }
 
     /// <summary>
-    /// 是否包含 scripts 目录
+    /// Whether it contains a scripts directory
     /// </summary>
     public bool HasScripts { get; set; }
 
     /// <summary>
-    /// 是否包含 references 目录
+    /// Whether it contains a references directory
     /// </summary>
     public bool HasReferences { get; set; }
 
     /// <summary>
-    /// 是否包含 assets 目录
+    /// Whether it contains an assets directory
     /// </summary>
     public bool HasAssets { get; set; }
 
     /// <summary>
-    /// SKILL.md 文件大小（字节）
+    /// SKILL.md file size (bytes)
     /// </summary>
     public long SkillMdSize { get; set; }
 
     /// <summary>
-    /// 整个 Skill 文件夹大小（字节）
+    /// Total Skill folder size (bytes)
     /// </summary>
     public long TotalSize { get; set; }
 }
 
 /// <summary>
-/// Skill 来源类型
+/// Skill source type
 /// </summary>
 public enum SkillSource
 {
     /// <summary>
-    /// 本地上传
+    /// Local upload
     /// </summary>
     Local = 0,
 
     /// <summary>
-    /// 从 URL 导入
+    /// Imported from URL
     /// </summary>
     Remote = 1,
 
     /// <summary>
-    /// 从市场安装
+    /// Installed from marketplace
     /// </summary>
     Marketplace = 2
 }

@@ -9,7 +9,7 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Chat.Queue;
 
 /// <summary>
-/// 基于数据库的消息队列实现
+/// Database-based message queue implementation
 /// </summary>
 public class DatabaseMessageQueue : IMessageQueue
 {
@@ -51,7 +51,7 @@ public class DatabaseMessageQueue : IMessageQueue
         _context.ChatMessageQueues.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
         
-        _logger.LogDebug("消息已入队: {MessageId}, 类型: {Type}", message.Id, message.Type);
+        _logger.LogDebug("Message enqueued: {MessageId}, type: {Type}", message.Id, message.Type);
     }
 
     /// <inheritdoc />
@@ -59,7 +59,7 @@ public class DatabaseMessageQueue : IMessageQueue
     {
         var now = DateTime.UtcNow;
         
-        // 查找下一个待处理的消息（按创建时间排序，FIFO）
+        // Find the next pending message (ordered by creation time, FIFO)
         var entity = await _context.ChatMessageQueues
             .Where(q => q.Status == "Pending" && (q.ScheduledAt == null || q.ScheduledAt <= now))
             .OrderBy(q => q.CreatedAt)
@@ -68,7 +68,7 @@ public class DatabaseMessageQueue : IMessageQueue
         if (entity == null)
             return null;
 
-        // 标记为处理中
+        // Mark as processing
         entity.Status = "Processing";
         entity.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
@@ -76,9 +76,9 @@ public class DatabaseMessageQueue : IMessageQueue
         var message = DeserializeMessage(entity.MessageContent, entity.Platform);
         if (message == null)
         {
-            _logger.LogWarning("无法反序列化消息: {MessageId}", entity.Id);
+            _logger.LogWarning("Failed to deserialize message: {MessageId}", entity.Id);
             entity.Status = "Failed";
-            entity.ErrorMessage = "消息反序列化失败";
+            entity.ErrorMessage = "Message deserialization failed";
             await _context.SaveChangesAsync(cancellationToken);
             return null;
         }
@@ -106,14 +106,14 @@ public class DatabaseMessageQueue : IMessageQueue
     {
         if (!Guid.TryParse(messageId, out var id))
         {
-            _logger.LogWarning("无效的消息ID: {MessageId}", messageId);
+            _logger.LogWarning("Invalid message ID: {MessageId}", messageId);
             return;
         }
 
         var entity = await _context.ChatMessageQueues.FindAsync([id], cancellationToken);
         if (entity == null)
         {
-            _logger.LogWarning("消息不存在: {MessageId}", messageId);
+            _logger.LogWarning("Message not found: {MessageId}", messageId);
             return;
         }
 
@@ -121,7 +121,7 @@ public class DatabaseMessageQueue : IMessageQueue
         entity.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
         
-        _logger.LogDebug("消息已完成: {MessageId}", messageId);
+        _logger.LogDebug("Message completed: {MessageId}", messageId);
     }
 
     /// <inheritdoc />
@@ -129,32 +129,32 @@ public class DatabaseMessageQueue : IMessageQueue
     {
         if (!Guid.TryParse(messageId, out var id))
         {
-            _logger.LogWarning("无效的消息ID: {MessageId}", messageId);
+            _logger.LogWarning("Invalid message ID: {MessageId}", messageId);
             return;
         }
 
         var entity = await _context.ChatMessageQueues.FindAsync([id], cancellationToken);
         if (entity == null)
         {
-            _logger.LogWarning("消息不存在: {MessageId}", messageId);
+            _logger.LogWarning("Message not found: {MessageId}", messageId);
             return;
         }
 
         entity.RetryCount++;
         
-        // 检查是否超过最大重试次数
+        // Check if maximum retry count exceeded
         if (entity.RetryCount >= _options.MaxRetryCount)
         {
-            // 移入死信队列
+            // Move to dead letter queue
             entity.Status = "DeadLetter";
             entity.ErrorMessage = reason;
-            _logger.LogWarning("消息已移入死信队列: {MessageId}, 原因: {Reason}", messageId, reason);
+            _logger.LogWarning("Message moved to dead letter queue: {MessageId}, reason: {Reason}", messageId, reason);
         }
         else
         {
             entity.Status = "Failed";
             entity.ErrorMessage = reason;
-            _logger.LogWarning("消息处理失败: {MessageId}, 重试次数: {RetryCount}, 原因: {Reason}", 
+            _logger.LogWarning("Message processing failed: {MessageId}, retry count: {RetryCount}, reason: {Reason}", 
                 messageId, entity.RetryCount, reason);
         }
         
@@ -167,32 +167,32 @@ public class DatabaseMessageQueue : IMessageQueue
     {
         if (!Guid.TryParse(messageId, out var id))
         {
-            _logger.LogWarning("无效的消息ID: {MessageId}", messageId);
+            _logger.LogWarning("Invalid message ID: {MessageId}", messageId);
             return;
         }
 
         var entity = await _context.ChatMessageQueues.FindAsync([id], cancellationToken);
         if (entity == null)
         {
-            _logger.LogWarning("消息不存在: {MessageId}", messageId);
+            _logger.LogWarning("Message not found: {MessageId}", messageId);
             return;
         }
 
         entity.RetryCount++;
         
-        // 检查是否超过最大重试次数
+        // Check if maximum retry count exceeded
         if (entity.RetryCount >= _options.MaxRetryCount)
         {
             entity.Status = "DeadLetter";
-            entity.ErrorMessage = "超过最大重试次数";
-            _logger.LogWarning("消息已移入死信队列: {MessageId}, 超过最大重试次数", messageId);
+            entity.ErrorMessage = "Maximum retry count exceeded";
+            _logger.LogWarning("Message moved to dead letter queue: {MessageId}, maximum retry count exceeded", messageId);
         }
         else
         {
             entity.Status = "Pending";
             entity.QueueType = QueuedMessageType.Retry.ToString();
             entity.ScheduledAt = DateTime.UtcNow.AddSeconds(delaySeconds);
-            _logger.LogDebug("消息已加入重试队列: {MessageId}, 延迟: {Delay}秒", messageId, delaySeconds);
+            _logger.LogDebug("Message added to retry queue: {MessageId}, delay: {Delay} seconds", messageId, delaySeconds);
         }
         
         entity.UpdatedAt = DateTime.UtcNow;
@@ -250,18 +250,18 @@ public class DatabaseMessageQueue : IMessageQueue
     {
         if (!Guid.TryParse(messageId, out var id))
         {
-            _logger.LogWarning("无效的消息ID: {MessageId}", messageId);
+            _logger.LogWarning("Invalid message ID: {MessageId}", messageId);
             return false;
         }
 
         var entity = await _context.ChatMessageQueues.FindAsync([id], cancellationToken);
         if (entity == null || entity.Status != "DeadLetter")
         {
-            _logger.LogWarning("死信消息不存在: {MessageId}", messageId);
+            _logger.LogWarning("Dead letter message not found: {MessageId}", messageId);
             return false;
         }
 
-        // 重置状态，重新入队
+        // Reset status and re-enqueue
         entity.Status = "Pending";
         entity.RetryCount = 0;
         entity.ErrorMessage = null;
@@ -269,7 +269,7 @@ public class DatabaseMessageQueue : IMessageQueue
         entity.UpdatedAt = DateTime.UtcNow;
         
         await _context.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("死信消息已重新入队: {MessageId}", messageId);
+        _logger.LogInformation("Dead letter message re-enqueued: {MessageId}", messageId);
         
         return true;
     }
@@ -279,20 +279,20 @@ public class DatabaseMessageQueue : IMessageQueue
     {
         if (!Guid.TryParse(messageId, out var id))
         {
-            _logger.LogWarning("无效的消息ID: {MessageId}", messageId);
+            _logger.LogWarning("Invalid message ID: {MessageId}", messageId);
             return false;
         }
 
         var entity = await _context.ChatMessageQueues.FindAsync([id], cancellationToken);
         if (entity == null || entity.Status != "DeadLetter")
         {
-            _logger.LogWarning("死信消息不存在: {MessageId}", messageId);
+            _logger.LogWarning("Dead letter message not found: {MessageId}", messageId);
             return false;
         }
 
         _context.ChatMessageQueues.Remove(entity);
         await _context.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("死信消息已删除: {MessageId}", messageId);
+        _logger.LogInformation("Dead letter message deleted: {MessageId}", messageId);
         
         return true;
     }
@@ -309,7 +309,7 @@ public class DatabaseMessageQueue : IMessageQueue
         {
             _context.ChatMessageQueues.RemoveRange(deadLetters);
             await _context.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("已清空死信队列，删除 {Count} 条消息", count);
+            _logger.LogInformation("Dead letter queue cleared, {Count} messages deleted", count);
         }
 
         return count;
@@ -320,14 +320,14 @@ public class DatabaseMessageQueue : IMessageQueue
     {
         if (!Guid.TryParse(messageId, out var id))
         {
-            _logger.LogWarning("无效的消息ID: {MessageId}", messageId);
+            _logger.LogWarning("Invalid message ID: {MessageId}", messageId);
             return;
         }
 
         var entity = await _context.ChatMessageQueues.FindAsync([id], cancellationToken);
         if (entity == null)
         {
-            _logger.LogWarning("消息不存在: {MessageId}", messageId);
+            _logger.LogWarning("Message not found: {MessageId}", messageId);
             return;
         }
 
@@ -336,7 +336,7 @@ public class DatabaseMessageQueue : IMessageQueue
         entity.UpdatedAt = DateTime.UtcNow;
         
         await _context.SaveChangesAsync(cancellationToken);
-        _logger.LogWarning("消息已移入死信队列: {MessageId}, 原因: {Reason}", messageId, reason);
+        _logger.LogWarning("Message moved to dead letter queue: {MessageId}, reason: {Reason}", messageId, reason);
     }
 
     private static string SerializeMessage(IChatMessage message)

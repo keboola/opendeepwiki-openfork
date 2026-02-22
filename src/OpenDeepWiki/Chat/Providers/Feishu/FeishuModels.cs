@@ -2,58 +2,58 @@ using System.Text.Json.Serialization;
 
 namespace OpenDeepWiki.Chat.Providers.Feishu;
 
-#region Webhook 事件模型
+#region Webhook event models
 
 /// <summary>
-/// 飞书 Webhook 事件基础结构
+/// Feishu Webhook event base structure
 /// </summary>
 public class FeishuWebhookEvent
 {
     /// <summary>
-    /// 事件模式（1.0 或 2.0）
+    /// Event schema (1.0 or 2.0)
     /// </summary>
     [JsonPropertyName("schema")]
     public string? Schema { get; set; }
     
     /// <summary>
-    /// 事件头信息（2.0 格式）
+    /// Event header (2.0 format)
     /// </summary>
     [JsonPropertyName("header")]
     public FeishuEventHeader? Header { get; set; }
     
     /// <summary>
-    /// 事件内容
+    /// Event content
     /// </summary>
     [JsonPropertyName("event")]
     public FeishuEventContent? Event { get; set; }
     
     /// <summary>
-    /// 验证 Token（1.0 格式）
+    /// Verification Token (1.0 format)
     /// </summary>
     [JsonPropertyName("token")]
     public string? Token { get; set; }
     
     /// <summary>
-    /// 事件类型（1.0 格式）
+    /// Event type (1.0 format)
     /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; set; }
     
     /// <summary>
-    /// 验证挑战码（URL 验证时使用）
+    /// Verification challenge code (used during URL verification)
     /// </summary>
     [JsonPropertyName("challenge")]
     public string? Challenge { get; set; }
     
     /// <summary>
-    /// 加密内容（启用加密时）
+    /// Encrypted content (when encryption is enabled)
     /// </summary>
     [JsonPropertyName("encrypt")]
     public string? Encrypt { get; set; }
 }
 
 /// <summary>
-/// 飞书事件头信息（2.0 格式）
+/// Feishu event header (2.0 format)
 /// </summary>
 public class FeishuEventHeader
 {
@@ -77,7 +77,7 @@ public class FeishuEventHeader
 }
 
 /// <summary>
-/// 飞书事件内容
+/// Feishu event content
 /// </summary>
 public class FeishuEventContent
 {
@@ -89,7 +89,7 @@ public class FeishuEventContent
 }
 
 /// <summary>
-/// 飞书消息发送者
+/// Feishu message sender
 /// </summary>
 public class FeishuSender
 {
@@ -104,7 +104,7 @@ public class FeishuSender
 }
 
 /// <summary>
-/// 飞书发送者 ID
+/// Feishu sender ID
 /// </summary>
 public class FeishuSenderId
 {
@@ -120,10 +120,10 @@ public class FeishuSenderId
 
 #endregion
 
-#region 消息模型
+#region Message models
 
 /// <summary>
-/// 飞书消息
+/// Feishu message
 /// </summary>
 public class FeishuMessage
 {
@@ -156,7 +156,7 @@ public class FeishuMessage
 }
 
 /// <summary>
-/// 飞书 @ 提及
+/// Feishu @ mention
 /// </summary>
 public class FeishuMention
 {
@@ -174,7 +174,7 @@ public class FeishuMention
 }
 
 /// <summary>
-/// 飞书文本消息内容
+/// Feishu text message content
 /// </summary>
 public class FeishuTextContent
 {
@@ -183,7 +183,7 @@ public class FeishuTextContent
 }
 
 /// <summary>
-/// 飞书图片消息内容
+/// Feishu image message content
 /// </summary>
 public class FeishuImageContent
 {
@@ -194,10 +194,10 @@ public class FeishuImageContent
 #endregion
 
 
-#region API 响应模型
+#region API response models
 
 /// <summary>
-/// 飞书 API 基础响应
+/// Feishu API base response
 /// </summary>
 public class FeishuApiResponse
 {
@@ -209,7 +209,7 @@ public class FeishuApiResponse
 }
 
 /// <summary>
-/// 飞书 Access Token 响应
+/// Feishu Access Token response
 /// </summary>
 public class FeishuTokenResponse : FeishuApiResponse
 {
@@ -221,7 +221,7 @@ public class FeishuTokenResponse : FeishuApiResponse
 }
 
 /// <summary>
-/// 飞书发送消息响应
+/// Feishu send message response
 /// </summary>
 public class FeishuSendMessageResponse : FeishuApiResponse
 {
@@ -230,7 +230,7 @@ public class FeishuSendMessageResponse : FeishuApiResponse
 }
 
 /// <summary>
-/// 飞书发送消息响应数据
+/// Feishu send message response data
 /// </summary>
 public class FeishuSendMessageData
 {
@@ -240,10 +240,10 @@ public class FeishuSendMessageData
 
 #endregion
 
-#region 消息卡片模型
+#region Message card models
 
 /// <summary>
-/// 飞书消息卡片
+/// Feishu message card
 /// </summary>
 public class FeishuCard
 {
@@ -258,7 +258,7 @@ public class FeishuCard
 }
 
 /// <summary>
-/// 飞书卡片配置
+/// Feishu card configuration
 /// </summary>
 public class FeishuCardConfig
 {
@@ -270,7 +270,7 @@ public class FeishuCardConfig
 }
 
 /// <summary>
-/// 飞书卡片头部
+/// Feishu card header
 /// </summary>
 public class FeishuCardHeader
 {
@@ -282,7 +282,7 @@ public class FeishuCardHeader
 }
 
 /// <summary>
-/// 飞书卡片文本
+/// Feishu card text
 /// </summary>
 public class FeishuCardText
 {
@@ -294,7 +294,7 @@ public class FeishuCardText
 }
 
 /// <summary>
-/// 飞书卡片 Markdown 元素
+/// Feishu card Markdown element
 /// </summary>
 public class FeishuCardMarkdown
 {
@@ -306,7 +306,7 @@ public class FeishuCardMarkdown
 }
 
 /// <summary>
-/// 飞书卡片分割线
+/// Feishu card divider
 /// </summary>
 public class FeishuCardDivider
 {
@@ -316,10 +316,10 @@ public class FeishuCardDivider
 
 #endregion
 
-#region 发送消息请求模型
+#region Send message request models
 
 /// <summary>
-/// 飞书发送消息请求
+/// Feishu send message request
 /// </summary>
 public class FeishuSendMessageRequest
 {

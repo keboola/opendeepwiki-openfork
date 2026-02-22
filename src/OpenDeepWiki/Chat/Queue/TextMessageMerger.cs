@@ -5,8 +5,8 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Queue;
 
 /// <summary>
-/// 文本消息合并器
-/// 将多条连续的短文本消息合并为一条
+/// Text message merger
+/// Merges multiple consecutive short text messages into one
 /// </summary>
 public class TextMessageMerger : IMessageMerger
 {
@@ -32,30 +32,30 @@ public class TextMessageMerger : IMessageMerger
     /// <inheritdoc />
     public bool CanMerge(IReadOnlyList<IChatMessage> messages)
     {
-        // 至少需要2条消息才能合并
+        // At least 2 messages are needed for merging
         if (messages.Count < 2)
             return false;
 
-        // 所有消息必须是文本类型
+        // All messages must be text type
         if (messages.Any(m => m.MessageType != ChatMessageType.Text))
             return false;
 
-        // 所有消息必须来自同一发送者
+        // All messages must be from the same sender
         var firstSenderId = messages[0].SenderId;
         if (messages.Any(m => m.SenderId != firstSenderId))
             return false;
 
-        // 所有消息必须来自同一平台
+        // All messages must be from the same platform
         var firstPlatform = messages[0].Platform;
         if (messages.Any(m => m.Platform != firstPlatform))
             return false;
 
-        // 检查总长度是否在阈值内
+        // Check if total length is within threshold
         var totalLength = messages.Sum(m => m.Content.Length);
         if (totalLength > _options.MergeThreshold)
             return false;
 
-        // 检查时间窗口
+        // Check time window
         var firstTimestamp = messages[0].Timestamp;
         var lastTimestamp = messages[^1].Timestamp;
         var timeSpan = lastTimestamp - firstTimestamp;
@@ -79,7 +79,7 @@ public class TextMessageMerger : IMessageMerger
         var firstMessage = messages[0];
         var lastMessage = messages[^1];
 
-        // 合并元数据
+        // Merge metadata
         var mergedMetadata = MergeMetadata(messages);
 
         return new ChatMessage
@@ -107,7 +107,7 @@ public class TextMessageMerger : IMessageMerger
             ["originalMessageIds"] = messages.Select(m => m.MessageId).ToList()
         };
 
-        // 合并所有消息的元数据（后面的覆盖前面的）
+        // Merge metadata from all messages (later entries override earlier ones)
         foreach (var message in messages)
         {
             if (message.Metadata == null) continue;

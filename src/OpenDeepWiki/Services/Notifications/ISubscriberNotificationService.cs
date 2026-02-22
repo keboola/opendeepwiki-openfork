@@ -1,68 +1,68 @@
 namespace OpenDeepWiki.Services.Notifications;
 
 /// <summary>
-/// 订阅者通知服务接口
-/// 负责在仓库更新后通知订阅用户
+/// Subscriber notification service interface
+/// Responsible for notifying subscribed users after repository updates
 /// </summary>
 public interface ISubscriberNotificationService
 {
     /// <summary>
-    /// 发送仓库更新通知给所有订阅者
+    /// Send repository update notification to all subscribers
     /// </summary>
-    /// <param name="notification">通知内容</param>
-    /// <param name="cancellationToken">取消令牌</param>
+    /// <param name="notification">Notification content</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     Task NotifySubscribersAsync(
         RepositoryUpdateNotification notification,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 获取仓库的所有订阅者
+    /// Get all subscribers for a repository
     /// </summary>
-    /// <param name="repositoryId">仓库ID</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>订阅者ID列表</returns>
+    /// <param name="repositoryId">Repository ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of subscriber IDs</returns>
     Task<IReadOnlyList<string>> GetSubscribersAsync(
         string repositoryId,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// 仓库更新通知
+/// Repository update notification
 /// </summary>
 public class RepositoryUpdateNotification
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称 (org/repo)
+    /// Repository name (org/repo)
     /// </summary>
     public string RepositoryName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 分支名称
+    /// Branch name
     /// </summary>
     public string BranchName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 更新摘要
+    /// Update summary
     /// </summary>
     public string Summary { get; set; } = string.Empty;
 
     /// <summary>
-    /// 变更文件数量
+    /// Number of changed files
     /// </summary>
     public int ChangedFilesCount { get; set; }
 
     /// <summary>
-    /// 更新时间戳
+    /// Update timestamp
     /// </summary>
     public DateTime UpdatedAt { get; set; }
 
     /// <summary>
-    /// 新的 Commit ID
+    /// New commit ID
     /// </summary>
     public string CommitId { get; set; } = string.Empty;
 }

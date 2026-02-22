@@ -1,10 +1,10 @@
 /**
- * 推荐系统 API 客户端
+ * Recommendation system API client
  */
 
 import { api } from "./api-client";
 
-/** 推荐仓库项 */
+/** Recommended repository item */
 export interface RecommendedRepository {
   id: string;
   repoName: string;
@@ -22,7 +22,7 @@ export interface RecommendedRepository {
   recommendReason?: string;
 }
 
-/** 得分明细 */
+/** Score breakdown */
 export interface ScoreBreakdown {
   popularity: number;
   subscription: number;
@@ -32,14 +32,14 @@ export interface ScoreBreakdown {
   collaborative: number;
 }
 
-/** 推荐响应 */
+/** Recommendation response */
 export interface RecommendationResponse {
   items: RecommendedRepository[];
   strategy: string;
   totalCandidates: number;
 }
 
-/** 推荐请求参数 */
+/** Recommendation request parameters */
 export interface RecommendationParams {
   userId?: string;
   limit?: number;
@@ -47,7 +47,7 @@ export interface RecommendationParams {
   language?: string;
 }
 
-/** 记录活动请求 */
+/** Record activity request */
 export interface RecordActivityRequest {
   userId: string;
   repositoryId?: string;
@@ -57,38 +57,38 @@ export interface RecordActivityRequest {
   language?: string;
 }
 
-/** 记录活动响应 */
+/** Record activity response */
 export interface RecordActivityResponse {
   success: boolean;
   errorMessage?: string;
 }
 
-/** 不感兴趣请求 */
+/** Dislike request */
 export interface DislikeRequest {
   userId: string;
   repositoryId: string;
   reason?: string;
 }
 
-/** 不感兴趣响应 */
+/** Dislike response */
 export interface DislikeResponse {
   success: boolean;
   errorMessage?: string;
 }
 
-/** 语言信息 */
+/** Language info */
 export interface LanguageInfo {
   name: string;
   count: number;
 }
 
-/** 可用语言列表响应 */
+/** Available languages list response */
 export interface AvailableLanguagesResponse {
   languages: LanguageInfo[];
 }
 
 /**
- * 获取推荐仓库列表
+ * Get recommended repository list
  */
 export async function getRecommendations(
   params: RecommendationParams = {}
@@ -107,7 +107,7 @@ export async function getRecommendations(
 }
 
 /**
- * 获取热门仓库
+ * Get popular repositories
  */
 export async function getPopularRepos(
   limit: number = 20,
@@ -123,14 +123,14 @@ export async function getPopularRepos(
 }
 
 /**
- * 获取可用的编程语言列表
+ * Get available programming languages list
  */
 export async function getAvailableLanguages(): Promise<AvailableLanguagesResponse> {
   return api.get<AvailableLanguagesResponse>("/api/v1/recommendations/languages");
 }
 
 /**
- * 记录用户活动
+ * Record user activity
  */
 export async function recordActivity(
   request: RecordActivityRequest
@@ -139,7 +139,7 @@ export async function recordActivity(
 }
 
 /**
- * 标记仓库为不感兴趣
+ * Mark repository as not interested
  */
 export async function markAsDisliked(
   request: DislikeRequest
@@ -148,7 +148,7 @@ export async function markAsDisliked(
 }
 
 /**
- * 取消不感兴趣标记
+ * Remove not-interested mark
  */
 export async function removeDislike(
   userId: string,
@@ -160,7 +160,7 @@ export async function removeDislike(
 }
 
 /**
- * 刷新用户偏好缓存
+ * Refresh user preference cache
  */
 export async function refreshUserPreference(
   userId: string

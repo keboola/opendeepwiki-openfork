@@ -21,7 +21,7 @@ export function useTranslations() {
   const admin = useNextIntlTranslations('admin');
   const organizations = useNextIntlTranslations('organizations');
 
-  // 使用 useCallback 缓存翻译函数，避免每次渲染创建新引用
+  // Use useCallback to cache the translation function, avoiding new references on each render
   const t = useCallback((key: string, params?: TranslationValues): string => {
     const parts = key.split('.');
     

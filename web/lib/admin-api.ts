@@ -151,7 +151,7 @@ export async function updateRepositoryStatus(id: string, status: number): Promis
   });
 }
 
-// 同步单个仓库统计信息
+// Sync individual repository statistics
 export interface SyncStatsResult {
   success: boolean;
   message?: string;
@@ -165,7 +165,7 @@ export async function syncRepositoryStats(id: string): Promise<SyncStatsResult> 
   return result.data;
 }
 
-// 批量同步统计信息
+// Batch sync statistics
 export interface BatchSyncItemResult {
   id: string;
   repoName: string;
@@ -191,7 +191,7 @@ export async function batchSyncRepositoryStats(ids: string[]): Promise<BatchSync
   return result.data;
 }
 
-// 批量删除仓库
+// Batch delete repositories
 export interface BatchDeleteResult {
   totalCount: number;
   successCount: number;
@@ -566,7 +566,7 @@ export async function deleteMcpConfig(id: string): Promise<void> {
   await fetchWithAuth(url, { method: "DELETE" });
 }
 
-// ==================== Tools API - Skill (Agent Skills 标准) ====================
+// ==================== Tools API - Skill (Agent Skills Standard) ====================
 
 export interface SkillFileInfo {
   fileName: string;
@@ -635,7 +635,7 @@ export async function uploadSkill(file: File): Promise<SkillConfig> {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `上传失败: ${response.status}`);
+    throw new Error(error.message || `Upload failed: ${response.status}`);
   }
 
   const result = await response.json();

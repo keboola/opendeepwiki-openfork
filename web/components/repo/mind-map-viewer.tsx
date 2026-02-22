@@ -22,19 +22,19 @@ interface TreeNode {
   children: TreeNode[];
 }
 
-// 多彩配色方案 - 更柔和的颜色
+// Colorful palette - softer colors
 const BRANCH_COLORS = [
-  { line: "#ec4899", bg: "#fce7f3", border: "#ec4899", text: "#be185d" }, // 粉色
-  { line: "#f59e0b", bg: "#fef3c7", border: "#f59e0b", text: "#b45309" }, // 黄色
-  { line: "#10b981", bg: "#d1fae5", border: "#10b981", text: "#047857" }, // 绿色
-  { line: "#3b82f6", bg: "#dbeafe", border: "#3b82f6", text: "#1d4ed8" }, // 蓝色
-  { line: "#8b5cf6", bg: "#ede9fe", border: "#8b5cf6", text: "#6d28d9" }, // 紫色
-  { line: "#14b8a6", bg: "#ccfbf1", border: "#14b8a6", text: "#0f766e" }, // 青色
-  { line: "#ef4444", bg: "#fee2e2", border: "#ef4444", text: "#b91c1c" }, // 红色
-  { line: "#6366f1", bg: "#e0e7ff", border: "#6366f1", text: "#4338ca" }, // 靛蓝
+  { line: "#ec4899", bg: "#fce7f3", border: "#ec4899", text: "#be185d" }, // Pink
+  { line: "#f59e0b", bg: "#fef3c7", border: "#f59e0b", text: "#b45309" }, // Yellow
+  { line: "#10b981", bg: "#d1fae5", border: "#10b981", text: "#047857" }, // Green
+  { line: "#3b82f6", bg: "#dbeafe", border: "#3b82f6", text: "#1d4ed8" }, // Blue
+  { line: "#8b5cf6", bg: "#ede9fe", border: "#8b5cf6", text: "#6d28d9" }, // Purple
+  { line: "#14b8a6", bg: "#ccfbf1", border: "#14b8a6", text: "#0f766e" }, // Teal
+  { line: "#ef4444", bg: "#fee2e2", border: "#ef4444", text: "#b91c1c" }, // Red
+  { line: "#6366f1", bg: "#e0e7ff", border: "#6366f1", text: "#4338ca" }, // Indigo
 ];
 
-// 深色模式配色
+// Dark mode colors
 const BRANCH_COLORS_DARK = [
   { line: "#f472b6", bg: "#831843", border: "#f472b6", text: "#fbcfe8" },
   { line: "#fbbf24", bg: "#78350f", border: "#fbbf24", text: "#fef3c7" },
@@ -46,12 +46,12 @@ const BRANCH_COLORS_DARK = [
   { line: "#818cf8", bg: "#312e81", border: "#818cf8", text: "#e0e7ff" },
 ];
 
-// 中心节点颜色
+// Center node colors
 const CENTER_COLOR = { bg: "#f3e8ff", border: "#a855f7", text: "#7c3aed" };
 const CENTER_COLOR_DARK = { bg: "#581c87", border: "#c084fc", text: "#e9d5ff" };
 
 /**
- * 解析思维导图内容为树形结构
+ * Parse mind map content into a tree structure
  */
 function parseMindMapContent(content: string): TreeNode[] {
   const lines = content.split("\n").filter(line => line.trim());
@@ -106,15 +106,15 @@ interface LayoutNode {
   isLeft?: boolean;
 }
 
-// 布局常量
+// Layout constants
 const NODE_HEIGHT = 32;
 const NODE_MIN_WIDTH = 60;
-const LEVEL_GAP_H = 120; // 水平层级间距
-const NODE_GAP_V = 8; // 垂直节点间距
+const LEVEL_GAP_H = 120; // Horizontal level spacing
+const NODE_GAP_V = 8; // Vertical node spacing
 const CENTER_HEIGHT = 40;
 
 /**
- * 测量文本宽度
+ * Measure text width
  */
 function measureText(text: string, isCenter: boolean): number {
   const fontSize = isCenter ? 14 : 11;
@@ -124,7 +124,7 @@ function measureText(text: string, isCenter: boolean): number {
 }
 
 /**
- * 计算子树高度
+ * Calculate subtree height
  */
 function getSubtreeHeight(node: LayoutNode): number {
   if (node.children.length === 0) {
@@ -138,7 +138,7 @@ function getSubtreeHeight(node: LayoutNode): number {
 }
 
 /**
- * 递归构建布局节点
+ * Recursively build layout nodes
  */
 function buildLayoutTree(
   node: TreeNode,
@@ -167,7 +167,7 @@ function buildLayoutTree(
 }
 
 /**
- * 递归定位节点
+ * Recursively position nodes
  */
 function positionSubtree(
   node: LayoutNode,
@@ -200,7 +200,7 @@ function positionSubtree(
 }
 
 /**
- * 计算节点布局
+ * Calculate node layout
  */
 function calculateLayout(
   nodes: TreeNode[],
@@ -210,13 +210,13 @@ function calculateLayout(
   const colors = isDark ? BRANCH_COLORS_DARK : BRANCH_COLORS;
   const centerColor = isDark ? CENTER_COLOR_DARK : CENTER_COLOR;
 
-  // 获取要分布的节点
+  // Get nodes to distribute
   let nodesToDistribute: TreeNode[] = nodes;
   if (nodes.length === 1 && nodes[0].children.length > 0) {
     nodesToDistribute = nodes[0].children;
   }
 
-  // 创建中心节点
+  // Create center node
   const centerWidth = measureText(repoName, true);
   const centerNode: LayoutNode = {
     title: repoName,
@@ -229,7 +229,7 @@ function calculateLayout(
     isCenter: true,
   };
 
-  // 分配左右节点 - 简单交替分配
+  // Distribute left and right nodes - simple alternating distribution
   const leftNodes: TreeNode[] = [];
   const rightNodes: TreeNode[] = [];
   
@@ -241,7 +241,7 @@ function calculateLayout(
     }
   });
 
-  // 构建左右子树
+  // Build left and right subtrees
   const leftLayoutNodes = leftNodes.map((n, i) =>
     buildLayoutTree(n, colors[i % colors.length], true)
   );
@@ -249,7 +249,7 @@ function calculateLayout(
     buildLayoutTree(n, colors[(i + leftNodes.length) % colors.length], false)
   );
 
-  // 计算左右两边的总高度
+  // Calculate total height of left and right sides
   const leftHeight = leftLayoutNodes.reduce(
     (sum, n) => sum + getSubtreeHeight(n) + NODE_GAP_V * 2,
     0
@@ -260,11 +260,11 @@ function calculateLayout(
   );
   const maxHeight = Math.max(leftHeight, rightHeight, CENTER_HEIGHT);
 
-  // 定位中心节点
+  // Position center node
   centerNode.x = 0;
   centerNode.y = 0;
 
-  // 定位左边节点
+  // Position left nodes
   if (leftLayoutNodes.length > 0) {
     let currentY = -leftHeight / 2;
     leftLayoutNodes.forEach(node => {
@@ -276,7 +276,7 @@ function calculateLayout(
     });
   }
 
-  // 定位右边节点
+  // Position right nodes
   if (rightLayoutNodes.length > 0) {
     let currentY = -rightHeight / 2;
     rightLayoutNodes.forEach(node => {
@@ -290,7 +290,7 @@ function calculateLayout(
 
   centerNode.children = [...leftLayoutNodes, ...rightLayoutNodes];
 
-  // 计算画布尺寸
+  // Calculate canvas dimensions
   const getAllNodes = (node: LayoutNode): LayoutNode[] => {
     return [node, ...node.children.flatMap(getAllNodes)];
   };
@@ -309,7 +309,7 @@ function calculateLayout(
   const width = maxX - minX + padding * 2;
   const height = maxY - minY + padding * 2;
 
-  // 偏移所有节点
+  // Offset all nodes
   const offsetX = -minX + padding;
   const offsetY = -minY + padding;
 
@@ -325,27 +325,27 @@ function calculateLayout(
 }
 
 /**
- * 绘制思维导图
+ * Draw mind map
  */
 function drawMindMap(
   ctx: CanvasRenderingContext2D,
   root: LayoutNode,
   isDark: boolean
 ) {
-  // 绘制连接线 - 从父节点到子节点
+  // Draw connection lines - from parent to child nodes
   const drawConnections = (parent: LayoutNode) => {
     parent.children.forEach(child => {
       const isLeft = child.isLeft;
       
-      // 父节点连接点
+      // Parent node connection point
       const parentX = isLeft ? parent.x : parent.x + parent.width;
       const parentY = parent.y + parent.height / 2;
       
-      // 子节点连接点
+      // Child node connection point
       const childX = isLeft ? child.x + child.width : child.x;
       const childY = child.y + child.height / 2;
 
-      // 绘制平滑曲线
+      // Draw smooth curve
       ctx.beginPath();
       ctx.moveTo(parentX, parentY);
       
@@ -356,17 +356,17 @@ function drawMindMap(
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 递归绘制子节点的连接线
+      // Recursively draw connection lines for child nodes
       drawConnections(child);
     });
   };
 
-  // 绘制节点
+  // Draw nodes
   const drawNode = (node: LayoutNode) => {
     const { x, y, width, height, color, title, isCenter } = node;
     const radius = height / 2;
 
-    // 绘制胶囊形状
+    // Draw capsule shape
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
@@ -381,13 +381,13 @@ function drawMindMap(
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 绘制文字
+    // Draw text
     ctx.fillStyle = color.text;
     ctx.font = `${isCenter ? "600 13px" : "500 11px"} system-ui, -apple-system, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     
-    // 截断过长文字
+    // Truncate overly long text
     let displayTitle = title;
     const maxWidth = width - 16;
     while (ctx.measureText(displayTitle).width > maxWidth && displayTitle.length > 3) {
@@ -396,17 +396,17 @@ function drawMindMap(
     
     ctx.fillText(displayTitle, x + width / 2, y + height / 2 + 1);
 
-    // 递归绘制子节点
+    // Recursively draw child nodes
     node.children.forEach(drawNode);
   };
 
-  // 先绘制连接线，再绘制节点
+  // Draw connection lines first, then draw nodes
   drawConnections(root);
   drawNode(root);
 }
 
 /**
- * 列表视图节点
+ * List view node
  */
 function ListNodeItem({ node, gitUrl, branch }: { node: TreeNode; gitUrl: string; branch: string }) {
   const [expanded, setExpanded] = useState(true);
@@ -484,7 +484,7 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
     setMounted(true);
   }, []);
 
-  // 鼠标滚轮缩放
+  // Mouse wheel zoom
   useEffect(() => {
     if (!mounted || viewMode !== "mindmap" || !containerRef.current) return;
 
@@ -501,7 +501,7 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
     return () => container.removeEventListener("wheel", handleWheel);
   }, [mounted, viewMode]);
 
-  // 绘制思维导图
+  // Draw mind map
   useEffect(() => {
     if (!mounted || viewMode !== "mindmap" || !canvasRef.current || !containerRef.current) return;
 
@@ -512,7 +512,7 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
 
     const { root, width, height } = calculateLayout(treeNodes, repoName, isDark);
     
-    // 计算自适应缩放
+    // Calculate auto-fit scale
     const containerWidth = container.clientWidth - 32;
     const containerHeight = Math.min(window.innerHeight * 0.65, 550);
     const scaleX = containerWidth / width;
@@ -521,7 +521,7 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
     
     setBaseScale(fitScale);
 
-    // 设置高清画布
+    // Set up high-DPI canvas
     const dpr = window.devicePixelRatio || 1;
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -529,12 +529,12 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
     canvas.style.height = `${height}px`;
     ctx.scale(dpr, dpr);
 
-    // 清空并绘制背景
+    // Clear and draw background
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = isDark ? "#0f172a" : "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // 绘制思维导图
+    // Draw mind map
     drawMindMap(ctx, root, isDark);
   }, [mounted, viewMode, treeNodes, repoName, isDark]);
 
@@ -579,7 +579,7 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
 
   return (
     <div className="space-y-4 px-4 md:px-6 lg:px-8">
-      {/* 工具栏 */}
+      {/* Toolbar */}
       <div className="flex items-center justify-between gap-4 p-3 bg-fd-muted/30 rounded-lg flex-wrap">
         <div className="flex items-center gap-2">
           <button
@@ -628,7 +628,7 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
         )}
       </div>
 
-      {/* 思维导图视图 */}
+      {/* Mind map view */}
       {viewMode === "mindmap" && (
         <div className="border rounded-lg overflow-hidden bg-fd-card">
           <div ref={containerRef} className="overflow-auto flex items-center justify-center p-4 relative" style={{ minHeight: "calc(100vh - 280px)" }}>
@@ -642,7 +642,7 @@ export function MindMapViewer({ content, owner, repo, branch = "main", gitUrl }:
         </div>
       )}
 
-      {/* 列表视图 */}
+      {/* List view */}
       {viewMode === "list" && (
         <div className="border rounded-lg p-4 bg-fd-card">
           <div className="text-sm text-fd-muted-foreground mb-4">{t("mindmap.tips.expand")} • {t("mindmap.tips.link")}</div>

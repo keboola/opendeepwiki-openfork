@@ -4,67 +4,67 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 文档目录实体（支持树形结构）
+/// Document catalog entity (supports tree structure)
 /// </summary>
 public class DocCatalog : AggregateRoot<string>
 {
     /// <summary>
-    /// 分支语言ID
+    /// Branch language ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string BranchLanguageId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 父目录ID（null 表示根节点）
+    /// Parent catalog ID (null indicates root node)
     /// </summary>
     [StringLength(36)]
     public string? ParentId { get; set; }
 
     /// <summary>
-    /// 目录标题
+    /// Catalog title
     /// </summary>
     [Required]
     [StringLength(500)]
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// URL 友好的路径，如 "1-overview"
+    /// URL-friendly path, e.g. "1-overview"
     /// </summary>
     [Required]
     [StringLength(1000)]
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
-    /// 排序顺序
+    /// Sort order
     /// </summary>
     public int Order { get; set; }
 
     /// <summary>
-    /// 关联的文档文件ID
+    /// Associated document file ID
     /// </summary>
     [StringLength(36)]
     public string? DocFileId { get; set; }
 
     /// <summary>
-    /// 父目录导航属性
+    /// Parent catalog navigation property
     /// </summary>
     [ForeignKey("ParentId")]
     public virtual DocCatalog? Parent { get; set; }
 
     /// <summary>
-    /// 子目录集合
+    /// Child catalog collection
     /// </summary>
     public virtual ICollection<DocCatalog> Children { get; set; } = new List<DocCatalog>();
 
     /// <summary>
-    /// 分支语言导航属性
+    /// Branch language navigation property
     /// </summary>
     [ForeignKey("BranchLanguageId")]
     public virtual BranchLanguage? BranchLanguage { get; set; }
 
     /// <summary>
-    /// 文档文件导航属性
+    /// Document file navigation property
     /// </summary>
     [ForeignKey("DocFileId")]
     public virtual DocFile? DocFile { get; set; }

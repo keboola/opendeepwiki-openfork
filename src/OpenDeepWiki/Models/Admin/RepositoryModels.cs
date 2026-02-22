@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// 管理端仓库列表响应
+/// Admin repository list response
 /// </summary>
 public class AdminRepositoryListResponse
 {
@@ -12,7 +12,7 @@ public class AdminRepositoryListResponse
 }
 
 /// <summary>
-/// 管理端仓库 DTO
+/// Admin repository DTO
 /// </summary>
 public class AdminRepositoryDto
 {
@@ -34,7 +34,7 @@ public class AdminRepositoryDto
 }
 
 /// <summary>
-/// 更新仓库请求
+/// Update repository request
 /// </summary>
 public class UpdateRepositoryRequest
 {
@@ -44,7 +44,7 @@ public class UpdateRepositoryRequest
 }
 
 /// <summary>
-/// 更新状态请求
+/// Update status request
 /// </summary>
 public class UpdateStatusRequest
 {
@@ -52,7 +52,7 @@ public class UpdateStatusRequest
 }
 
 /// <summary>
-/// 同步统计信息结果
+/// Sync statistics result
 /// </summary>
 public class SyncStatsResult
 {
@@ -63,7 +63,7 @@ public class SyncStatsResult
 }
 
 /// <summary>
-/// 批量同步统计信息结果
+/// Batch sync statistics result
 /// </summary>
 public class BatchSyncStatsResult
 {
@@ -74,7 +74,7 @@ public class BatchSyncStatsResult
 }
 
 /// <summary>
-/// 批量同步单项结果
+/// Batch sync individual item result
 /// </summary>
 public class BatchSyncItemResult
 {
@@ -87,7 +87,7 @@ public class BatchSyncItemResult
 }
 
 /// <summary>
-/// 批量删除结果
+/// Batch delete result
 /// </summary>
 public class BatchDeleteResult
 {
@@ -98,7 +98,7 @@ public class BatchDeleteResult
 }
 
 /// <summary>
-/// 管理端仓库深度管理信息
+/// Admin repository deep management information
 /// </summary>
 public class AdminRepositoryManagementDto
 {
@@ -112,7 +112,7 @@ public class AdminRepositoryManagementDto
 }
 
 /// <summary>
-/// 管理端分支信息
+/// Admin branch information
 /// </summary>
 public class AdminRepositoryBranchDto
 {
@@ -124,7 +124,7 @@ public class AdminRepositoryBranchDto
 }
 
 /// <summary>
-/// 管理端分支语言信息
+/// Admin branch language information
 /// </summary>
 public class AdminBranchLanguageDto
 {
@@ -137,7 +137,7 @@ public class AdminBranchLanguageDto
 }
 
 /// <summary>
-/// 管理端增量更新任务信息
+/// Admin incremental update task information
 /// </summary>
 public class AdminIncrementalTaskDto
 {
@@ -157,7 +157,7 @@ public class AdminIncrementalTaskDto
 }
 
 /// <summary>
-/// 管理端文档重生成请求
+/// Admin document regeneration request
 /// </summary>
 public class RegenerateRepositoryDocumentRequest
 {
@@ -167,7 +167,7 @@ public class RegenerateRepositoryDocumentRequest
 }
 
 /// <summary>
-/// 管理端文档内容更新请求
+/// Admin document content update request
 /// </summary>
 public class UpdateRepositoryDocumentContentRequest
 {
@@ -178,7 +178,7 @@ public class UpdateRepositoryDocumentContentRequest
 }
 
 /// <summary>
-/// 管理端操作统一响应
+/// Admin operation unified response
 /// </summary>
 public class AdminRepositoryOperationResult
 {
@@ -187,7 +187,7 @@ public class AdminRepositoryOperationResult
 }
 
 /// <summary>
-/// 批量操作请求
+/// Batch operation request
 /// </summary>
 public class BatchOperationRequest
 {

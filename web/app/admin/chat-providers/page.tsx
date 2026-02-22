@@ -71,6 +71,7 @@ interface PlatformFieldDefinition {
   type: FieldType;
   required?: boolean;
   placeholderKey?: string;
+  descriptionKey?: string;
 }
 
 const PLATFORM_FIELDS: Record<string, PlatformFieldDefinition[]> = {
@@ -104,10 +105,10 @@ const PLATFORM_FIELDS: Record<string, PlatformFieldDefinition[]> = {
     { key: "EncryptMode", labelKey: "admin.chatProviders.fieldEncryptMode", type: "text" },
   ],
   slack: [
-    { key: "BotToken", labelKey: "admin.chatProviders.fieldBotToken", type: "password", required: true, placeholderKey: "admin.chatProviders.hintBotToken" },
-    { key: "SigningSecret", labelKey: "admin.chatProviders.fieldSigningSecret", type: "password", required: true, placeholderKey: "admin.chatProviders.hintSigningSecret" },
-    { key: "ApiBaseUrl", labelKey: "admin.chatProviders.fieldApiBaseUrl", type: "text", placeholderKey: "admin.chatProviders.hintApiBaseUrl" },
-    { key: "ReplyInThread", labelKey: "admin.chatProviders.fieldReplyInThread", type: "switch" },
+    { key: "BotToken", labelKey: "admin.chatProviders.fieldBotToken", type: "password", required: true, placeholderKey: "admin.chatProviders.hintBotToken", descriptionKey: "admin.chatProviders.descBotToken" },
+    { key: "SigningSecret", labelKey: "admin.chatProviders.fieldSigningSecret", type: "password", required: true, placeholderKey: "admin.chatProviders.hintSigningSecret", descriptionKey: "admin.chatProviders.descSigningSecret" },
+    { key: "ApiBaseUrl", labelKey: "admin.chatProviders.fieldApiBaseUrl", type: "text", placeholderKey: "admin.chatProviders.hintApiBaseUrl", descriptionKey: "admin.chatProviders.descApiBaseUrl" },
+    { key: "ReplyInThread", labelKey: "admin.chatProviders.fieldReplyInThread", type: "switch", descriptionKey: "admin.chatProviders.descReplyInThread" },
   ],
 };
 
@@ -331,16 +332,21 @@ export default function AdminChatProvidersPage() {
           const value = fieldValues[field.key];
           if (field.type === "switch") {
             return (
-              <div key={field.key} className="flex items-center justify-between rounded-md border px-3 py-2">
-                <label className="text-sm font-medium">
-                  {t(field.labelKey)}{field.required ? " *" : ""}
-                </label>
-                <Switch
-                  checked={Boolean(value)}
-                  onCheckedChange={(checked) =>
-                    setFieldValues((prev) => ({ ...prev, [field.key]: checked }))
-                  }
-                />
+              <div key={field.key} className="space-y-1">
+                <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                  <label className="text-sm font-medium">
+                    {t(field.labelKey)}{field.required ? " *" : ""}
+                  </label>
+                  <Switch
+                    checked={Boolean(value)}
+                    onCheckedChange={(checked) =>
+                      setFieldValues((prev) => ({ ...prev, [field.key]: checked }))
+                    }
+                  />
+                </div>
+                {field.descriptionKey && (
+                  <p className="text-xs text-muted-foreground px-1">{t(field.descriptionKey)}</p>
+                )}
               </div>
             );
           }
@@ -358,6 +364,9 @@ export default function AdminChatProvidersPage() {
                   setFieldValues((prev) => ({ ...prev, [field.key]: event.target.value }))
                 }
               />
+              {field.descriptionKey && (
+                <p className="text-xs text-muted-foreground mt-1">{t(field.descriptionKey)}</p>
+              )}
             </div>
           );
         })}

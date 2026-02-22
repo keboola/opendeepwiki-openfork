@@ -395,9 +395,13 @@
     "fieldBotToken": "Bot Token",
     "fieldSigningSecret": "Signing Secret",
     "fieldReplyInThread": "在线程中回复",
-    "hintBotToken": "Slack App > OAuth & Permissions > Bot User OAuth Token (xoxb-...)",
-    "hintSigningSecret": "Slack App > Basic Information > App Credentials > Signing Secret",
-    "hintApiBaseUrl": "Default: https://slack.com/api"
+    "hintBotToken": "xoxb-...",
+    "hintSigningSecret": "Signing Secret value",
+    "hintApiBaseUrl": "https://slack.com/api",
+    "descBotToken": "Found in your Slack App settings under OAuth & Permissions > Bot User OAuth Token. Starts with xoxb-.",
+    "descSigningSecret": "Found in your Slack App settings under Basic Information > App Credentials > Signing Secret. Used to verify webhook requests.",
+    "descApiBaseUrl": "Override the Slack API base URL. Leave empty to use the default (https://slack.com/api).",
+    "descReplyInThread": "When enabled, bot responses are posted as thread replies instead of new messages in the channel."
   },
   "mcps": {
     "title": "MCPs 管理",

@@ -44,6 +44,17 @@ public static class SystemSettingDefaults
     ];
 
     /// <summary>
+    /// Default settings for the GitHub App integration.
+    /// Only seeded if env vars are present (unlike wiki settings which always seed).
+    /// </summary>
+    public static readonly (string Key, string Category, string Description)[] GitHubAppDefaults =
+    [
+        ("GITHUB_APP_ID", "github", "GitHub App ID"),
+        ("GITHUB_APP_NAME", "github", "GitHub App name (URL slug)"),
+        ("GITHUB_APP_PRIVATE_KEY", "github", "GitHub App private key (base64-encoded PEM)")
+    ];
+
+    /// <summary>
     /// Initialize default system settings (only for keys not already in the database).
     /// </summary>
     public static async Task InitializeDefaultsAsync(IConfiguration configuration, IContext context)
@@ -92,6 +103,35 @@ public static class SystemSettingDefaults
                     Category = category,
                     CreatedAt = DateTime.UtcNow
                 });
+            }
+        }
+
+        // Process GitHub App settings (only seed if env var has a value)
+        foreach (var (key, category, description) in GitHubAppDefaults)
+        {
+            if (existingByKey.TryGetValue(key, out var existing))
+            {
+                if (existing.Description != description)
+                {
+                    existing.Description = description;
+                    hasChanges = true;
+                }
+            }
+            else
+            {
+                var envValue = GetEnvironmentOrConfigurationValue(configuration, key);
+                if (!string.IsNullOrWhiteSpace(envValue))
+                {
+                    settingsToAdd.Add(new SystemSetting
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Key = key,
+                        Value = envValue,
+                        Description = description,
+                        Category = category,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
             }
         }
 

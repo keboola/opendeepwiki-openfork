@@ -1048,6 +1048,14 @@ export interface GitHubStatus {
   installations: GitHubInstallation[];
 }
 
+export interface GitHubConfig {
+  hasAppId: boolean;
+  hasPrivateKey: boolean;
+  appId?: string;
+  appName?: string;
+  source: string;
+}
+
 export interface GitHubRepo {
   id: number;
   fullName: string;
@@ -1100,6 +1108,11 @@ export async function storeGitHubInstallation(installationId: number): Promise<G
   return result.data;
 }
 
+export async function disconnectGitHubInstallation(id: string): Promise<void> {
+  const url = buildApiUrl(`/api/admin/github/installations/${id}`);
+  await fetchWithAuth(url, { method: "DELETE" });
+}
+
 export async function getInstallationRepos(
   installationId: number,
   page: number = 1,
@@ -1136,4 +1149,28 @@ export async function batchImportRepos(request: {
     body: JSON.stringify(request),
   });
   return result.data;
+}
+
+export async function getGitHubConfig(): Promise<GitHubConfig> {
+  const url = buildApiUrl("/api/admin/github/config");
+  const result = await fetchWithAuth(url);
+  return result.data;
+}
+
+export async function saveGitHubConfig(data: {
+  appId: string;
+  appName: string;
+  privateKey: string;
+}): Promise<GitHubConfig> {
+  const url = buildApiUrl("/api/admin/github/config");
+  const result = await fetchWithAuth(url, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return result.data;
+}
+
+export async function resetGitHubConfig(): Promise<void> {
+  const url = buildApiUrl("/api/admin/github/config");
+  await fetchWithAuth(url, { method: "DELETE" });
 }

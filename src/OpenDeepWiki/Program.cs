@@ -304,6 +304,7 @@ try
     builder.Services.AddSingleton<IProcessingLogService, ProcessingLogService>();
 
     // 注册 GitHub App 服务
+    builder.Services.AddSingleton<GitHubAppCredentialCache>();
     builder.Services.AddScoped<IGitHubAppService, GitHubAppService>();
     builder.Services.AddScoped<IAdminGitHubImportService, AdminGitHubImportService>();
 
@@ -402,6 +403,10 @@ try
         var settingsService = scope.ServiceProvider.GetRequiredService<IAdminSettingsService>();
         var wikiOptions = scope.ServiceProvider.GetRequiredService<IOptions<WikiGeneratorOptions>>();
         await SystemSettingDefaults.ApplyToWikiGeneratorOptions(wikiOptions.Value, settingsService);
+
+        // Load GitHub App credentials from DB into the in-memory cache
+        var githubCache = app.Services.GetRequiredService<GitHubAppCredentialCache>();
+        await githubCache.LoadFromDbAsync(settingsService);
     }
 
     // 启用 CORS

@@ -19,6 +19,7 @@ namespace OpenDeepWiki.Services.GitHub;
 public class GitHubAppService : IGitHubAppService
 {
     private readonly IConfiguration _configuration;
+    private readonly GitHubAppCredentialCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IContext _context;
     private readonly ILogger<GitHubAppService> _logger;
@@ -31,23 +32,27 @@ public class GitHubAppService : IGitHubAppService
 
     public GitHubAppService(
         IConfiguration configuration,
+        GitHubAppCredentialCache cache,
         IHttpClientFactory httpClientFactory,
         IContext context,
         ILogger<GitHubAppService> logger)
     {
         _configuration = configuration;
+        _cache = cache;
         _httpClientFactory = httpClientFactory;
         _context = context;
         _logger = logger;
     }
 
     private string? AppId =>
-        _configuration["GitHub:App:Id"]
+        _cache.AppId
+        ?? _configuration["GitHub:App:Id"]
         ?? Environment.GetEnvironmentVariable("GitHub__App__Id")
         ?? Environment.GetEnvironmentVariable("GITHUB_APP_ID");
 
     private string? PrivateKeyBase64 =>
-        _configuration["GitHub:App:PrivateKey"]
+        _cache.PrivateKeyBase64
+        ?? _configuration["GitHub:App:PrivateKey"]
         ?? Environment.GetEnvironmentVariable("GitHub__App__PrivateKey")
         ?? Environment.GetEnvironmentVariable("GITHUB_APP_PRIVATE_KEY");
 

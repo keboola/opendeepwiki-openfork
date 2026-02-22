@@ -79,3 +79,22 @@ public class BatchImportResult
     public List<string> SkippedRepos { get; set; } = new();
     public List<string> ImportedRepos { get; set; } = new();
 }
+
+public class SaveGitHubConfigRequest
+{
+    public string AppId { get; set; } = string.Empty;
+    public string AppName { get; set; } = string.Empty;
+    public string PrivateKey { get; set; } = string.Empty;
+}
+
+public class GitHubConfigResponse
+{
+    public bool HasAppId { get; set; }
+    public bool HasPrivateKey { get; set; }
+    public string? AppId { get; set; }
+    public string? AppName { get; set; }
+    /// <summary>
+    /// Credential source: "database", "environment", or "none".
+    /// </summary>
+    public string Source { get; set; } = "none";
+}

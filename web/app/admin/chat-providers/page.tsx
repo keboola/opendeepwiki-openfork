@@ -56,10 +56,10 @@ import { toast } from "sonner";
 import { useTranslations } from "@/hooks/use-translations";
 
 const PLATFORM_OPTIONS = [
+  { value: "slack", labelKey: "admin.chatProviders.platformSlack" },
   { value: "feishu", labelKey: "admin.chatProviders.platformFeishu" },
   { value: "qq", labelKey: "admin.chatProviders.platformQq" },
   { value: "wechat", labelKey: "admin.chatProviders.platformWechat" },
-  { value: "slack", labelKey: "admin.chatProviders.platformSlack" },
   { value: "custom", labelKey: "admin.chatProviders.platformCustom" },
 ];
 
@@ -129,7 +129,7 @@ export default function AdminChatProvidersPage() {
   const [deletePlatform, setDeletePlatform] = useState<string | null>(null);
   const [rawConfigData, setRawConfigData] = useState("{}");
   const [formData, setFormData] = useState({
-    platform: "feishu",
+    platform: "slack",
     displayName: "",
     isEnabled: true,
     webhookUrl: "",
@@ -161,7 +161,7 @@ export default function AdminChatProvidersPage() {
   }, [fetchData]);
 
   const resetForm = (platform?: string) => {
-    const targetPlatform = platform || "feishu";
+    const targetPlatform = platform || "slack";
     setFormData({
       platform: targetPlatform,
       displayName: "",
@@ -408,13 +408,13 @@ export default function AdminChatProvidersPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {configs.map((config) => (
             <Card key={config.platform} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-full p-2 ${config.isEnabled ? "bg-emerald-100 dark:bg-emerald-900" : "bg-gray-100 dark:bg-gray-800"}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`shrink-0 rounded-full p-2 ${config.isEnabled ? "bg-emerald-100 dark:bg-emerald-900" : "bg-gray-100 dark:bg-gray-800"}`}>
                     <MessageSquare className={`h-5 w-5 ${config.isEnabled ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`} />
                   </div>
-                  <div>
-                    <h3 className="font-semibold">{config.displayName}</h3>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold truncate">{config.displayName}</h3>
                     <p className="text-xs text-muted-foreground">{platformLabel(config.platform)}</p>
                     <div className="mt-1 flex items-center gap-2 text-xs">
                       {config.isEnabled ? (
@@ -434,7 +434,7 @@ export default function AdminChatProvidersPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex shrink-0 gap-1">
                   <Button variant="ghost" size="icon" onClick={() => handleReload(config)}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>

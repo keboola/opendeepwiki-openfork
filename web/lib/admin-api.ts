@@ -755,13 +755,13 @@ export interface ChatProviderConfig {
 export async function getChatProviderConfigs(): Promise<ChatProviderStatus[]> {
   const url = buildApiUrl("/api/chat/admin/providers");
   const result = await fetchWithAuth(url);
-  return result.data;
+  return Array.isArray(result) ? result : result.data ?? [];
 }
 
 export async function getChatProviderConfig(platform: string): Promise<ChatProviderConfig> {
   const url = buildApiUrl(`/api/chat/admin/providers/${platform}`);
   const result = await fetchWithAuth(url);
-  return result.data;
+  return result.data ?? result;
 }
 
 export async function saveChatProviderConfig(data: ChatProviderConfig): Promise<void> {

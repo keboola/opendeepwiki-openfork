@@ -3,7 +3,7 @@ using OpenDeepWiki.Models.Admin;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端系统设置服务接口
+/// Admin system settings service interface
 /// </summary>
 public interface IAdminSettingsService
 {

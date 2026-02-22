@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// 管理端角色 DTO
+/// Admin role DTO
 /// </summary>
 public class AdminRoleDto
 {
@@ -15,7 +15,7 @@ public class AdminRoleDto
 }
 
 /// <summary>
-/// 创建角色请求
+/// Create role request
 /// </summary>
 public class CreateRoleRequest
 {
@@ -25,7 +25,7 @@ public class CreateRoleRequest
 }
 
 /// <summary>
-/// 更新角色请求
+/// Update role request
 /// </summary>
 public class UpdateRoleRequest
 {

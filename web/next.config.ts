@@ -5,8 +5,8 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  // API 代理已改为运行时动态转发，见 app/api/[...path]/route.ts
-  // 环境变量 API_PROXY_URL 在运行时读取，无需构建时烘焙
+  // API proxy has been changed to runtime dynamic forwarding, see app/api/[...path]/route.ts
+  // Environment variable API_PROXY_URL is read at runtime, no need to bake in at build time
 };
 
 export default withNextIntl(nextConfig);

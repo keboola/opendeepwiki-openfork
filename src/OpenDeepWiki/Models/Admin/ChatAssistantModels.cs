@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// 对话助手配置 DTO
+/// Chat assistant configuration DTO
 /// </summary>
 public class ChatAssistantConfigDto
 {
@@ -17,7 +17,7 @@ public class ChatAssistantConfigDto
 }
 
 /// <summary>
-/// 更新对话助手配置请求
+/// Update chat assistant configuration request
 /// </summary>
 public class UpdateChatAssistantConfigRequest
 {
@@ -30,7 +30,7 @@ public class UpdateChatAssistantConfigRequest
 }
 
 /// <summary>
-/// 可选项 DTO（用于模型、MCP、Skill选择列表）
+/// Selectable item DTO (used for model, MCP, and Skill selection lists)
 /// </summary>
 public class SelectableItemDto
 {
@@ -42,7 +42,7 @@ public class SelectableItemDto
 }
 
 /// <summary>
-/// 对话助手配置选项响应
+/// Chat assistant configuration options response
 /// </summary>
 public class ChatAssistantConfigOptionsDto
 {

@@ -89,13 +89,13 @@ public class RepositoryProcessingWorker(
                 break;
             }
 
-            // 清除旧的处理日志
+            // Clear old processing logs
             if (processingLogService != null)
             {
                 await processingLogService.ClearLogsAsync(repository.Id, stoppingToken);
             }
 
-            // 设置当前仓库ID到WikiGenerator
+            // Set current repository ID on WikiGenerator
             if (wikiGenerator is WikiGenerator generator)
             {
                 generator.SetCurrentRepository(repository.Id);
@@ -107,11 +107,11 @@ public class RepositoryProcessingWorker(
             context.Repositories.Update(repository);
             await context.SaveChangesAsync(stoppingToken);
 
-            // 记录开始处理
+            // Log start of processing
             if (processingLogService != null)
             {
                 await processingLogService.LogAsync(repository.Id, ProcessingStep.Workspace, 
-                    $"开始处理仓库 {repository.OrgName}/{repository.RepoName}", cancellationToken: stoppingToken);
+                    $"Starting repository processing: {repository.OrgName}/{repository.RepoName}", cancellationToken: stoppingToken);
             }
 
             var stopwatch = Stopwatch.StartNew();
@@ -136,11 +136,11 @@ public class RepositoryProcessingWorker(
                     "Repository processing completed successfully. RepositoryId: {RepositoryId}, Repository: {Org}/{Repo}, Duration: {Duration}ms",
                     repository.Id, repository.OrgName, repository.RepoName, stopwatch.ElapsedMilliseconds);
 
-                // 记录完成
+                // Log completion
                 if (processingLogService != null)
                 {
                     await processingLogService.LogAsync(repository.Id, ProcessingStep.Complete, 
-                        $"仓库处理完成，总耗时 {stopwatch.ElapsedMilliseconds}ms", cancellationToken: stoppingToken);
+                        $"Repository processing completed, total elapsed: {stopwatch.ElapsedMilliseconds}ms", cancellationToken: stoppingToken);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -161,11 +161,11 @@ public class RepositoryProcessingWorker(
                     "Repository processing failed. RepositoryId: {RepositoryId}, Repository: {Org}/{Repo}, Duration: {Duration}ms, ErrorType: {ErrorType}",
                     repository.Id, repository.OrgName, repository.RepoName, stopwatch.ElapsedMilliseconds, ex.GetType().Name);
 
-                // 记录失败
+                // Log failure
                 if (processingLogService != null)
                 {
                     await processingLogService.LogAsync(repository.Id, ProcessingStep.Content, 
-                        $"处理失败: {ex.Message}", cancellationToken: stoppingToken);
+                        $"Processing failed: {ex.Message}", cancellationToken: stoppingToken);
                 }
             }
 
@@ -235,11 +235,11 @@ public class RepositoryProcessingWorker(
             "Starting branch processing. BranchId: {BranchId}, Branch: {BranchName}, Repository: {Org}/{Repo}, LastCommitId: {LastCommitId}",
             branch.Id, branch.BranchName, repository.OrgName, repository.RepoName, branch.LastCommitId ?? "none");
 
-        // 记录准备工作区
+        // Log workspace preparation
         if (processingLogService != null)
         {
             await processingLogService.LogAsync(repository.Id, ProcessingStep.Workspace, 
-                $"正在准备工作区，分支: {branch.BranchName}", cancellationToken: stoppingToken);
+                $"Preparing workspace, branch: {branch.BranchName}", cancellationToken: stoppingToken);
         }
 
         // Prepare workspace with previous commit ID for incremental updates
@@ -253,14 +253,14 @@ public class RepositoryProcessingWorker(
             "Workspace prepared. WorkingDirectory: {WorkingDirectory}, CurrentCommit: {CurrentCommit}, PreviousCommit: {PreviousCommit}, IsIncremental: {IsIncremental}",
             workspace.WorkingDirectory, workspace.CommitId, workspace.PreviousCommitId ?? "none", workspace.IsIncremental);
 
-        // 记录工作区准备完成
+        // Log workspace preparation completed
         if (processingLogService != null)
         {
             await processingLogService.LogAsync(repository.Id, ProcessingStep.Workspace, 
-                $"工作区准备完成，Commit: {workspace.CommitId[..Math.Min(7, workspace.CommitId.Length)]}", cancellationToken: stoppingToken);
+                $"Workspace ready, Commit: {workspace.CommitId[..Math.Min(7, workspace.CommitId.Length)]}", cancellationToken: stoppingToken);
         }
 
-        // 检测并更新仓库主要编程语言（仅在首次处理或语言为空时）
+        // Detect and update repository primary programming language (only on first processing or when language is empty)
         if (string.IsNullOrEmpty(repository.PrimaryLanguage))
         {
             var detectedLanguage = await repositoryAnalyzer.DetectPrimaryLanguageAsync(workspace, stoppingToken);
@@ -277,7 +277,7 @@ public class RepositoryProcessingWorker(
                 if (processingLogService != null)
                 {
                     await processingLogService.LogAsync(repository.Id, ProcessingStep.Workspace,
-                        $"检测到主要编程语言: {detectedLanguage}", cancellationToken: stoppingToken);
+                        $"Detected primary programming language: {detectedLanguage}", cancellationToken: stoppingToken);
                 }
             }
         }
@@ -394,8 +394,8 @@ public class RepositoryProcessingWorker(
             else
             {
                 // Full generation: generate catalog and all documents
-                // 思维导图由 MindMapWorker 独立后台任务生成
-                // 翻译任务由 TranslationWorker 独立后台任务扫描并创建
+                // Mind maps are generated by MindMapWorker as an independent background task
+                // Translation tasks are scanned and created by TranslationWorker as an independent background task
                 logger.LogDebug("Performing full wiki generation for {LanguageCode}", language.LanguageCode);
                 
                 logger.LogInformation("Generating catalog for {LanguageCode}", language.LanguageCode);

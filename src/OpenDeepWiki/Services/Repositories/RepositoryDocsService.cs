@@ -11,12 +11,12 @@ using Microsoft.AspNetCore.Authorization;
 namespace OpenDeepWiki.Services.Repositories;
 
 [MiniApi(Route = "/api/v1/repos")]
-[Tags("仓库文档")]
+[Tags("Repository Documents")]
 public class RepositoryDocsService(IContext context, IGitPlatformService gitPlatformService, ICache cache)
 {
-    private const string FallbackLanguageCode = "zh"; // 当没有默认语言标记时的回退语言
-    private const int ExportRateLimitMinutes = 5; // 导出限流：5分钟内只能导出一次
-    private const int MaxConcurrentExports = 10; // 最大并发导出数
+    private const string FallbackLanguageCode = "zh"; // Fallback language when no default language is marked
+    private const int ExportRateLimitMinutes = 5; // Export rate limit: only one export allowed per 5 minutes
+    private const int MaxConcurrentExports = 10; // Maximum concurrent exports
     private const string ExportRateLimitKeyPrefix = "export:rate-limit";
     private const string ExportConcurrencyCountKey = "export:concurrency:count";
     private const string ExportConcurrencyLockKey = "export:concurrency:lock";
@@ -48,14 +48,14 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
 
         foreach (var branch in branches)
         {
-            // 获取该分支下有实际文档内容的语言
+            // Get languages with actual document content under this branch
             var languagesWithContent = await context.BranchLanguages
                 .AsNoTracking()
                 .Where(item => item.RepositoryBranchId == branch.Id)
                 .Where(item => context.DocCatalogs.Any(c => c.BranchLanguageId == item.Id && !c.IsDeleted))
                 .ToListAsync();
 
-            // 只有当分支有内容时才添加
+            // Only add if the branch has content
             if (languagesWithContent.Count > 0)
             {
                 branchItems.Add(new BranchItem
@@ -67,7 +67,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
                 foreach (var lang in languagesWithContent)
                 {
                     allLanguages.Add(lang.LanguageCode);
-                    // 记录标记为默认的语言
+                    // Record the language marked as default
                     if (lang.IsDefault && defaultLanguageCode is null)
                     {
                         defaultLanguageCode = lang.LanguageCode;
@@ -76,7 +76,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             }
         }
 
-        // 确定默认分支（只从有内容的分支中选择）
+        // Determine default branch (only select from branches with content)
         var defaultBranch = branchItems.FirstOrDefault(b => 
             string.Equals(b.Name, "main", StringComparison.OrdinalIgnoreCase))?.Name
             ?? branchItems.FirstOrDefault(b => 
@@ -84,7 +84,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             ?? branchItems.FirstOrDefault()?.Name
             ?? "";
 
-        // 确定默认语言：优先使用标记的默认语言，否则回退
+        // Determine default language: prefer the marked default language, otherwise fallback
         var finalDefaultLanguage = defaultLanguageCode 
             ?? (allLanguages.Contains(FallbackLanguageCode) ? FallbackLanguageCode : allLanguages.FirstOrDefault() ?? "");
 
@@ -104,7 +104,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             .AsNoTracking()
             .FirstOrDefaultAsync(item => item.OrgName == owner && item.RepoName == repo);
 
-        // 仓库不存在
+        // Repository does not exist
         if (repository is null)
         {
             return new RepositoryTreeResponse
@@ -117,7 +117,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             };
         }
 
-        // 仓库正在处理中或等待处理
+        // Repository is being processed or awaiting processing
         if (repository.Status == RepositoryStatus.Pending || repository.Status == RepositoryStatus.Processing)
         {
             return new RepositoryTreeResponse
@@ -130,7 +130,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             };
         }
 
-        // 仓库处理失败
+        // Repository processing failed
         if (repository.Status == RepositoryStatus.Failed)
         {
             return new RepositoryTreeResponse
@@ -143,7 +143,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             };
         }
 
-        // 仓库处理完成，获取文档目录
+        // Repository processing completed, get document catalog
         var branchEntity = await GetBranchAsync(repository.Id, branch);
         var language = await GetLanguageAsync(branchEntity.Id, lang);
 
@@ -155,7 +155,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
 
         if (catalogs.Count == 0)
         {
-            // 仓库已完成但没有文档，可能是空仓库
+            // Repository completed but has no documents, may be an empty repository
             return new RepositoryTreeResponse
             {
                 Owner = repository.OrgName,
@@ -166,7 +166,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             };
         }
 
-        // 构建树形结构
+        // Build tree structure
         var catalogMap = catalogs.ToDictionary(c => c.Id);
         var rootNodes = new List<RepositoryTreeNodeResponse>();
 
@@ -175,7 +175,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             rootNodes.Add(BuildTreeNode(catalog, catalogMap));
         }
 
-        // 递归查找第一个有实际内容的文档
+        // Recursively find the first document with actual content
         var defaultSlug = FindFirstContentSlug(catalogs, null) ?? string.Empty;
 
         return new RepositoryTreeResponse
@@ -232,7 +232,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             return new RepositoryDocResponse { Slug = normalizedSlug, Exists = false };
         }
 
-        // 解析来源文件列表
+        // Parse source file list
         var sourceFiles = new List<string>();
         if (!string.IsNullOrEmpty(docFile.SourceFiles))
         {
@@ -242,7 +242,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             }
             catch
             {
-                // 解析失败时返回空列表
+                // Return empty list when parsing fails
             }
         }
 
@@ -256,7 +256,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
     }
 
     /// <summary>
-    /// 检查GitHub仓库是否存在
+    /// Check if a GitHub repository exists
     /// </summary>
     [HttpGet("/{owner}/{repo}/check")]
     public async Task<GitRepoCheckResponse> CheckRepoAsync(string owner, string repo)
@@ -296,7 +296,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             return null;
         }
 
-        // 如果指定了分支名，尝试查找
+        // If a branch name is specified, try to find it
         if (!string.IsNullOrWhiteSpace(branchName))
         {
             var specified = branches.FirstOrDefault(item =>
@@ -307,7 +307,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             }
         }
 
-        // 否则返回默认分支
+        // Otherwise return the default branch
         return branches.FirstOrDefault(item => string.Equals(item.BranchName, "main", StringComparison.OrdinalIgnoreCase))
                ?? branches.FirstOrDefault(item => string.Equals(item.BranchName, "master", StringComparison.OrdinalIgnoreCase))
                ?? branches.OrderBy(item => item.CreatedAt).First();
@@ -325,7 +325,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             return null;
         }
 
-        // 如果指定了语言代码，尝试查找
+        // If a language code is specified, try to find it
         if (!string.IsNullOrWhiteSpace(languageCode))
         {
             var specified = languages.FirstOrDefault(item =>
@@ -336,14 +336,14 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             }
         }
 
-        // 优先返回标记为默认的语言
+        // Prefer returning the language marked as default
         var defaultLanguage = languages.FirstOrDefault(item => item.IsDefault);
         if (defaultLanguage is not null)
         {
             return defaultLanguage;
         }
 
-        // 回退：使用预设的回退语言代码
+        // Fallback: use the preset fallback language code
         return languages.FirstOrDefault(item => string.Equals(item.LanguageCode, FallbackLanguageCode, StringComparison.OrdinalIgnoreCase))
                ?? languages.OrderBy(item => item.CreatedAt).First();
     }
@@ -364,7 +364,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
     }
 
     /// <summary>
-    /// 递归查找第一个有实际内容的文档路径
+    /// Recursively find the first document path with actual content
     /// </summary>
     private static string? FindFirstContentSlug(List<DocCatalog> catalogs, string? parentId)
     {
@@ -375,13 +375,13 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
 
         foreach (var child in children)
         {
-            // 如果当前节点有内容，返回它的路径
+            // If the current node has content, return its path
             if (!string.IsNullOrEmpty(child.DocFileId))
             {
                 return NormalizePath(child.Path);
             }
 
-            // 否则递归查找子节点
+            // Otherwise recursively search child nodes
             var childSlug = FindFirstContentSlug(catalogs, child.Id);
             if (childSlug != null)
             {
@@ -414,7 +414,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
     }
 
     /// <summary>
-    /// 导出仓库文档为压缩包
+    /// Export repository documents as a compressed archive
     /// </summary>
     [HttpGet("/{owner}/{repo}/export")]
     [Authorize]
@@ -423,19 +423,19 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
         var repository = await GetRepositoryAsync(owner, repo);
         if (repository is null)
         {
-            return new NotFoundObjectResult("仓库不存在");
+            return new NotFoundObjectResult("Repository does not exist");
         }
 
         var branchEntity = await GetBranchAsync(repository.Id, branch);
         if (branchEntity is null)
         {
-            return new NotFoundObjectResult("分支不存在");
+            return new NotFoundObjectResult("Branch does not exist");
         }
 
         var language = await GetLanguageAsync(branchEntity.Id, lang);
         if (language is null)
         {
-            return new NotFoundObjectResult("语言不存在");
+            return new NotFoundObjectResult("Language does not exist");
         }
 
         var now = DateTime.UtcNow;
@@ -448,13 +448,13 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             if (timeSinceLastExport.TotalMinutes < ExportRateLimitMinutes)
             {
                 var remainingMinutes = Math.Ceiling(ExportRateLimitMinutes - timeSinceLastExport.TotalMinutes);
-                return new BadRequestObjectResult($"导出过于频繁，请在 {remainingMinutes} 分钟后重试");
+                return new BadRequestObjectResult($"Export rate limited, please try again in {remainingMinutes} minute(s)");
             }
         }
 
         if (!await TryAcquireExportSlotAsync())
         {
-            return new BadRequestObjectResult("当前导出请求过多，请稍后重试");
+            return new BadRequestObjectResult("Too many concurrent export requests, please try again later");
         }
 
         try
@@ -464,7 +464,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
                 AbsoluteExpirationRelativeToNow = ExportRateLimitTtl
             });
 
-            // 获取所有文档目录和文件
+            // Get all document catalogs and files
             var catalogs = await context.DocCatalogs
                 .AsNoTracking()
                 .Where(item => item.BranchLanguageId == language.Id && !item.IsDeleted)
@@ -474,21 +474,21 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
 
             if (catalogs.Count == 0)
             {
-                return new NotFoundObjectResult("该分支和语言下没有文档内容");
+                return new NotFoundObjectResult("No documents found for this branch and language");
             }
 
-            // 创建内存流用于生成压缩包
+            // Create memory stream for generating compressed archive
             using var memoryStream = new MemoryStream();
             using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
             {
-                // 构建目录结构并添加文件
+                // Build directory structure and add files
                 await AddFilesToArchive(archive, catalogs, null, null);
             }
 
-            // 设置文件名
+            // Set file name
             var fileName = $"{owner}-{repo}-{branchEntity.BranchName}-{language.LanguageCode}.zip";
             
-            // 返回压缩包
+            // Return compressed archive
             return new FileContentResult(memoryStream.ToArray(), "application/zip")
             {
                 FileDownloadName = fileName
@@ -544,7 +544,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
     }
 
     /// <summary>
-    /// 递归添加文件到压缩包
+    /// Recursively add files to the compressed archive
     /// </summary>
     private static async Task AddFilesToArchive(
         ZipArchive archive,
@@ -552,7 +552,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
         string? parentCatalogId,
         string? parentZipPath)
     {
-        // 获取当前层级的目录项
+        // Get directory items at the current level
         var currentLevelItems = catalogs
             .Where(c => c.ParentId == parentCatalogId)
             .OrderBy(c => c.Order)
@@ -564,10 +564,10 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
         {
             var itemName = EnsureUniqueName(SanitizeZipNameSegment(catalog.Title), usedNames);
 
-            // 如果有文档文件，创建文件条目
+            // If there is a document file, create a file entry
             if (catalog.DocFile != null)
             {
-                // 使用 .md 扩展名
+                // Use .md extension
                 var fileName = $"{itemName}.md";
                 var fullPath = CombineZipPath(parentZipPath, fileName);
 
@@ -577,7 +577,7 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
                 await writer.WriteAsync(catalog.DocFile.Content);
             }
 
-            // 递归处理子目录
+            // Recursively process subdirectories
             var children = catalogs.Where(c => c.ParentId == catalog.Id).ToList();
             if (children.Count > 0)
             {

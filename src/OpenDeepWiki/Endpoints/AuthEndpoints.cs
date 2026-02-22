@@ -5,16 +5,16 @@ using OpenDeepWiki.Services.Auth;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// 认证相关端点
+/// Authentication-related endpoints
 /// </summary>
 public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/auth")
-            .WithTags("认证");
+            .WithTags("Authentication");
 
-        // 用户登录
+        // User login
         group.MapPost("/login", async ([FromBody] LoginRequest request, [FromServices] IAuthService authService) =>
         {
             try
@@ -32,12 +32,12 @@ public static class AuthEndpoints
             }
         })
         .WithName("Login")
-        .WithSummary("用户登录")
+        .WithSummary("User login")
         .Produces<LoginResponse>(200)
         .Produces(401)
         .Produces(400);
 
-        // 用户注册
+        // User registration
         group.MapPost("/register", async ([FromBody] RegisterRequest request, [FromServices] IAuthService authService) =>
         {
             try
@@ -55,11 +55,11 @@ public static class AuthEndpoints
             }
         })
         .WithName("Register")
-        .WithSummary("用户注册")
+        .WithSummary("User registration")
         .Produces<LoginResponse>(200)
         .Produces(400);
 
-        // 获取当前用户信息
+        // Get current user info
         group.MapGet("/me", async (HttpContext context, [FromServices] IAuthService authService) =>
         {
             var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -73,14 +73,14 @@ public static class AuthEndpoints
 
             if (userInfo == null)
             {
-                return Results.NotFound(new { success = false, message = "用户不存在" });
+                return Results.NotFound(new { success = false, message = "User not found" });
             }
 
             return Results.Ok(new { success = true, data = userInfo });
         })
         .RequireAuthorization()
         .WithName("GetCurrentUser")
-        .WithSummary("获取当前用户信息")
+        .WithSummary("Get current user info")
         .Produces<UserInfo>(200)
         .Produces(401)
         .Produces(404);

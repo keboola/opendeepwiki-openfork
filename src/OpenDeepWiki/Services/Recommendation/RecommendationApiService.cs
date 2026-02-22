@@ -4,14 +4,14 @@ using OpenDeepWiki.Models.Recommendation;
 namespace OpenDeepWiki.Services.Recommendation;
 
 /// <summary>
-/// 推荐API服务
+/// Recommendation API service
 /// </summary>
 [MiniApi(Route = "/api/v1/recommendations")]
-[Tags("推荐")]
+[Tags("Recommendations")]
 public class RecommendationApiService(RecommendationService recommendationService)
 {
     /// <summary>
-    /// 获取推荐仓库列表
+    /// Get recommended repository list
     /// </summary>
     [HttpGet]
     public async Task<RecommendationResponse> GetRecommendationsAsync(
@@ -36,7 +36,7 @@ public class RecommendationApiService(RecommendationService recommendationServic
     }
 
     /// <summary>
-    /// 获取热门仓库
+    /// Get popular repositories
     /// </summary>
     [HttpGet("/popular")]
     public async Task<RecommendationResponse> GetPopularReposAsync(
@@ -59,7 +59,7 @@ public class RecommendationApiService(RecommendationService recommendationServic
     }
 
     /// <summary>
-    /// 获取可用的编程语言列表
+    /// Get available programming languages list
     /// </summary>
     [HttpGet("/languages")]
     public async Task<AvailableLanguagesResponse> GetAvailableLanguagesAsync(
@@ -69,7 +69,7 @@ public class RecommendationApiService(RecommendationService recommendationServic
     }
 
     /// <summary>
-    /// 记录用户活动
+    /// Record user activity
     /// </summary>
     [HttpPost("/activity")]
     public async Task<RecordActivityResponse> RecordActivityAsync(
@@ -81,7 +81,7 @@ public class RecommendationApiService(RecommendationService recommendationServic
             return new RecordActivityResponse
             {
                 Success = false,
-                ErrorMessage = "用户ID不能为空"
+                ErrorMessage = "User ID cannot be empty"
             };
         }
 
@@ -90,7 +90,7 @@ public class RecommendationApiService(RecommendationService recommendationServic
             return new RecordActivityResponse
             {
                 Success = false,
-                ErrorMessage = "活动类型不能为空"
+                ErrorMessage = "Activity type cannot be empty"
             };
         }
 
@@ -99,13 +99,13 @@ public class RecommendationApiService(RecommendationService recommendationServic
         return new RecordActivityResponse
         {
             Success = success,
-            ErrorMessage = success ? null : "记录活动失败"
+            ErrorMessage = success ? null : "Failed to record activity"
         };
     }
 
 
     /// <summary>
-    /// 标记仓库为不感兴趣
+    /// Mark repository as not interested
     /// </summary>
     [HttpPost("/dislike")]
     public async Task<DislikeResponse> MarkAsDislikedAsync(
@@ -117,7 +117,7 @@ public class RecommendationApiService(RecommendationService recommendationServic
             return new DislikeResponse
             {
                 Success = false,
-                ErrorMessage = "用户ID不能为空"
+                ErrorMessage = "User ID cannot be empty"
             };
         }
 
@@ -126,7 +126,7 @@ public class RecommendationApiService(RecommendationService recommendationServic
             return new DislikeResponse
             {
                 Success = false,
-                ErrorMessage = "仓库ID不能为空"
+                ErrorMessage = "Repository ID cannot be empty"
             };
         }
 
@@ -135,12 +135,12 @@ public class RecommendationApiService(RecommendationService recommendationServic
         return new DislikeResponse
         {
             Success = success,
-            ErrorMessage = success ? null : "标记失败"
+            ErrorMessage = success ? null : "Failed to mark"
         };
     }
 
     /// <summary>
-    /// 取消不感兴趣标记
+    /// Remove not-interested mark
     /// </summary>
     [HttpDelete("/dislike/{repositoryId}")]
     public async Task<IResult> RemoveDislikeAsync(
@@ -150,18 +150,18 @@ public class RecommendationApiService(RecommendationService recommendationServic
     {
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Results.BadRequest(new { error = "用户ID不能为空" });
+            return Results.BadRequest(new { error = "User ID cannot be empty" });
         }
 
         var success = await recommendationService.RemoveDislikeAsync(userId, repositoryId, cancellationToken);
 
         return success
             ? Results.Ok(new { success = true })
-            : Results.Json(new { success = false, error = "取消失败" }, statusCode: StatusCodes.Status500InternalServerError);
+            : Results.Json(new { success = false, error = "Failed to remove" }, statusCode: StatusCodes.Status500InternalServerError);
     }
 
     /// <summary>
-    /// 刷新用户偏好缓存
+    /// Refresh user preference cache
     /// </summary>
     [HttpPost("/refresh-preference/{userId}")]
     public async Task<IResult> RefreshUserPreferenceAsync(
@@ -170,11 +170,11 @@ public class RecommendationApiService(RecommendationService recommendationServic
     {
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Results.BadRequest(new { error = "用户ID不能为空" });
+            return Results.BadRequest(new { error = "User ID cannot be empty" });
         }
 
         await recommendationService.UpdateUserPreferenceCacheAsync(userId, cancellationToken);
 
-        return Results.Ok(new { success = true, message = "用户偏好缓存已刷新" });
+        return Results.Ok(new { success = true, message = "User preference cache refreshed" });
     }
 }

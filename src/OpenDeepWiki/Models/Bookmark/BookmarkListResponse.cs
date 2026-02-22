@@ -1,27 +1,27 @@
 namespace OpenDeepWiki.Models.Bookmark;
 
 /// <summary>
-/// 收藏列表响应
+/// Bookmark list response
 /// </summary>
 public class BookmarkListResponse
 {
     /// <summary>
-    /// 收藏项列表
+    /// List of bookmark items
     /// </summary>
     public List<BookmarkItemResponse> Items { get; set; } = [];
 
     /// <summary>
-    /// 总数
+    /// Total count
     /// </summary>
     public int Total { get; set; }
 
     /// <summary>
-    /// 当前页码
+    /// Current page number
     /// </summary>
     public int Page { get; set; }
 
     /// <summary>
-    /// 每页大小
+    /// Page size
     /// </summary>
     public int PageSize { get; set; }
 }

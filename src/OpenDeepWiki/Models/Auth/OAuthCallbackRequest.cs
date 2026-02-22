@@ -1,17 +1,17 @@
 namespace OpenDeepWiki.Models.Auth;
 
 /// <summary>
-/// OAuth回调请求
+/// OAuth callback request
 /// </summary>
 public class OAuthCallbackRequest
 {
     /// <summary>
-    /// 授权码
+    /// Authorization code
     /// </summary>
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
-    /// 状态码（用于防止CSRF攻击）
+    /// State code (used to prevent CSRF attacks)
     /// </summary>
     public string? State { get; set; }
 }

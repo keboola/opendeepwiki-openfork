@@ -3,70 +3,70 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Sessions;
 
 /// <summary>
-/// 对话会话接口
-/// 维护用户与 Agent 之间的对话上下文
+/// Chat session interface
+/// Maintains conversation context between user and Agent
 /// </summary>
 public interface IChatSession
 {
     /// <summary>
-    /// 会话唯一标识
+    /// Session unique identifier
     /// </summary>
     string SessionId { get; }
     
     /// <summary>
-    /// 用户标识
+    /// User identifier
     /// </summary>
     string UserId { get; }
     
     /// <summary>
-    /// 平台标识
+    /// Platform identifier
     /// </summary>
     string Platform { get; }
     
     /// <summary>
-    /// 会话状态
+    /// Session state
     /// </summary>
     SessionState State { get; }
     
     /// <summary>
-    /// 对话历史
+    /// Conversation history
     /// </summary>
     IReadOnlyList<IChatMessage> History { get; }
     
     /// <summary>
-    /// 创建时间
+    /// Creation time
     /// </summary>
     DateTimeOffset CreatedAt { get; }
     
     /// <summary>
-    /// 最后活动时间
+    /// Last activity time
     /// </summary>
     DateTimeOffset LastActivityAt { get; }
     
     /// <summary>
-    /// 会话元数据
+    /// Session metadata
     /// </summary>
     IDictionary<string, object>? Metadata { get; }
     
     /// <summary>
-    /// 添加消息到历史
+    /// Add message to history
     /// </summary>
-    /// <param name="message">要添加的消息</param>
+    /// <param name="message">Message to add</param>
     void AddMessage(IChatMessage message);
     
     /// <summary>
-    /// 清空历史
+    /// Clear history
     /// </summary>
     void ClearHistory();
     
     /// <summary>
-    /// 更新状态
+    /// Update state
     /// </summary>
-    /// <param name="state">新状态</param>
+    /// <param name="state">New state</param>
     void UpdateState(SessionState state);
     
     /// <summary>
-    /// 更新最后活动时间
+    /// Update last activity time
     /// </summary>
     void Touch();
 }

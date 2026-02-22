@@ -4,60 +4,60 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 聊天分享快照实体
-/// 用于存储创建分享时的对话内容和元数据
+/// Chat share snapshot entity
+/// Stores conversation content and metadata when creating a share
 /// </summary>
 public class ChatShareSnapshot : AggregateRoot<Guid>
 {
     /// <summary>
-    /// 对外分享ID（随机Token）
+    /// Public share ID (random token)
     /// </summary>
     [Required]
     [StringLength(100)]
     public string ShareId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 分享标题
+    /// Share title
     /// </summary>
     [Required]
     [StringLength(200)]
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// 分享描述
+    /// Share description
     /// </summary>
     [StringLength(500)]
     public string? Description { get; set; }
 
     /// <summary>
-    /// 分享创建者（可为空）
+    /// Share creator (nullable)
     /// </summary>
     [StringLength(200)]
     public string? CreatedBy { get; set; }
 
     /// <summary>
-    /// 分享内容快照（JSON）
+    /// Share content snapshot (JSON)
     /// </summary>
     [Required]
     public string SnapshotJson { get; set; } = string.Empty;
 
     /// <summary>
-    /// 分享元数据（JSON）
+    /// Share metadata (JSON)
     /// </summary>
     public string? Metadata { get; set; }
 
     /// <summary>
-    /// 分享创建时间（UTC）
+    /// Share creation time (UTC)
     /// </summary>
     public new DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// 分享过期时间（UTC）
+    /// Share expiration time (UTC)
     /// </summary>
     public DateTime? ExpiresAt { get; set; }
 
     /// <summary>
-    /// 分享撤销时间（UTC）
+    /// Share revocation time (UTC)
     /// </summary>
     public DateTime? RevokedAt { get; set; }
 }

@@ -3,100 +3,100 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 用户创建的对话应用实体
-/// 包含AppId、AppSecret和配置信息，用于嵌入到外部网站
+/// Chat application entity created by users
+/// Contains AppId, AppSecret, and configuration for embedding into external websites
 /// </summary>
 public class ChatApp : AggregateRoot<Guid>
 {
     /// <summary>
-    /// 所属用户ID
+    /// Owner user ID
     /// </summary>
     [Required]
     [StringLength(100)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 应用名称
+    /// Application name
     /// </summary>
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 应用描述
+    /// Application description
     /// </summary>
     [StringLength(500)]
     public string? Description { get; set; }
 
     /// <summary>
-    /// 应用图标URL
+    /// Application icon URL
     /// </summary>
     [StringLength(500)]
     public string? IconUrl { get; set; }
 
     /// <summary>
-    /// 公开的应用ID（用于嵌入脚本）
+    /// Public application ID (used for embed scripts)
     /// </summary>
     [Required]
     [StringLength(64)]
     public string AppId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 服务端验证密钥
+    /// Server-side verification secret key
     /// </summary>
     [Required]
     [StringLength(128)]
     public string AppSecret { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否启用域名校验
+    /// Whether domain validation is enabled
     /// </summary>
     public bool EnableDomainValidation { get; set; } = false;
 
     /// <summary>
-    /// 允许的域名列表（JSON数组）
+    /// Allowed domain list (JSON array)
     /// </summary>
     [StringLength(2000)]
     public string? AllowedDomains { get; set; }
 
     /// <summary>
-    /// AI模型提供商类型（OpenAI、OpenAIResponses、Anthropic）
+    /// AI model provider type (OpenAI, OpenAIResponses, Anthropic)
     /// </summary>
     [Required]
     [StringLength(50)]
     public string ProviderType { get; set; } = "OpenAI";
 
     /// <summary>
-    /// API密钥
+    /// API key
     /// </summary>
     [StringLength(500)]
     public string? ApiKey { get; set; }
 
     /// <summary>
-    /// API基础URL
+    /// API base URL
     /// </summary>
     [StringLength(500)]
     public string? BaseUrl { get; set; }
 
     /// <summary>
-    /// 可用模型列表（JSON数组）
+    /// Available model list (JSON array)
     /// </summary>
     [StringLength(1000)]
     public string? AvailableModels { get; set; }
 
     /// <summary>
-    /// 默认模型
+    /// Default model
     /// </summary>
     [StringLength(100)]
     public string? DefaultModel { get; set; }
 
     /// <summary>
-    /// 每分钟请求限制
+    /// Rate limit per minute
     /// </summary>
     public int? RateLimitPerMinute { get; set; }
 
     /// <summary>
-    /// 是否激活
+    /// Whether active
     /// </summary>
     public bool IsActive { get; set; } = true;
 }

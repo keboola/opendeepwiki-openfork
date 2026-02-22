@@ -3,7 +3,7 @@ using System.Security.Claims;
 namespace OpenDeepWiki.Services.Auth;
 
 /// <summary>
-/// 用户上下文实现，从HttpContext获取当前用户信息
+/// User context implementation, retrieves current user information from HttpContext
 /// </summary>
 public class UserContext : IUserContext
 {

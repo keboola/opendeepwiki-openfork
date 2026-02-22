@@ -7,8 +7,8 @@ using Microsoft.Extensions.Options;
 namespace OpenDeepWiki.Chat.Config;
 
 /// <summary>
-/// 配置验证启动过滤器
-/// 在应用启动时验证所有配置的完整性
+/// Configuration validation startup filter
+/// Validates the integrity of all configurations on application startup
 /// </summary>
 public class ConfigValidationStartupFilter : IStartupFilter
 {
@@ -22,7 +22,7 @@ public class ConfigValidationStartupFilter : IStartupFilter
             {
                 var logger = app.ApplicationServices.GetRequiredService<ILogger<ConfigValidationStartupFilter>>();
                 
-                // 使用 IServiceScopeFactory 创建 scope 来解析 Scoped 服务
+                // Use IServiceScopeFactory to create a scope for resolving Scoped services
                 var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
                 using var scope = scopeFactory.CreateScope();
                 var configService = scope.ServiceProvider.GetRequiredService<IChatConfigService>();
@@ -72,20 +72,20 @@ public class ConfigValidationStartupFilter : IStartupFilter
 }
 
 /// <summary>
-/// 配置验证器
-/// 提供配置验证的静态方法
+/// Configuration validator
+/// Provides static methods for configuration validation
 /// </summary>
 public static class ConfigValidator
 {
     /// <summary>
-    /// 验证单个配置
+    /// Validate a single configuration
     /// </summary>
     public static ConfigValidationResult Validate(ProviderConfigDto config)
     {
         var errors = new List<string>();
         var missingFields = new List<string>();
         
-        // 验证必需的基本字段
+        // Validate required basic fields
         if (string.IsNullOrWhiteSpace(config.Platform))
         {
             errors.Add("Platform is required");
@@ -98,7 +98,7 @@ public static class ConfigValidator
             missingFields.Add("DisplayName");
         }
         
-        // 验证数值范围
+        // Validate value ranges
         if (config.MessageInterval < 0)
         {
             errors.Add("MessageInterval must be non-negative");
@@ -114,7 +114,7 @@ public static class ConfigValidator
             errors.Add("MaxRetryCount should not exceed 10");
         }
         
-        // 验证 WebhookUrl 格式（如果提供）
+        // Validate WebhookUrl format (if provided)
         if (!string.IsNullOrWhiteSpace(config.WebhookUrl))
         {
             if (!Uri.TryCreate(config.WebhookUrl, UriKind.Absolute, out var uri) ||
@@ -124,7 +124,7 @@ public static class ConfigValidator
             }
         }
         
-        // 验证 ConfigData 是有效的 JSON
+        // Validate that ConfigData is valid JSON
         if (!string.IsNullOrWhiteSpace(config.ConfigData))
         {
             try
@@ -137,7 +137,7 @@ public static class ConfigValidator
             }
         }
         
-        // 验证平台特定的必需字段
+        // Validate platform-specific required fields
         if (!string.IsNullOrWhiteSpace(config.Platform) && !string.IsNullOrWhiteSpace(config.ConfigData))
         {
             var platformErrors = ValidatePlatformSpecificFields(config.Platform, config.ConfigData);
@@ -155,7 +155,7 @@ public static class ConfigValidator
     }
     
     /// <summary>
-    /// 验证平台特定的必需字段
+    /// Validate platform-specific required fields
     /// </summary>
     private static (List<string> Errors, List<string> MissingFields) ValidatePlatformSpecificFields(
         string platform, 
@@ -195,7 +195,7 @@ public static class ConfigValidator
     }
     
     /// <summary>
-    /// 获取平台的必需字段
+    /// Get required fields for a platform
     /// </summary>
     private static string[] GetRequiredFieldsForPlatform(string platform)
     {
@@ -204,7 +204,7 @@ public static class ConfigValidator
             "feishu" => new[] { "AppId", "AppSecret" },
             "qq" => new[] { "AppId", "Token" },
             "wechat" => new[] { "AppId", "AppSecret", "Token", "EncodingAesKey" },
-            _ => Array.Empty<string>() // 默认不要求特定字段
+            _ => Array.Empty<string>() // No specific fields required by default
         };
     }
 }

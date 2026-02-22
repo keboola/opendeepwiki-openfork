@@ -23,9 +23,9 @@ export function LanguageToggle() {
   }, []);
 
   const changeLocale = React.useCallback((newLocale: Locale) => {
-    // 设置 cookie
+    // Set cookie
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
-    // 刷新页面以应用新语言
+    // Refresh page to apply the new language
     window.location.reload();
   }, []);
 

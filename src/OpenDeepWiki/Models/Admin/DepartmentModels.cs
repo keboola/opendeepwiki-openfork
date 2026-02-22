@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// 管理端部门 DTO
+/// Admin department DTO
 /// </summary>
 public class AdminDepartmentDto
 {
@@ -17,7 +17,7 @@ public class AdminDepartmentDto
 }
 
 /// <summary>
-/// 创建部门请求
+/// Create department request
 /// </summary>
 public class CreateDepartmentRequest
 {
@@ -29,7 +29,7 @@ public class CreateDepartmentRequest
 }
 
 /// <summary>
-/// 更新部门请求
+/// Update department request
 /// </summary>
 public class UpdateDepartmentRequest
 {
@@ -42,7 +42,7 @@ public class UpdateDepartmentRequest
 
 
 /// <summary>
-/// 部门用户 DTO
+/// Department user DTO
 /// </summary>
 public class DepartmentUserDto
 {
@@ -56,7 +56,7 @@ public class DepartmentUserDto
 }
 
 /// <summary>
-/// 部门仓库 DTO
+/// Department repository DTO
 /// </summary>
 public class DepartmentRepositoryDto
 {
@@ -71,7 +71,7 @@ public class DepartmentRepositoryDto
 }
 
 /// <summary>
-/// 添加用户到部门请求
+/// Add user to department request
 /// </summary>
 public class AddUserToDepartmentRequest
 {
@@ -80,7 +80,7 @@ public class AddUserToDepartmentRequest
 }
 
 /// <summary>
-/// 分配仓库到部门请求
+/// Assign repository to department request
 /// </summary>
 public class AssignRepositoryRequest
 {

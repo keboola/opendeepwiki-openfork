@@ -3,8 +3,8 @@
 namespace OpenDeepWiki.Agents;
 
 /// <summary>
-/// 自定义 HTTP 消息处理器，用于拦截和记录请求/响应状态
-/// 支持 502/429 错误自动重试
+/// Custom HTTP message handler for intercepting and logging request/response status
+/// Supports automatic retry for 502/429 errors
 /// </summary>
 public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
 {
@@ -23,7 +23,7 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
         var requestId = Guid.NewGuid().ToString("N")[..8];
         var startTime = DateTime.UtcNow;
 
-        Console.WriteLine($"[{requestId}] >>> 请求开始: {request.Method} {request.RequestUri}");
+        Console.WriteLine($"[{requestId}] >>> Request started: {request.Method} {request.RequestUri}");
 
         var attempt = 0;
         HttpResponseMessage? response = null;
@@ -34,17 +34,17 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
 
             try
             {
-                // 如果是重试，需要克隆请求（因为原请求可能已被消费）
+                // If retrying, clone the request (because the original may have been consumed)
                 var requestToSend = attempt == 1 ? request : await CloneRequestAsync(request);
 
                 response = await base.SendAsync(requestToSend, cancellationToken);
 
-                // 检查是否需要重试
+                // Check if retry is needed
                 if (ShouldRetry(response.StatusCode) && attempt < MaxRetryAttempts)
                 {
                     var retryDelay = GetRetryDelay(response, attempt);
                     Console.WriteLine(
-                        $"[{requestId}] !!! 收到 {(int)response.StatusCode} 响应，{retryDelay.TotalSeconds:F0}秒后进行第 {attempt + 1} 次重试...");
+                        $"[{requestId}] !!! Received {(int)response.StatusCode} response, retrying (attempt {attempt + 1}) in {retryDelay.TotalSeconds:F0}s...");
 
                     response.Dispose();
                     await Task.Delay(retryDelay, cancellationToken);
@@ -57,14 +57,14 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
             {
                 var retryDelay = GetExponentialDelay(attempt);
                 Console.WriteLine(
-                    $"[{requestId}] !!! 请求异常: {ex.Message}，{retryDelay.TotalSeconds:F0}秒后进行第 {attempt + 1} 次重试...");
+                    $"[{requestId}] !!! Request exception: {ex.Message}, retrying (attempt {attempt + 1}) in {retryDelay.TotalSeconds:F0}s...");
 
                 await Task.Delay(retryDelay, cancellationToken);
             }
             catch (Exception ex)
             {
                 var elapsed = DateTime.UtcNow - startTime;
-                Console.WriteLine($"[{requestId}] !!! 请求异常: {ex.Message} | 耗时: {elapsed.TotalMilliseconds:F0}ms");
+                Console.WriteLine($"[{requestId}] !!! Request exception: {ex.Message} | Elapsed: {elapsed.TotalMilliseconds:F0}ms");
                 throw;
             }
         }
@@ -74,12 +74,12 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
         if (response != null)
         {
             Console.WriteLine(
-                $"[{requestId}] <<< 响应完成: {(int)response.StatusCode} {response.StatusCode} | 耗时: {totalElapsed.TotalMilliseconds:F0}ms | 尝试次数: {attempt}");
+                $"[{requestId}] <<< Response complete: {(int)response.StatusCode} {response.StatusCode} | Elapsed: {totalElapsed.TotalMilliseconds:F0}ms | Attempts: {attempt}");
 
             if (!response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync(cancellationToken);
-                Console.WriteLine($"[{requestId}] !!! 错误响应: {content[..Math.Min(500, content.Length)]}");
+                Console.WriteLine($"[{requestId}] !!! Error response: {content[..Math.Min(500, content.Length)]}");
             }
         }
 
@@ -105,7 +105,7 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
 
     private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
     {
-        // 优先使用 Retry-After 头
+        // Prefer using the Retry-After header
         if (response.Headers.RetryAfter != null)
         {
             if (response.Headers.RetryAfter.Delta.HasValue)
@@ -124,7 +124,7 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
             }
         }
 
-        // 使用指数退避
+        // Use exponential backoff
         return GetExponentialDelay(attempt);
     }
 
@@ -141,26 +141,26 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
             Version = request.Version
         };
 
-        // 复制内容
+        // Copy content
         if (request.Content != null)
         {
             var content = await request.Content.ReadAsByteArrayAsync();
             clone.Content = new ByteArrayContent(content);
 
-            // 复制内容头
+            // Copy content headers
             foreach (var header in request.Content.Headers)
             {
                 clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
 
-        // 复制请求头
+        // Copy request headers
         foreach (var header in request.Headers)
         {
             clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
-        // 复制选项
+        // Copy options
         foreach (var option in request.Options)
         {
             clone.Options.TryAdd(option.Key, option.Value);

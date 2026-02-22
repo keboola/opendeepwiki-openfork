@@ -1,23 +1,23 @@
 namespace OpenDeepWiki.Models.Admin;
 
 /// <summary>
-/// 仪表盘统计数据响应
+/// Dashboard statistics response
 /// </summary>
 public class DashboardStatisticsResponse
 {
     /// <summary>
-    /// 每日仓库统计
+    /// Daily repository statistics
     /// </summary>
     public List<DailyRepositoryStatistic> RepositoryStats { get; set; } = new();
 
     /// <summary>
-    /// 每日用户统计
+    /// Daily user statistics
     /// </summary>
     public List<DailyUserStatistic> UserStats { get; set; } = new();
 }
 
 /// <summary>
-/// 每日仓库统计
+/// Daily repository statistics
 /// </summary>
 public class DailyRepositoryStatistic
 {
@@ -27,7 +27,7 @@ public class DailyRepositoryStatistic
 }
 
 /// <summary>
-/// 每日用户统计
+/// Daily user statistics
 /// </summary>
 public class DailyUserStatistic
 {
@@ -36,7 +36,7 @@ public class DailyUserStatistic
 }
 
 /// <summary>
-/// Token 消耗统计响应
+/// Token usage statistics response
 /// </summary>
 public class TokenUsageStatisticsResponse
 {
@@ -47,7 +47,7 @@ public class TokenUsageStatisticsResponse
 }
 
 /// <summary>
-/// 每日 Token 消耗
+/// Daily token usage
 /// </summary>
 public class DailyTokenUsage
 {

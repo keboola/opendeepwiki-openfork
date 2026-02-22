@@ -84,7 +84,7 @@ const defaultFormData: FormData = {
   isActive: true,
 };
 
-// 树形节点组件
+// Tree node component
 function DepartmentTreeNode({
   dept,
   level,
@@ -170,7 +170,7 @@ function DepartmentTreeNode({
 }
 
 
-// 扁平化部门树用于下拉选择
+// Flatten department tree for dropdown selection
 function flattenDepartments(depts: AdminDepartment[], level = 0): { id: string; name: string; level: number }[] {
   const result: { id: string; name: string; level: number }[] = [];
   for (const dept of depts) {
@@ -191,16 +191,16 @@ export default function AdminDepartmentsPage() {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const t = useTranslations();
 
-  // 树形展开状态
+  // Tree expansion state
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-  // 详情面板状态
+  // Detail panel state
   const [selectedDept, setSelectedDept] = useState<AdminDepartment | null>(null);
   const [deptUsers, setDeptUsers] = useState<DepartmentUser[]>([]);
   const [deptRepos, setDeptRepos] = useState<DepartmentRepository[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // 添加用户对话框状态
+  // Add user dialog state
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [userSearchKeyword, setUserSearchKeyword] = useState("");
   const [userSearchResults, setUserSearchResults] = useState<{ id: string; name: string; email?: string }[]>([]);
@@ -210,7 +210,7 @@ export default function AdminDepartmentsPage() {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [isManager, setIsManager] = useState(false);
 
-  // 添加仓库对话框状态
+  // Add repository dialog state
   const [showAddRepoDialog, setShowAddRepoDialog] = useState(false);
   const [repoSearchKeyword, setRepoSearchKeyword] = useState("");
   const [repoSearchResults, setRepoSearchResults] = useState<{ id: string; name: string; orgName: string }[]>([]);
@@ -226,7 +226,7 @@ export default function AdminDepartmentsPage() {
     try {
       const result = await getDepartmentTree();
       setDepartmentTree(result);
-      // 默认展开所有
+      // Expand all by default
       const allIds = new Set<string>();
       const collectIds = (depts: AdminDepartment[]) => {
         for (const d of depts) {
@@ -315,7 +315,7 @@ export default function AdminDepartmentsPage() {
       setShowDialog(false);
       fetchData();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "操作失败";
+      const message = error instanceof Error ? error.message : "Operation failed";
       toast.error(message || t('admin.toast.operationFailed'));
     }
   };
@@ -331,13 +331,13 @@ export default function AdminDepartmentsPage() {
       }
       fetchData();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "删除失败";
+      const message = error instanceof Error ? error.message : "Delete failed";
       toast.error(message || t('admin.toast.operationFailed'));
     }
   };
 
 
-  // 搜索用户
+  // Search users
   const searchUsers = useCallback(async (keyword: string, page: number) => {
     setUserLoading(true);
     try {
@@ -378,7 +378,7 @@ export default function AdminDepartmentsPage() {
       setShowAddUserDialog(false);
       fetchDeptDetail(selectedDept);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "添加失败";
+      const message = error instanceof Error ? error.message : "Add failed";
       toast.error(message || t('admin.toast.operationFailed'));
     }
   };
@@ -394,7 +394,7 @@ export default function AdminDepartmentsPage() {
     }
   };
 
-  // 搜索仓库
+  // Search repositories
   const searchRepos = useCallback(async (keyword: string, page: number) => {
     setRepoLoading(true);
     try {
@@ -435,7 +435,7 @@ export default function AdminDepartmentsPage() {
       setShowAddRepoDialog(false);
       fetchDeptDetail(selectedDept);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "分配失败";
+      const message = error instanceof Error ? error.message : "Assignment failed";
       toast.error(message || t('admin.toast.operationFailed'));
     }
   };
@@ -473,7 +473,7 @@ export default function AdminDepartmentsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* 部门树 */}
+        {/* Department tree */}
         <div className="lg:col-span-1">
           <Card className="p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -510,7 +510,7 @@ export default function AdminDepartmentsPage() {
           </Card>
         </div>
 
-        {/* 部门详情 */}
+        {/* Department details */}
         <div className="lg:col-span-2">
           {!selectedDept ? (
             <Card className="flex h-64 flex-col items-center justify-center">
@@ -615,7 +615,7 @@ export default function AdminDepartmentsPage() {
       </div>
 
 
-      {/* 新增/编辑部门对话框 */}
+      {/* Create/edit department dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
@@ -645,7 +645,7 @@ export default function AdminDepartmentsPage() {
                     .filter((d) => d.id !== editingDept?.id)
                     .map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
-                        {"　".repeat(dept.level)}{dept.name}
+                        {"\u00A0\u00A0".repeat(dept.level)}{dept.name}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -683,7 +683,7 @@ export default function AdminDepartmentsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 添加用户对话框 - 支持搜索和分页 */}
+      {/* Add user dialog - with search and pagination */}
       <Dialog open={showAddUserDialog} onOpenChange={setShowAddUserDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -774,7 +774,7 @@ export default function AdminDepartmentsPage() {
       </Dialog>
 
 
-      {/* 分配仓库对话框 - 支持搜索和分页 */}
+      {/* Assign repository dialog - with search and pagination */}
       <Dialog open={showAddRepoDialog} onOpenChange={setShowAddRepoDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -858,7 +858,7 @@ export default function AdminDepartmentsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 删除确认对话框 */}
+      {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

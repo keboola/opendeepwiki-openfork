@@ -4,19 +4,19 @@ using OpenDeepWiki.Chat.Queue;
 namespace OpenDeepWiki.Chat.Processing;
 
 /// <summary>
-/// 死信队列处理器
-/// 提供死信队列的监控和管理功能
+/// Dead letter queue processor
+/// Provides monitoring and management capabilities for the dead letter queue
 /// Requirements: 10.4
 /// </summary>
 public interface IDeadLetterProcessor
 {
     /// <summary>
-    /// 获取死信队列统计信息
+    /// Get dead letter queue statistics
     /// </summary>
     Task<DeadLetterStats> GetStatsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 获取死信消息列表
+    /// Get dead letter message list
     /// </summary>
     Task<IReadOnlyList<DeadLetterMessage>> GetMessagesAsync(
         int skip = 0, 
@@ -24,35 +24,35 @@ public interface IDeadLetterProcessor
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 重新处理单条死信消息
+    /// Reprocess a single dead letter message
     /// </summary>
     Task<bool> ReprocessAsync(string messageId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 批量重新处理死信消息
+    /// Batch reprocess dead letter messages
     /// </summary>
     Task<int> ReprocessBatchAsync(
         IEnumerable<string> messageIds, 
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 重新处理所有死信消息
+    /// Reprocess all dead letter messages
     /// </summary>
     Task<int> ReprocessAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 删除单条死信消息
+    /// Delete a single dead letter message
     /// </summary>
     Task<bool> DeleteAsync(string messageId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 清空死信队列
+    /// Clear the dead letter queue
     /// </summary>
     Task<int> ClearAllAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// 死信队列统计信息
+/// Dead letter queue statistics
 /// </summary>
 public record DeadLetterStats(
     int TotalCount,
@@ -64,7 +64,7 @@ public record DeadLetterStats(
 );
 
 /// <summary>
-/// 死信队列处理器实现
+/// Dead letter queue processor implementation
 /// </summary>
 public class DeadLetterProcessor : IDeadLetterProcessor
 {
@@ -116,7 +116,7 @@ public class DeadLetterProcessor : IDeadLetterProcessor
         var result = await _messageQueue.ReprocessDeadLetterAsync(messageId, cancellationToken);
         if (result)
         {
-            _logger.LogInformation("死信消息已重新入队处理: {MessageId}", messageId);
+            _logger.LogInformation("Dead letter message re-enqueued for processing: {MessageId}", messageId);
         }
         return result;
     }
@@ -135,7 +135,7 @@ public class DeadLetterProcessor : IDeadLetterProcessor
             }
         }
         
-        _logger.LogInformation("批量重新处理死信消息完成，成功: {SuccessCount}", successCount);
+        _logger.LogInformation("Batch reprocessing of dead letter messages complete, succeeded: {SuccessCount}", successCount);
         return successCount;
     }
 
@@ -154,7 +154,7 @@ public class DeadLetterProcessor : IDeadLetterProcessor
         var result = await _messageQueue.DeleteDeadLetterAsync(messageId, cancellationToken);
         if (result)
         {
-            _logger.LogInformation("死信消息已删除: {MessageId}", messageId);
+            _logger.LogInformation("Dead letter message deleted: {MessageId}", messageId);
         }
         return result;
     }
@@ -163,7 +163,7 @@ public class DeadLetterProcessor : IDeadLetterProcessor
     public async Task<int> ClearAllAsync(CancellationToken cancellationToken = default)
     {
         var count = await _messageQueue.ClearDeadLetterQueueAsync(cancellationToken);
-        _logger.LogInformation("死信队列已清空，删除 {Count} 条消息", count);
+        _logger.LogInformation("Dead letter queue cleared, {Count} messages deleted", count);
         return count;
     }
 }

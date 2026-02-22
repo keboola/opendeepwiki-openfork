@@ -7,8 +7,8 @@ using OpenDeepWiki.Models.Recommendation;
 namespace OpenDeepWiki.Services.Recommendation;
 
 /// <summary>
-/// 推荐服务
-/// 实现基于多维度的混合推荐算法
+/// Recommendation service
+/// Implements a multi-dimensional hybrid recommendation algorithm
 /// </summary>
 public class RecommendationService
 {
@@ -22,7 +22,7 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 获取推荐仓库列表
+    /// Get recommended repository list
     /// </summary>
     public async Task<RecommendationResponse> GetRecommendationsAsync(
         RecommendationRequest request,
@@ -30,18 +30,18 @@ public class RecommendationService
     {
         var config = GetConfigByStrategy(request.Strategy);
 
-        // 1. 获取候选仓库池（公开且已完成处理的仓库）
+        // 1. Get candidate repository pool (public and completed repositories)
         var candidateQuery = _context.Repositories
             .AsNoTracking()
             .Where(r => r.IsPublic && r.Status == RepositoryStatus.Completed && !r.IsDeleted);
 
-        // 语言过滤
+        // Language filter
         if (!string.IsNullOrEmpty(request.LanguageFilter))
         {
             candidateQuery = candidateQuery.Where(r => r.PrimaryLanguage == request.LanguageFilter);
         }
 
-        // 排除用户标记为不感兴趣的仓库
+        // Exclude repositories the user marked as not interested
         if (!string.IsNullOrEmpty(request.UserId))
         {
             var dislikedRepoIds = await _context.UserDislikes
@@ -69,14 +69,14 @@ public class RecommendationService
             };
         }
 
-        // 2. 获取用户相关数据（如果有用户ID）
+        // 2. Get user-related data (if user ID is available)
         UserPreferenceData? userPreference = null;
         if (!string.IsNullOrEmpty(request.UserId))
         {
             userPreference = await GetUserPreferenceDataAsync(request.UserId, cancellationToken);
         }
 
-        // 3. 获取协同过滤数据
+        // 3. Get collaborative filtering data
         var collaborativeScores = new Dictionary<string, double>();
         if (!string.IsNullOrEmpty(request.UserId) && config.CollaborativeWeight > 0)
         {
@@ -84,7 +84,7 @@ public class RecommendationService
                 request.UserId, candidates.Select(c => c.Id).ToList(), cancellationToken);
         }
 
-        // 4. 计算每个仓库的综合得分
+        // 4. Calculate composite score for each repository
         var scoredRepos = candidates.Select(repo =>
         {
             var breakdown = CalculateScoreBreakdown(repo, userPreference, collaborativeScores, config);
@@ -122,13 +122,13 @@ public class RecommendationService
 
 
     /// <summary>
-    /// 根据策略获取配置
+    /// Get configuration by strategy
     /// </summary>
     private RecommendationConfig GetConfigByStrategy(string strategy)
     {
         return strategy.ToLower() switch
         {
-            // 热门策略：侧重热度和订阅
+            // Popular strategy: emphasizes popularity and subscriptions
             "popular" => new RecommendationConfig
             {
                 PopularityWeight = 0.40,
@@ -138,7 +138,7 @@ public class RecommendationService
                 PrivateRepoLanguageWeight = 0.05,
                 CollaborativeWeight = 0.00
             },
-            // 个性化策略：侧重用户偏好
+            // Personalized strategy: emphasizes user preferences
             "personalized" => new RecommendationConfig
             {
                 PopularityWeight = 0.10,
@@ -148,7 +148,7 @@ public class RecommendationService
                 PrivateRepoLanguageWeight = 0.25,
                 CollaborativeWeight = 0.15
             },
-            // 探索策略：增加随机性和长尾内容
+            // Explore strategy: increases randomness and long-tail content
             "explore" => new RecommendationConfig
             {
                 PopularityWeight = 0.15,
@@ -158,14 +158,14 @@ public class RecommendationService
                 PrivateRepoLanguageWeight = 0.15,
                 CollaborativeWeight = 0.20
             },
-            // 默认混合策略
+            // Default hybrid strategy
             _ => new RecommendationConfig()
         };
     }
 
     /// <summary>
-    /// 计算热度得分
-    /// 使用对数归一化，避免大数值主导
+    /// Calculate popularity score
+    /// Uses logarithmic normalization to prevent large values from dominating
     /// </summary>
     private double CalculatePopularityScore(Repository repo)
     {
@@ -186,8 +186,8 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 计算订阅得分
-    /// 订阅数反映用户的持续关注意愿
+    /// Calculate subscription score
+    /// Subscription count reflects users' sustained interest
     /// </summary>
     private double CalculateSubscriptionScore(Repository repo)
     {
@@ -197,37 +197,37 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 计算时间衰减得分
-    /// 最近更新的仓库得分更高
+    /// Calculate time decay score
+    /// Recently updated repositories score higher
     /// </summary>
     private double CalculateTimeDecayScore(Repository repo)
     {
         var lastUpdate = repo.UpdatedAt ?? repo.CreatedAt;
         var daysSinceUpdate = (DateTime.UtcNow - lastUpdate).TotalDays;
 
-        // 半衰期设为60天
+        // Half-life set to 60 days
         const double halfLife = 60.0;
         return Math.Exp(-0.693 * daysSinceUpdate / halfLife);
     }
 
     /// <summary>
-    /// 计算用户偏好得分
-    /// 基于用户历史行为的语言偏好
+    /// Calculate user preference score
+    /// Based on language preferences from user's historical behavior
     /// </summary>
     private double CalculateUserPreferenceScore(Repository repo, UserPreferenceData? userPref)
     {
-        if (userPref == null) return 0.5; // 无用户数据时返回中性分数
+        if (userPref == null) return 0.5; // Return neutral score when no user data is available
 
         double score = 0;
 
-        // 语言匹配 (60%)
+        // Language match (60%)
         if (!string.IsNullOrEmpty(repo.PrimaryLanguage) &&
             userPref.LanguageWeights.TryGetValue(repo.PrimaryLanguage, out var langWeight))
         {
             score += 0.6 * langWeight;
         }
 
-        // 排除已浏览/收藏的仓库，给新内容加分 (40%)
+        // Exclude viewed/bookmarked repositories, give bonus points to new content (40%)
         if (!userPref.ViewedRepoIds.Contains(repo.Id) &&
             !userPref.BookmarkedRepoIds.Contains(repo.Id))
         {
@@ -238,25 +238,25 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 计算私有仓库语言匹配得分
-    /// 基于用户自己添加的仓库的语言分布
+    /// Calculate private repository language match score
+    /// Based on the language distribution of user's own repositories
     /// </summary>
     private double CalculatePrivateRepoLanguageScore(Repository repo, UserPreferenceData? userPref)
     {
         if (userPref == null || string.IsNullOrEmpty(repo.PrimaryLanguage))
-            return 0.3; // 无数据时返回较低分数
+            return 0.3; // Return lower score when no data is available
 
         if (userPref.PrivateRepoLanguages.TryGetValue(repo.PrimaryLanguage, out var weight))
         {
             return weight;
         }
 
-        return 0.1; // 语言不匹配时给予较低分数
+        return 0.1; // Give lower score when language doesn't match
     }
 
 
     /// <summary>
-    /// 计算得分明细
+    /// Calculate score breakdown
     /// </summary>
     private ScoreBreakdown CalculateScoreBreakdown(
         Repository repo,
@@ -276,7 +276,7 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 计算最终得分
+    /// Calculate final score
     /// </summary>
     private double CalculateFinalScore(ScoreBreakdown breakdown, RecommendationConfig config)
     {
@@ -289,30 +289,30 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 生成推荐理由
+    /// Generate recommendation reason
     /// </summary>
     private string GenerateRecommendReason(ScoreBreakdown breakdown, UserPreferenceData? userPref)
     {
         var reasons = new List<string>();
 
         if (breakdown.Popularity > 0.7)
-            reasons.Add("热门项目");
+            reasons.Add("Popular project");
         if (breakdown.Subscription > 0.6)
-            reasons.Add("高订阅量");
+            reasons.Add("Highly subscribed");
         if (breakdown.TimeDecay > 0.8)
-            reasons.Add("近期活跃");
+            reasons.Add("Recently active");
         if (breakdown.UserPreference > 0.6 && userPref != null)
-            reasons.Add("符合您的偏好");
+            reasons.Add("Matches your preferences");
         if (breakdown.PrivateRepoLanguage > 0.6 && userPref != null)
-            reasons.Add("与您的技术栈匹配");
+            reasons.Add("Matches your tech stack");
         if (breakdown.Collaborative > 0.5)
-            reasons.Add("相似用户推荐");
+            reasons.Add("Recommended by similar users");
 
-        return reasons.Count > 0 ? string.Join("、", reasons) : "综合推荐";
+        return reasons.Count > 0 ? string.Join(", ", reasons) : "General recommendation";
     }
 
     /// <summary>
-    /// 获取用户偏好数据
+    /// Get user preference data
     /// </summary>
     private async Task<UserPreferenceData> GetUserPreferenceDataAsync(
         string userId,
@@ -320,7 +320,7 @@ public class RecommendationService
     {
         var result = new UserPreferenceData();
 
-        // 1. 获取用户已浏览的仓库ID
+        // 1. Get repository IDs viewed by the user
         var viewedRepoIds = await _context.UserActivities
             .AsNoTracking()
             .Where(a => a.UserId == userId && a.RepositoryId != null)
@@ -329,7 +329,7 @@ public class RecommendationService
             .ToListAsync(cancellationToken);
         result.ViewedRepoIds = viewedRepoIds.ToHashSet();
 
-        // 2. 获取用户已收藏的仓库ID
+        // 2. Get repository IDs bookmarked by the user
         var bookmarkedRepoIds = await _context.UserBookmarks
             .AsNoTracking()
             .Where(b => b.UserId == userId)
@@ -337,7 +337,7 @@ public class RecommendationService
             .ToListAsync(cancellationToken);
         result.BookmarkedRepoIds = bookmarkedRepoIds.ToHashSet();
 
-        // 3. 计算语言偏好（基于用户活动）
+        // 3. Calculate language preferences (based on user activity)
         var languageActivities = await _context.UserActivities
             .AsNoTracking()
             .Where(a => a.UserId == userId && a.Language != null)
@@ -354,7 +354,7 @@ public class RecommendationService
             }
         }
 
-        // 4. 获取用户私有仓库的语言分布
+        // 4. Get language distribution of user's private repositories
         var userRepoLanguages = await _context.Repositories
             .AsNoTracking()
             .Where(r => r.OwnerUserId == userId && r.PrimaryLanguage != null)
@@ -375,8 +375,8 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 计算协同过滤得分
-    /// 基于相似用户的行为推荐
+    /// Calculate collaborative filtering scores
+    /// Recommendations based on similar users' behavior
     /// </summary>
     private async Task<Dictionary<string, double>> CalculateCollaborativeScoresAsync(
         string userId,
@@ -385,7 +385,7 @@ public class RecommendationService
     {
         var scores = new Dictionary<string, double>();
 
-        // 1. 获取目标用户的收藏和订阅
+        // 1. Get the target user's bookmarks and subscriptions
         var userRepoIds = await _context.UserBookmarks
             .AsNoTracking()
             .Where(b => b.UserId == userId)
@@ -401,7 +401,7 @@ public class RecommendationService
             return scores;
         }
 
-        // 2. 找到收藏/订阅了相同仓库的其他用户
+        // 2. Find other users who bookmarked/subscribed to the same repositories
         var similarUserIds = await _context.UserBookmarks
             .AsNoTracking()
             .Where(b => userRepoIds.Contains(b.RepositoryId) && b.UserId != userId)
@@ -411,7 +411,7 @@ public class RecommendationService
                 .Where(s => userRepoIds.Contains(s.RepositoryId) && s.UserId != userId)
                 .Select(s => s.UserId))
             .Distinct()
-            .Take(100) // 限制相似用户数量
+            .Take(100) // Limit the number of similar users
             .ToListAsync(cancellationToken);
 
         if (similarUserIds.Count == 0)
@@ -419,7 +419,7 @@ public class RecommendationService
             return scores;
         }
 
-        // 3. 获取相似用户收藏/订阅的仓库及其频次
+        // 3. Get repositories bookmarked/subscribed by similar users and their frequency
         var similarUserRepos = await _context.UserBookmarks
             .AsNoTracking()
             .Where(b => similarUserIds.Contains(b.UserId) && candidateRepoIds.Contains(b.RepositoryId))
@@ -434,7 +434,7 @@ public class RecommendationService
             .Select(g => new { RepoId = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
 
-        // 4. 合并并计算得分
+        // 4. Merge and calculate scores
         var combinedScores = new Dictionary<string, int>();
         foreach (var item in similarUserRepos)
         {
@@ -443,7 +443,7 @@ public class RecommendationService
         foreach (var item in subscriptionRepos)
         {
             if (combinedScores.ContainsKey(item.RepoId))
-                combinedScores[item.RepoId] += item.Count * 2; // 订阅权重更高
+                combinedScores[item.RepoId] += item.Count * 2; // Subscriptions have higher weight
             else
                 combinedScores[item.RepoId] = item.Count * 2;
         }
@@ -461,7 +461,7 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 记录用户活动
+    /// Record user activity
     /// </summary>
     public async Task<bool> RecordActivityAsync(
         RecordActivityRequest request,
@@ -510,7 +510,7 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 更新用户偏好缓存
+    /// Update user preference cache
     /// </summary>
     public async Task UpdateUserPreferenceCacheAsync(
         string userId,
@@ -547,7 +547,7 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 标记仓库为不感兴趣
+    /// Mark repository as not interested
     /// </summary>
     public async Task<bool> MarkAsDislikedAsync(
         DislikeRequest request,
@@ -555,13 +555,13 @@ public class RecommendationService
     {
         try
         {
-            // 检查是否已标记
+            // Check if already marked
             var existing = await _context.UserDislikes
                 .FirstOrDefaultAsync(d => d.UserId == request.UserId && d.RepositoryId == request.RepositoryId, cancellationToken);
 
             if (existing != null)
             {
-                return true; // 已经标记过了
+                return true; // Already marked
             }
 
             var dislike = new UserDislike
@@ -585,7 +585,7 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 取消不感兴趣标记
+    /// Remove not-interested mark
     /// </summary>
     public async Task<bool> RemoveDislikeAsync(
         string userId,
@@ -615,7 +615,7 @@ public class RecommendationService
     }
 
     /// <summary>
-    /// 获取可用的编程语言列表
+    /// Get available programming languages list
     /// </summary>
     public async Task<AvailableLanguagesResponse> GetAvailableLanguagesAsync(
         CancellationToken cancellationToken = default)
@@ -637,7 +637,7 @@ public class RecommendationService
 }
 
 /// <summary>
-/// 用户偏好数据（内存中使用）
+/// User preference data (used in memory)
 /// </summary>
 public class UserPreferenceData
 {

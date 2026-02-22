@@ -10,7 +10,7 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Providers.Feishu;
 
 /// <summary>
-/// 飞书消息 Provider 实现
+/// Feishu message Provider implementation
 /// </summary>
 public class FeishuProvider : BaseMessageProvider
 {
@@ -21,7 +21,7 @@ public class FeishuProvider : BaseMessageProvider
     private readonly SemaphoreSlim _tokenLock = new(1, 1);
     
     /// <summary>
-    /// 飞书支持的消息类型
+    /// Message types supported by Feishu
     /// </summary>
     private static readonly HashSet<ChatMessageType> SupportedMessageTypes = new()
     {
@@ -32,7 +32,7 @@ public class FeishuProvider : BaseMessageProvider
     };
     
     public override string PlatformId => "feishu";
-    public override string DisplayName => "飞书";
+    public override string DisplayName => "Feishu";
     
     public FeishuProvider(
         ILogger<FeishuProvider> logger,
@@ -45,7 +45,7 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 初始化 Provider，获取 Access Token
+    /// Initialize Provider, obtain Access Token
     /// </summary>
     public override async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -69,7 +69,7 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析飞书原始消息为统一格式
+    /// Parse Feishu raw message into unified format
     /// </summary>
     public override async Task<IChatMessage?> ParseMessageAsync(string rawMessage, CancellationToken cancellationToken = default)
     {
@@ -82,7 +82,7 @@ public class FeishuProvider : BaseMessageProvider
                 return null;
             }
             
-            // 处理加密消息
+            // Handle encrypted message
             if (!string.IsNullOrEmpty(webhookEvent.Encrypt))
             {
                 var decrypted = DecryptMessage(webhookEvent.Encrypt);
@@ -94,7 +94,7 @@ public class FeishuProvider : BaseMessageProvider
                 webhookEvent = JsonSerializer.Deserialize<FeishuWebhookEvent>(decrypted);
             }
             
-            // 检查是否是消息事件
+            // Check if this is a message event
             var eventType = webhookEvent?.Header?.EventType ?? webhookEvent?.Type;
             if (eventType != "im.message.receive_v1" && eventType != "message")
             {
@@ -138,7 +138,7 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 发送消息到飞书
+    /// Send message to Feishu
     /// </summary>
     public override async Task<SendResult> SendMessageAsync(
         IChatMessage message, 
@@ -149,10 +149,10 @@ public class FeishuProvider : BaseMessageProvider
         {
             var token = await GetAccessTokenAsync(cancellationToken);
             
-            // 降级不支持的消息类型
+            // Degrade unsupported message types
             var processedMessage = DegradeMessage(message, SupportedMessageTypes);
             
-            // 构建发送请求
+            // Build send request
             var (msgType, content) = ConvertToFeishuFormat(processedMessage);
             var request = new FeishuSendMessageRequest
             {
@@ -192,7 +192,7 @@ public class FeishuProvider : BaseMessageProvider
 
     
     /// <summary>
-    /// 验证飞书 Webhook 请求
+    /// Validate Feishu Webhook request
     /// </summary>
     public override async Task<WebhookValidationResult> ValidateWebhookAsync(
         HttpRequest request, 
@@ -211,7 +211,7 @@ public class FeishuProvider : BaseMessageProvider
                 return new WebhookValidationResult(false, ErrorMessage: "Invalid request body");
             }
             
-            // 处理加密消息
+            // Handle encrypted message
             if (!string.IsNullOrEmpty(webhookEvent.Encrypt))
             {
                 var decrypted = DecryptMessage(webhookEvent.Encrypt);
@@ -222,10 +222,10 @@ public class FeishuProvider : BaseMessageProvider
                 webhookEvent = JsonSerializer.Deserialize<FeishuWebhookEvent>(decrypted);
             }
             
-            // URL 验证请求
+            // URL verification request
             if (webhookEvent?.Type == "url_verification")
             {
-                // 验证 Token
+                // Verify Token
                 if (!string.IsNullOrEmpty(_feishuOptions.VerificationToken) &&
                     webhookEvent.Token != _feishuOptions.VerificationToken)
                 {
@@ -235,7 +235,7 @@ public class FeishuProvider : BaseMessageProvider
                 return new WebhookValidationResult(true, Challenge: webhookEvent.Challenge);
             }
             
-            // 验证事件 Token（2.0 格式）
+            // Verify event Token (2.0 format)
             var token = webhookEvent?.Header?.Token ?? webhookEvent?.Token;
             if (!string.IsNullOrEmpty(_feishuOptions.VerificationToken) &&
                 token != _feishuOptions.VerificationToken)
@@ -252,10 +252,10 @@ public class FeishuProvider : BaseMessageProvider
         }
     }
     
-    #region 私有方法
+    #region Private methods
     
     /// <summary>
-    /// 获取 Access Token（带缓存）
+    /// Get Access Token (with caching)
     /// </summary>
     private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
@@ -267,7 +267,7 @@ public class FeishuProvider : BaseMessageProvider
         await _tokenLock.WaitAsync(cancellationToken);
         try
         {
-            // 双重检查
+            // Double-check
             if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpireTime)
             {
                 return _accessToken;
@@ -307,7 +307,7 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解密飞书消息
+    /// Decrypt Feishu message
     /// </summary>
     private string? DecryptMessage(string encryptedContent)
     {
@@ -328,7 +328,7 @@ public class FeishuProvider : BaseMessageProvider
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.None;
             
-            // IV 是加密数据的前 16 字节
+            // IV is the first 16 bytes of encrypted data
             var iv = encryptedBytes[..16];
             var cipherText = encryptedBytes[16..];
             
@@ -337,7 +337,7 @@ public class FeishuProvider : BaseMessageProvider
             using var decryptor = aes.CreateDecryptor();
             var decryptedBytes = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
             
-            // 移除 PKCS7 填充
+            // Remove PKCS7 padding
             var paddingLength = decryptedBytes[^1];
             var result = Encoding.UTF8.GetString(decryptedBytes, 0, decryptedBytes.Length - paddingLength);
             
@@ -351,7 +351,7 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析飞书消息内容
+    /// Parse Feishu message content
     /// </summary>
     private (ChatMessageType Type, string Content) ParseFeishuMessageContent(string msgType, string content)
     {
@@ -387,12 +387,12 @@ public class FeishuProvider : BaseMessageProvider
     
     private string ParsePostMessage(string content)
     {
-        // 富文本消息保持原始 JSON 格式
+        // Rich text messages keep the original JSON format
         return content;
     }
     
     /// <summary>
-    /// 转换为飞书消息格式
+    /// Convert to Feishu message format
     /// </summary>
     public (string MsgType, string Content) ConvertToFeishuFormat(IChatMessage message)
     {
@@ -407,7 +407,7 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析时间戳
+    /// Parse timestamp
     /// </summary>
     private static DateTimeOffset ParseTimestamp(string timestamp)
     {
@@ -419,22 +419,22 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 判断是否为可重试的错误
+    /// Determine whether the error is retryable
     /// </summary>
     private static bool IsRetryableError(int errorCode)
     {
-        // 飞书常见可重试错误码
+        // Common retryable Feishu error codes
         return errorCode switch
         {
-            99991400 => true,  // 请求频率超限
-            99991663 => true,  // 服务端内部错误
-            99991672 => true,  // 服务暂时不可用
+            99991400 => true,  // Request rate limit exceeded
+            99991663 => true,  // Server internal error
+            99991672 => true,  // Service temporarily unavailable
             _ => false
         };
     }
     
     /// <summary>
-    /// 带重试的发送逻辑
+    /// Send logic with retry
     /// </summary>
     private async Task<SendResult> SendWithRetryAsync(
         Func<Task<SendResult>> sendFunc,
@@ -454,7 +454,7 @@ public class FeishuProvider : BaseMessageProvider
                     return result;
                 }
                 
-                // 指数退避
+                // Exponential backoff
                 var delay = retryDelayBase * (int)Math.Pow(2, attempt);
                 Logger.LogWarning(
                     "Feishu API call failed (attempt {Attempt}/{MaxRetries}), retrying in {Delay}ms. Error: {Error}",
@@ -478,10 +478,10 @@ public class FeishuProvider : BaseMessageProvider
     
     #endregion
     
-    #region 消息卡片构建辅助方法
+    #region Message card builder helper methods
     
     /// <summary>
-    /// 创建简单的文本卡片
+    /// Create a simple text card
     /// </summary>
     public static string CreateTextCard(string title, string content, string headerColor = "blue")
     {
@@ -503,7 +503,7 @@ public class FeishuProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 创建带分割线的多段卡片
+    /// Create a multi-section card with dividers
     /// </summary>
     public static string CreateMultiSectionCard(string title, IEnumerable<string> sections, string headerColor = "blue")
     {

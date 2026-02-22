@@ -20,7 +20,7 @@ interface MindMapPageContentProps {
 export function MindMapPageContent({ owner, repo, mindMap }: MindMapPageContentProps) {
   const t = useTranslations();
 
-  // 思维导图不存在
+  // Mind map does not exist
   if (!mindMap) {
     return (
       <DocsPage toc={[]}>
@@ -37,7 +37,7 @@ export function MindMapPageContent({ owner, repo, mindMap }: MindMapPageContentP
     );
   }
 
-  // 思维导图正在生成中
+  // Mind map is being generated
   if (mindMap.statusName === "Pending" || mindMap.statusName === "Processing") {
     return (
       <DocsPage toc={[]}>
@@ -54,7 +54,7 @@ export function MindMapPageContent({ owner, repo, mindMap }: MindMapPageContentP
     );
   }
 
-  // 思维导图生成失败
+  // Mind map generation failed
   if (mindMap.statusName === "Failed") {
     return (
       <DocsPage toc={[]}>
@@ -71,7 +71,7 @@ export function MindMapPageContent({ owner, repo, mindMap }: MindMapPageContentP
     );
   }
 
-  // 思维导图内容为空
+  // Mind map content is empty
   if (!mindMap.content) {
     return (
       <DocsPage toc={[]}>

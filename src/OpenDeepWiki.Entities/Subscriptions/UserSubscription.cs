@@ -4,33 +4,33 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 用户订阅实体
-/// 记录用户与仓库之间的订阅关系
+/// User subscription entity
+/// Records the subscription relationship between users and repositories
 /// </summary>
 public class UserSubscription : AggregateRoot<string>
 {
     /// <summary>
-    /// 用户ID
+    /// User ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 用户导航属性
+    /// User navigation property
     /// </summary>
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }
 
     /// <summary>
-    /// 仓库导航属性
+    /// Repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }

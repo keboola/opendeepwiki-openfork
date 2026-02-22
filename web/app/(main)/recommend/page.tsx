@@ -89,7 +89,7 @@ export default function RecommendPage() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
   const [dislikingId, setDislikingId] = useState<string | null>(null);
 
-  // 获取可用语言列表
+  // Fetch available language list
   useEffect(() => {
     getAvailableLanguages()
       .then((res) => setLanguages(res.languages))
@@ -140,7 +140,7 @@ export default function RecommendPage() {
       });
       
       if (result.success) {
-        // 从列表中移除
+        // Remove from list
         setRepos((prev) => prev.filter((r) => r.id !== repo.id));
       }
     } catch (error) {
@@ -153,7 +153,7 @@ export default function RecommendPage() {
   const handleRepoClick = async (repo: RecommendedRepository) => {
     if (!user) return;
     
-    // 记录浏览行为
+    // Record browsing activity
     try {
       await recordActivity({
         userId: user.id,

@@ -3,12 +3,12 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Repositories;
 
 /// <summary>
-/// 处理日志服务接口
+/// Processing log service interface
 /// </summary>
 public interface IProcessingLogService
 {
     /// <summary>
-    /// 记录处理日志
+    /// Record processing log
     /// </summary>
     Task LogAsync(
         string repositoryId,
@@ -19,7 +19,7 @@ public interface IProcessingLogService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 获取仓库的处理日志
+    /// Get processing logs for a repository
     /// </summary>
     Task<ProcessingLogResponse> GetLogsAsync(
         string repositoryId,
@@ -28,13 +28,13 @@ public interface IProcessingLogService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 清除仓库的处理日志
+    /// Clear processing logs for a repository
     /// </summary>
     Task ClearLogsAsync(string repositoryId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// 处理日志响应
+/// Processing log response
 /// </summary>
 public class ProcessingLogResponse
 {
@@ -42,23 +42,23 @@ public class ProcessingLogResponse
     public List<ProcessingLogItem> Logs { get; set; } = new();
     
     /// <summary>
-    /// 文档生成进度 - 总数
+    /// Document generation progress - total count
     /// </summary>
     public int TotalDocuments { get; set; }
-    
+
     /// <summary>
-    /// 文档生成进度 - 已完成数
+    /// Document generation progress - completed count
     /// </summary>
     public int CompletedDocuments { get; set; }
-    
+
     /// <summary>
-    /// 处理开始时间（第一条日志的时间）
+    /// Processing start time (time of the first log entry)
     /// </summary>
     public DateTime? StartedAt { get; set; }
 }
 
 /// <summary>
-/// 处理日志项
+/// Processing log item
 /// </summary>
 public class ProcessingLogItem
 {

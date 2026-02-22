@@ -3,26 +3,26 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 仓库指派请求
+/// Repository assignment request
 /// </summary>
 public class RepositoryAssignRequest
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 部门ID
+    /// Department ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string DepartmentId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 指派用户ID
+    /// Assignee user ID
     /// </summary>
     [Required]
     [StringLength(36)]

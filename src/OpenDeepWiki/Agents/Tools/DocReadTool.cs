@@ -84,7 +84,7 @@ Returns:
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            return JsonSerializer.Serialize(new { error = true, message = "文档路径不能为空" });
+            return JsonSerializer.Serialize(new { error = true, message = "Document path cannot be empty" });
         }
 
         try
@@ -97,7 +97,7 @@ Returns:
 
             if (repository == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"仓库 '{_owner}/{_repo}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Repository '{_owner}/{_repo}' does not exist" });
             }
 
             // Find the branch
@@ -108,7 +108,7 @@ Returns:
 
             if (branch == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"分支 '{_branch}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Branch '{_branch}' does not exist" });
             }
 
             // Find the branch language
@@ -119,7 +119,7 @@ Returns:
 
             if (branchLanguage == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"语言 '{_language}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Language '{_language}' does not exist" });
             }
 
             // Find the catalog item by path
@@ -130,12 +130,12 @@ Returns:
 
             if (catalog == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"文档 '{path}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Document '{path}' does not exist" });
             }
 
             if (string.IsNullOrEmpty(catalog.DocFileId))
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"文档 '{path}' 没有内容" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Document '{path}' has no content" });
             }
 
             // Find the document file
@@ -144,14 +144,14 @@ Returns:
 
             if (docFile == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"文档 '{path}' 内容不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Document '{path}' content does not exist" });
             }
 
             return docFile.Content;
         }
         catch (Exception ex)
         {
-            return JsonSerializer.Serialize(new { error = true, message = $"读取文档失败: {ex.Message}" });
+            return JsonSerializer.Serialize(new { error = true, message = $"Failed to read document: {ex.Message}" });
         }
     }
 
@@ -197,7 +197,7 @@ Returns:
 
             if (repository == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"仓库 '{_owner}/{_repo}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Repository '{_owner}/{_repo}' does not exist" });
             }
 
             // Find the branch
@@ -208,7 +208,7 @@ Returns:
 
             if (branch == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"分支 '{_branch}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Branch '{_branch}' does not exist" });
             }
 
             // Find the branch language
@@ -219,7 +219,7 @@ Returns:
 
             if (branchLanguage == null)
             {
-                return JsonSerializer.Serialize(new { error = true, message = $"语言 '{_language}' 不存在" });
+                return JsonSerializer.Serialize(new { error = true, message = $"Language '{_language}' does not exist" });
             }
 
             // Get all catalog items with documents
@@ -235,7 +235,7 @@ Returns:
         }
         catch (Exception ex)
         {
-            return JsonSerializer.Serialize(new { error = true, message = $"获取文档列表失败: {ex.Message}" });
+            return JsonSerializer.Serialize(new { error = true, message = $"Failed to get document list: {ex.Message}" });
         }
     }
 

@@ -6,7 +6,7 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Translation;
 
 /// <summary>
-/// 翻译服务实现
+/// Translation service implementation
 /// </summary>
 public class TranslationService : ITranslationService
 {
@@ -27,7 +27,7 @@ public class TranslationService : ITranslationService
         string targetLanguageCode,
         CancellationToken cancellationToken = default)
     {
-        // 检查是否已存在相同的任务（待处理或处理中）
+        // Check if a duplicate task already exists (pending or processing)
         var existingTask = await _context.TranslationTasks
             .FirstOrDefaultAsync(t => 
                 t.RepositoryBranchId == repositoryBranchId &&
@@ -44,7 +44,7 @@ public class TranslationService : ITranslationService
             return null;
         }
 
-        // 检查目标语言是否已存在
+        // Check if target language already exists
         var existingLanguage = await _context.BranchLanguages
             .FirstOrDefaultAsync(l => 
                 l.RepositoryBranchId == repositoryBranchId &&
@@ -183,7 +183,7 @@ public class TranslationService : ITranslationService
         }
         else
         {
-            task.Status = TranslationTaskStatus.Pending; // 重置为待处理，等待重试
+            task.Status = TranslationTaskStatus.Pending; // Reset to pending, waiting for retry
             _logger.LogWarning(
                 "Translation task failed, will retry. TaskId: {TaskId}, RetryCount: {RetryCount}/{MaxRetry}, Error: {Error}",
                 taskId, task.RetryCount, task.MaxRetryCount, errorMessage);

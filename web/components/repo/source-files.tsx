@@ -11,20 +11,20 @@ interface SourceFilesProps {
 }
 
 /**
- * 构建文件的 Git 平台链接
+ * Build Git platform link for a file
  */
 function buildFileUrl(gitUrl: string, branch: string, filePath: string): string {
-  // 规范化 URL
+  // Normalize URL
   let normalizedUrl = gitUrl.replace(/\.git$/, "").trim();
   
-  // 转换 SSH 格式为 HTTPS
+  // Convert SSH format to HTTPS
   if (normalizedUrl.startsWith("git@")) {
     normalizedUrl = normalizedUrl.replace("git@", "https://").replace(":", "/");
   }
   
   normalizedUrl = normalizedUrl.replace(/\/$/, "");
   
-  // 根据平台构建 URL
+  // Build URL based on platform
   if (normalizedUrl.includes("github.com")) {
     return `${normalizedUrl}/blob/${branch}/${filePath}`;
   } else if (normalizedUrl.includes("gitlab.com") || normalizedUrl.includes("gitlab")) {
@@ -35,7 +35,7 @@ function buildFileUrl(gitUrl: string, branch: string, filePath: string): string 
     return `${normalizedUrl}/src/${branch}/${filePath}`;
   }
   
-  // 默认使用 GitHub 格式
+  // Default to GitHub format
   return `${normalizedUrl}/blob/${branch}/${filePath}`;
 }
 
@@ -43,15 +43,15 @@ export function SourceFiles({ files, gitUrl, branch }: SourceFilesProps) {
   const params = useParams();
   const searchParams = useSearchParams();
   
-  // 从 URL 参数获取仓库信息
+  // Get repository info from URL parameters
   const owner = params.owner as string;
   const repo = params.repo as string;
   const currentBranch = searchParams.get("branch") || branch || "main";
   
-  // 构建默认的 Git URL
+  // Build default Git URL
   const defaultGitUrl = gitUrl || `https://github.com/${owner}/${repo}`;
   
-  // 对文件进行分组（按目录）
+  // Group files by directory
   const groupedFiles = useMemo(() => {
     const groups: Record<string, string[]> = {};
     
@@ -65,7 +65,7 @@ export function SourceFiles({ files, gitUrl, branch }: SourceFilesProps) {
       groups[dir].push(file);
     });
     
-    // 按目录名排序
+    // Sort by directory name
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [files]);
   

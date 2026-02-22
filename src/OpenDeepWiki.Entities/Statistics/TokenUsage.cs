@@ -4,57 +4,57 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// Token 消耗记录实体
+/// Token consumption record entity
 /// </summary>
 public class TokenUsage : AggregateRoot<string>
 {
     /// <summary>
-    /// 关联的仓库ID（可选）
+    /// Associated repository ID (optional)
     /// </summary>
     [StringLength(36)]
     public string? RepositoryId { get; set; }
 
     /// <summary>
-    /// 关联的用户ID（可选）
+    /// Associated user ID (optional)
     /// </summary>
     [StringLength(36)]
     public string? UserId { get; set; }
 
     /// <summary>
-    /// 输入 Token 数量
+    /// Input token count
     /// </summary>
     public int InputTokens { get; set; }
 
     /// <summary>
-    /// 输出 Token 数量
+    /// Output token count
     /// </summary>
     public int OutputTokens { get; set; }
 
     /// <summary>
-    /// 使用的模型名称
+    /// Model name used
     /// </summary>
     [StringLength(100)]
     public string? ModelName { get; set; }
 
     /// <summary>
-    /// 操作类型（catalog, content, chat 等）
+    /// Operation type (catalog, content, chat, etc.)
     /// </summary>
     [StringLength(50)]
     public string? Operation { get; set; }
 
     /// <summary>
-    /// 记录时间
+    /// Record time
     /// </summary>
     public DateTime RecordedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// 关联的仓库导航属性
+    /// Associated repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }
 
     /// <summary>
-    /// 关联的用户导航属性
+    /// Associated user navigation property
     /// </summary>
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }

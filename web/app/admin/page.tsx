@@ -22,7 +22,7 @@ import { Loader2, GitBranch, Users, Coins, TrendingUp } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { useLocale } from "next-intl";
 
-// 自定义 Tooltip 组件
+// Custom Tooltip component
 interface TooltipPayload {
   name: string;
   value: number;
@@ -163,7 +163,7 @@ export default function AdminDashboardPage() {
         </Tabs>
       </div>
 
-      {/* 统计卡片 */}
+      {/* Statistics cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="p-6">
           <div className="flex items-center gap-4">
@@ -211,9 +211,9 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
-      {/* 图表区域 */}
+      {/* Chart area */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* 仓库统计图表 */}
+        {/* Repository statistics chart */}
         <Card className="p-6">
           <h3 className="mb-4 text-lg font-semibold">{t('admin.dashboard.repoStats')}</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
           </ResponsiveContainer>
         </Card>
 
-        {/* 用户增长图表 */}
+        {/* User growth chart */}
         <Card className="p-6">
           <h3 className="mb-4 text-lg font-semibold">{t('admin.dashboard.userGrowth')}</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -266,7 +266,7 @@ export default function AdminDashboardPage() {
           </ResponsiveContainer>
         </Card>
 
-        {/* Token 消耗图表 */}
+        {/* Token consumption chart */}
         <Card className="p-6 lg:col-span-2">
           <h3 className="mb-4 text-lg font-semibold">{t('admin.dashboard.tokenTrend')}</h3>
           <ResponsiveContainer width="100%" height={300}>

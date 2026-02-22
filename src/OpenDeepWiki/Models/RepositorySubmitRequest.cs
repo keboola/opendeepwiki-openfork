@@ -3,59 +3,59 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 仓库提交请求
+/// Repository submit request
 /// </summary>
 public class RepositorySubmitRequest
 {
     /// <summary>
-    /// Git地址
+    /// Git URL
     /// </summary>
     [Required]
     [StringLength(500)]
     public string GitUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     [Required]
     [StringLength(100)]
     public string RepoName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库组织
+    /// Repository organization
     /// </summary>
     [Required]
     [StringLength(100)]
     public string OrgName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库账户
+    /// Authentication account
     /// </summary>
     [StringLength(200)]
     public string? AuthAccount { get; set; }
 
     /// <summary>
-    /// 仓库密码（明文存储）
+    /// Authentication password (stored in plaintext)
     /// </summary>
     [StringLength(500)]
     public string? AuthPassword { get; set; }
 
     /// <summary>
-    /// 仓库分支
+    /// Repository branch
     /// </summary>
     [Required]
     [StringLength(200)]
     public string BranchName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库当前生成语言
+    /// Current generation language for the repository
     /// </summary>
     [Required]
     [StringLength(50)]
     public string LanguageCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否公开
+    /// Whether the repository is public
     /// </summary>
     public bool IsPublic { get; set; } = true;
 }

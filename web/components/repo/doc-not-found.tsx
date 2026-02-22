@@ -12,12 +12,12 @@ export function DocNotFound({ slug }: DocNotFoundProps) {
       <div className="rounded-full bg-muted/50 p-4 mb-6">
         <FileQuestion className="h-12 w-12 text-muted-foreground" />
       </div>
-      <h2 className="text-xl font-semibold mb-2">文档不存在</h2>
+      <h2 className="text-xl font-semibold mb-2">Document not found</h2>
       <p className="text-muted-foreground text-center max-w-md">
-        未找到路径为 <code className="px-1.5 py-0.5 bg-muted rounded text-sm">{slug}</code> 的文档。
+        No document found at path <code className="px-1.5 py-0.5 bg-muted rounded text-sm">{slug}</code>.
       </p>
       <p className="text-sm text-muted-foreground mt-4">
-        请从左侧目录选择其他文档查看。
+        Please select another document from the sidebar.
       </p>
     </div>
   );

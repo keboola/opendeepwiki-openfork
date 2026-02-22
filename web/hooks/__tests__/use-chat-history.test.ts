@@ -1,10 +1,10 @@
 /**
- * 对话历史属性测试
- * 
- * Property 2: 对话历史完整性
+ * Chat history property tests
+ *
+ * Property 2: Chat history completeness
  * Validates: Requirements 8.1, 8.2, 8.3
- * 
- * Feature: doc-chat-assistant, Property 2: 对话历史完整性
+ *
+ * Feature: doc-chat-assistant, Property 2: Chat history completeness
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
@@ -17,24 +17,24 @@ import {
   ToolResult 
 } from '../use-chat-history'
 
-// 生成随机工具调用
+// Generate random tool calls
 const toolCallArb = fc.record({
   id: fc.string({ minLength: 1, maxLength: 20 }),
   name: fc.string({ minLength: 1, maxLength: 50 }),
   arguments: fc.dictionary(fc.string(), fc.jsonValue()),
 })
 
-// 生成随机工具结果
+// Generate random tool results
 const toolResultArb = fc.record({
   toolCallId: fc.string({ minLength: 1, maxLength: 20 }),
   result: fc.string(),
   isError: fc.boolean(),
 })
 
-// 生成随机消息角色
+// Generate random message roles
 const roleArb = fc.constantFrom('user', 'assistant', 'tool') as fc.Arbitrary<'user' | 'assistant' | 'tool'>
 
-// 生成随机新消息
+// Generate random new messages
 const newMessageArb: fc.Arbitrary<NewChatMessage> = fc.record({
   role: roleArb,
   content: fc.string(),
@@ -45,20 +45,20 @@ const newMessageArb: fc.Arbitrary<NewChatMessage> = fc.record({
 
 describe('useChatHistory Property Tests', () => {
   /**
-   * Property 2: 对话历史完整性
-   * 
-   * 对于任意对话会话，消息历史必须包含所有用户消息、AI回复、工具调用和工具结果，
-   * 且发送新消息时必须传递完整历史
+   * Property 2: Chat history completeness
+   *
+   * For any chat session, message history must contain all user messages, AI replies,
+   * tool calls, and tool results, and the complete history must be passed when sending new messages
    */
-  describe('Property 2: 对话历史完整性', () => {
-    it('添加的消息应该完整保留在历史记录中', () => {
+  describe('Property 2: Chat history completeness', () => {
+    it('added messages should be fully preserved in the history', () => {
       fc.assert(
         fc.property(
           fc.array(newMessageArb, { minLength: 1, maxLength: 20 }),
           (messages) => {
             const { result } = renderHook(() => useChatHistory())
             
-            // 添加所有消息
+            // Add all messages
             const addedIds: string[] = []
             messages.forEach(msg => {
               act(() => {
@@ -66,11 +66,11 @@ describe('useChatHistory Property Tests', () => {
                 addedIds.push(id)
               })
             })
-            
-            // 验证消息数量
+
+            // Verify message count
             expect(result.current.messages.length).toBe(messages.length)
-            
-            // 验证每条消息的内容完整性
+
+            // Verify content completeness of each message
             result.current.messages.forEach((storedMsg, index) => {
               const originalMsg = messages[index]
               expect(storedMsg.role).toBe(originalMsg.role)
@@ -89,14 +89,14 @@ describe('useChatHistory Property Tests', () => {
       )
     })
 
-    it('消息历史应该包含所有类型的消息（用户、助手、工具）', () => {
+    it('message history should contain all message types (user, assistant, tool)', () => {
       fc.assert(
         fc.property(
           fc.array(roleArb, { minLength: 1, maxLength: 30 }),
           (roles) => {
             const { result } = renderHook(() => useChatHistory())
             
-            // 为每个角色添加消息
+            // Add a message for each role
             roles.forEach(role => {
               act(() => {
                 result.current.addMessage({
@@ -106,7 +106,7 @@ describe('useChatHistory Property Tests', () => {
               })
             })
             
-            // 验证所有角色的消息都被保留
+            // Verify all role messages are preserved
             const storedRoles = result.current.messages.map(m => m.role)
             expect(storedRoles).toEqual(roles)
             
@@ -117,7 +117,7 @@ describe('useChatHistory Property Tests', () => {
       )
     })
 
-    it('工具调用和工具结果应该正确关联', () => {
+    it('tool calls and tool results should be correctly associated', () => {
       fc.assert(
         fc.property(
           toolCallArb,
@@ -125,7 +125,7 @@ describe('useChatHistory Property Tests', () => {
           (toolCall, toolResult) => {
             const { result } = renderHook(() => useChatHistory())
             
-            // 添加带工具调用的助手消息
+            // Add assistant message with tool call
             act(() => {
               result.current.addMessage({
                 role: 'assistant',
@@ -134,7 +134,7 @@ describe('useChatHistory Property Tests', () => {
               })
             })
             
-            // 添加工具结果消息
+            // Add tool result message
             act(() => {
               result.current.addMessage({
                 role: 'tool',
@@ -143,7 +143,7 @@ describe('useChatHistory Property Tests', () => {
               })
             })
             
-            // 验证工具调用和结果都被保留
+            // Verify both tool call and result are preserved
             expect(result.current.messages.length).toBe(2)
             expect(result.current.messages[0].toolCalls?.[0]).toEqual(toolCall)
             expect(result.current.messages[1].toolResult?.toolCallId).toBe(toolCall.id)
@@ -155,7 +155,7 @@ describe('useChatHistory Property Tests', () => {
       )
     })
 
-    it('更新消息应该保持其他字段不变', () => {
+    it('updating a message should keep other fields unchanged', () => {
       fc.assert(
         fc.property(
           newMessageArb,
@@ -163,7 +163,7 @@ describe('useChatHistory Property Tests', () => {
           (originalMsg, newContent) => {
             const { result } = renderHook(() => useChatHistory())
             
-            // 添加消息
+            // Add message
             let msgId: string = ''
             act(() => {
               msgId = result.current.addMessage(originalMsg)
@@ -171,12 +171,12 @@ describe('useChatHistory Property Tests', () => {
             
             const originalTimestamp = result.current.messages[0].timestamp
             
-            // 更新消息内容
+            // Update message content
             act(() => {
               result.current.updateMessage(msgId, { content: newContent })
             })
             
-            // 验证只有content被更新，其他字段保持不变
+            // Verify only content was updated, other fields remain unchanged
             const updatedMsg = result.current.messages[0]
             expect(updatedMsg.content).toBe(newContent)
             expect(updatedMsg.role).toBe(originalMsg.role)
@@ -193,14 +193,14 @@ describe('useChatHistory Property Tests', () => {
       )
     })
 
-    it('清空历史后消息列表应该为空', () => {
+    it('message list should be empty after clearing history', () => {
       fc.assert(
         fc.property(
           fc.array(newMessageArb, { minLength: 1, maxLength: 20 }),
           (messages) => {
             const { result } = renderHook(() => useChatHistory())
             
-            // 添加消息
+            // Add message
             messages.forEach(msg => {
               act(() => {
                 result.current.addMessage(msg)
@@ -209,12 +209,12 @@ describe('useChatHistory Property Tests', () => {
             
             expect(result.current.messages.length).toBe(messages.length)
             
-            // 清空历史
+            // Clear history
             act(() => {
               result.current.clearHistory()
             })
             
-            // 验证历史为空
+            // Verify history is empty
             expect(result.current.messages.length).toBe(0)
             
             return true
@@ -224,14 +224,14 @@ describe('useChatHistory Property Tests', () => {
       )
     })
 
-    it('每条消息应该有唯一的ID', () => {
+    it('each message should have a unique ID', () => {
       fc.assert(
         fc.property(
           fc.array(newMessageArb, { minLength: 2, maxLength: 50 }),
           (messages) => {
             const { result } = renderHook(() => useChatHistory())
             
-            // 添加所有消息
+            // Add all messages
             const ids: string[] = []
             messages.forEach(msg => {
               act(() => {
@@ -240,7 +240,7 @@ describe('useChatHistory Property Tests', () => {
               })
             })
             
-            // 验证所有ID都是唯一的
+            // Verify all IDs are unique
             const uniqueIds = new Set(ids)
             expect(uniqueIds.size).toBe(ids.length)
             

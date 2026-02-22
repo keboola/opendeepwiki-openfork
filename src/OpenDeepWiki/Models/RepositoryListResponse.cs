@@ -3,38 +3,38 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 仓库列表响应
+/// Repository list response
 /// </summary>
 public class RepositoryListResponse
 {
     /// <summary>
-    /// 仓库列表
+    /// List of repositories
     /// </summary>
     public List<RepositoryItemResponse> Items { get; set; } = [];
 
     /// <summary>
-    /// 总数
+    /// Total count
     /// </summary>
     public int Total { get; set; }
 }
 
 /// <summary>
-/// 仓库列表项响应
+/// Repository list item response
 /// </summary>
 public class RepositoryItemResponse
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// 组织名称
+    /// Organization name
     /// </summary>
     public string OrgName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     public string RepoName { get; set; } = string.Empty;
 
@@ -44,47 +44,47 @@ public class RepositoryItemResponse
     public string GitUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// 处理状态
+    /// Processing status
     /// </summary>
     public RepositoryStatus Status { get; set; }
 
     /// <summary>
-    /// 状态名称
+    /// Status name
     /// </summary>
     public string StatusName => Status.ToString();
 
     /// <summary>
-    /// 是否公开
+    /// Whether the repository is public
     /// </summary>
     public bool IsPublic { get; set; }
 
     /// <summary>
-    /// 是否设置了密码
+    /// Whether a password has been set
     /// </summary>
     public bool HasPassword { get; set; }
 
     /// <summary>
-    /// 创建时间
+    /// Created at timestamp
     /// </summary>
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// 更新时间
+    /// Updated at timestamp
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
-    /// Star数量
+    /// Star count
     /// </summary>
     public int StarCount { get; set; }
 
     /// <summary>
-    /// Fork数量
+    /// Fork count
     /// </summary>
     public int ForkCount { get; set; }
 
     /// <summary>
-    /// 主要编程语言
+    /// Primary programming language
     /// </summary>
     public string? PrimaryLanguage { get; set; }
 }

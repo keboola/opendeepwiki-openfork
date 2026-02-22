@@ -1,6 +1,6 @@
 /**
- * 图片验证工具函数
- * 支持国际化的错误消息
+ * Image validation utility functions
+ * Supports internationalized error messages
  */
 
 export const SUPPORTED_IMAGE_TYPES = [
@@ -13,32 +13,32 @@ export const SUPPORTED_IMAGE_TYPES = [
 export const MAX_IMAGE_SIZE = 10 * 1024 * 1024
 
 /**
- * 验证图片文件
- * @param file 文件对象
- * @param t 翻译函数
+ * Validate image file
+ * @param file File object
+ * @param t Translation function
  */
 export function validateImageFile(
   file: File,
   t?: (key: string, values?: Record<string, any>) => string
 ): { valid: boolean; error?: string } {
-  // 检查文件类型
+  // Check file type
   if (!SUPPORTED_IMAGE_TYPES.includes(file.type as typeof SUPPORTED_IMAGE_TYPES[number])) {
     return {
       valid: false,
       error: t
         ? t("chat.image.unsupportedFormat")
-        : `不支持的图片格式: ${file.type}。仅支持 PNG、JPG、GIF、WebP`,
+        : `Unsupported image format: ${file.type}. Only PNG, JPG, GIF, WebP are supported`,
     }
   }
 
-  // 检查文件大小
+  // Check file size
   if (file.size > MAX_IMAGE_SIZE) {
     const sizeMB = (file.size / (1024 * 1024)).toFixed(2)
     return {
       valid: false,
       error: t
         ? t("chat.image.sizeTooLarge")
-        : `图片大小 (${sizeMB}MB) 超过限制 (10MB)`,
+        : `Image size (${sizeMB}MB) exceeds limit (10MB)`,
     }
   }
 
@@ -46,19 +46,19 @@ export function validateImageFile(
 }
 
 /**
- * 将文件转换为Base64
+ * Convert file to Base64
  */
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result as string)
-    reader.onerror = () => reject(new Error("读取文件失败"))
+    reader.onerror = () => reject(new Error("Failed to read file"))
     reader.readAsDataURL(file)
   })
 }
 
 /**
- * 从Base64字符串中提取MIME类型
+ * Extract MIME type from Base64 string
  */
 export function getMimeTypeFromBase64(base64: string): string | null {
   const match = base64.match(/^data:([^;]+);base64,/)
@@ -66,9 +66,9 @@ export function getMimeTypeFromBase64(base64: string): string | null {
 }
 
 /**
- * 验证Base64图片格式
- * @param base64 Base64字符串
- * @param t 翻译函数
+ * Validate Base64 image format
+ * @param base64 Base64 string
+ * @param t Translation function
  */
 export function validateBase64Image(
   base64: string,
@@ -79,7 +79,7 @@ export function validateBase64Image(
   if (!mimeType) {
     return {
       valid: false,
-      error: t ? t("chat.image.invalidFormat") : "无效的Base64图片格式",
+      error: t ? t("chat.image.invalidFormat") : "Invalid Base64 image format",
     }
   }
 
@@ -88,7 +88,7 @@ export function validateBase64Image(
       valid: false,
       error: t
         ? t("chat.image.unsupportedFormat")
-        : `不支持的图片格式: ${mimeType}。仅支持 PNG、JPG、GIF、WebP`,
+        : `Unsupported image format: ${mimeType}. Only PNG, JPG, GIF, WebP are supported`,
     }
   }
 

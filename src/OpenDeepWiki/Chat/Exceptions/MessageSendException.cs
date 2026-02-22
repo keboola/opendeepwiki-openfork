@@ -1,12 +1,12 @@
 namespace OpenDeepWiki.Chat.Exceptions;
 
 /// <summary>
-/// 消息发送异常
+/// Message send exception
 /// </summary>
 public class MessageSendException : ProviderException
 {
     /// <summary>
-    /// 消息ID
+    /// Message ID
     /// </summary>
     public string? MessageId { get; }
     

@@ -7,49 +7,49 @@ using OpenDeepWiki.Services.Repositories;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// 增量更新端点日志类（用于泛型日志记录器）
+/// Incremental update endpoint logger class (used for generic logger)
 /// </summary>
 public class IncrementalUpdateEndpointsLogger { }
 
 /// <summary>
-/// 增量更新 API 端点
-/// 提供手动触发增量更新、查询任务状态和重试失败任务的功能
+/// Incremental update API endpoints
+/// Provides functionality for manually triggering incremental updates, querying task status, and retrying failed tasks
 /// </summary>
 public static class IncrementalUpdateEndpoints
 {
     /// <summary>
-    /// 注册所有增量更新相关端点
+    /// Register all incremental update related endpoints
     /// </summary>
     public static IEndpointRouteBuilder MapIncrementalUpdateEndpoints(this IEndpointRouteBuilder app)
     {
-        // 仓库增量更新触发端点
+        // Repository incremental update trigger endpoints
         var repoGroup = app.MapGroup("/api/v1/repositories")
-            .WithTags("增量更新");
+            .WithTags("Incremental Updates");
 
         repoGroup.MapPost("/{repositoryId}/branches/{branchId}/incremental-update", TriggerIncrementalUpdateAsync)
             .WithName("TriggerIncrementalUpdate")
-            .WithSummary("手动触发增量更新")
-            .WithDescription("为指定仓库和分支创建一个高优先级的增量更新任务");
+            .WithSummary("Manually trigger incremental update")
+            .WithDescription("Create a high-priority incremental update task for the specified repository and branch");
 
-        // 增量更新任务管理端点
+        // Incremental update task management endpoints
         var taskGroup = app.MapGroup("/api/v1/incremental-updates")
-            .WithTags("增量更新任务");
+            .WithTags("Incremental Update Tasks");
 
         taskGroup.MapGet("/{taskId}", GetTaskStatusAsync)
             .WithName("GetIncrementalUpdateTaskStatus")
-            .WithSummary("获取任务状态")
-            .WithDescription("获取指定增量更新任务的详细状态");
+            .WithSummary("Get task status")
+            .WithDescription("Get the detailed status of a specific incremental update task");
 
         taskGroup.MapPost("/{taskId}/retry", RetryFailedTaskAsync)
             .WithName("RetryFailedIncrementalUpdateTask")
-            .WithSummary("重试失败任务")
-            .WithDescription("重试一个失败的增量更新任务");
+            .WithSummary("Retry failed task")
+            .WithDescription("Retry a failed incremental update task");
 
         return app;
     }
 
     /// <summary>
-    /// 手动触发增量更新
+    /// Manually trigger incremental update
     /// POST /api/v1/repositories/{repositoryId}/branches/{branchId}/incremental-update
     /// </summary>
     private static async Task<IResult> TriggerIncrementalUpdateAsync(
@@ -66,7 +66,7 @@ public static class IncrementalUpdateEndpoints
 
         try
         {
-            // 验证仓库是否存在
+            // Verify repository exists
             var repository = await context.Repositories
                 .FirstOrDefaultAsync(r => r.Id == repositoryId, cancellationToken);
 
@@ -76,12 +76,12 @@ public static class IncrementalUpdateEndpoints
                 return Results.NotFound(new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = "仓库不存在",
+                    Error = "Repository not found",
                     ErrorCode = "REPOSITORY_NOT_FOUND"
                 });
             }
 
-            // 验证分支是否存在
+            // Verify branch exists
             var branch = await context.RepositoryBranches
                 .FirstOrDefaultAsync(b => b.Id == branchId && b.RepositoryId == repositoryId, cancellationToken);
 
@@ -91,15 +91,15 @@ public static class IncrementalUpdateEndpoints
                 return Results.NotFound(new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = "分支不存在",
+                    Error = "Branch not found",
                     ErrorCode = "BRANCH_NOT_FOUND"
                 });
             }
 
-            // 触发增量更新
+            // Trigger incremental update
             var taskId = await updateService.TriggerManualUpdateAsync(repositoryId, branchId, cancellationToken);
 
-            // 获取任务状态
+            // Get task status
             var task = await context.IncrementalUpdateTasks
                 .FirstOrDefaultAsync(t => t.Id == taskId, cancellationToken);
 
@@ -113,8 +113,8 @@ public static class IncrementalUpdateEndpoints
                 TaskId = taskId,
                 Status = task?.Status.ToString() ?? "Unknown",
                 Message = task?.Status == IncrementalUpdateStatus.Processing
-                    ? "任务正在处理中"
-                    : "增量更新任务已创建"
+                    ? "Task is currently being processed"
+                    : "Incremental update task created"
             });
         }
         catch (Exception ex)
@@ -127,7 +127,7 @@ public static class IncrementalUpdateEndpoints
                 new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = "触发增量更新失败",
+                    Error = "Failed to trigger incremental update",
                     ErrorCode = "TRIGGER_FAILED",
                     Details = ex.Message
                 },
@@ -137,7 +137,7 @@ public static class IncrementalUpdateEndpoints
 
 
     /// <summary>
-    /// 获取任务状态
+    /// Get task status
     /// GET /api/v1/incremental-updates/{taskId}
     /// </summary>
     private static async Task<IResult> GetTaskStatusAsync(
@@ -161,7 +161,7 @@ public static class IncrementalUpdateEndpoints
                 return Results.NotFound(new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = "任务不存在",
+                    Error = "Task not found",
                     ErrorCode = "TASK_NOT_FOUND"
                 });
             }
@@ -196,7 +196,7 @@ public static class IncrementalUpdateEndpoints
                 new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = "获取任务状态失败",
+                    Error = "Failed to get task status",
                     ErrorCode = "GET_STATUS_FAILED",
                     Details = ex.Message
                 },
@@ -205,7 +205,7 @@ public static class IncrementalUpdateEndpoints
     }
 
     /// <summary>
-    /// 重试失败任务
+    /// Retry failed task
     /// POST /api/v1/incremental-updates/{taskId}/retry
     /// </summary>
     private static async Task<IResult> RetryFailedTaskAsync(
@@ -227,12 +227,12 @@ public static class IncrementalUpdateEndpoints
                 return Results.NotFound(new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = "任务不存在",
+                    Error = "Task not found",
                     ErrorCode = "TASK_NOT_FOUND"
                 });
             }
 
-            // 只能重试失败的任务
+            // Can only retry failed tasks
             if (task.Status != IncrementalUpdateStatus.Failed)
             {
                 logger.LogWarning(
@@ -242,12 +242,12 @@ public static class IncrementalUpdateEndpoints
                 return Results.BadRequest(new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = $"只能重试失败的任务，当前状态: {task.Status}",
+                    Error = $"Can only retry failed tasks, current status: {task.Status}",
                     ErrorCode = "INVALID_TASK_STATUS"
                 });
             }
 
-            // 重置任务状态
+            // Reset task status
             task.Status = IncrementalUpdateStatus.Pending;
             task.RetryCount++;
             task.ErrorMessage = null;
@@ -267,7 +267,7 @@ public static class IncrementalUpdateEndpoints
                 TaskId = task.Id,
                 Status = task.Status.ToString(),
                 RetryCount = task.RetryCount,
-                Message = "任务已重置，将在下次轮询时重新处理"
+                Message = "Task has been reset and will be reprocessed on the next poll"
             });
         }
         catch (Exception ex)
@@ -278,7 +278,7 @@ public static class IncrementalUpdateEndpoints
                 new IncrementalUpdateErrorResponse
                 {
                     Success = false,
-                    Error = "重试任务失败",
+                    Error = "Failed to retry task",
                     ErrorCode = "RETRY_FAILED",
                     Details = ex.Message
                 },
@@ -288,173 +288,173 @@ public static class IncrementalUpdateEndpoints
 }
 
 
-#region 响应模型
+#region Response models
 
 /// <summary>
-/// 触发增量更新响应
+/// Trigger incremental update response
 /// </summary>
 public class TriggerIncrementalUpdateResponse
 {
     /// <summary>
-    /// 是否成功
+    /// Whether successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 任务ID
+    /// Task ID
     /// </summary>
     public string TaskId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 任务状态
+    /// Task status
     /// </summary>
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
-    /// 消息
+    /// Message
     /// </summary>
     public string Message { get; set; } = string.Empty;
 }
 
 /// <summary>
-/// 增量更新任务详情响应
+/// Incremental update task detail response
 /// </summary>
 public class IncrementalUpdateTaskResponse
 {
     /// <summary>
-    /// 是否成功
+    /// Whether successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 任务ID
+    /// Task ID
     /// </summary>
     public string TaskId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称 (org/repo)
+    /// Repository name (org/repo)
     /// </summary>
     public string? RepositoryName { get; set; }
 
     /// <summary>
-    /// 分支ID
+    /// Branch ID
     /// </summary>
     public string BranchId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 分支名称
+    /// Branch name
     /// </summary>
     public string? BranchName { get; set; }
 
     /// <summary>
-    /// 任务状态
+    /// Task status
     /// </summary>
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
-    /// 任务优先级
+    /// Task priority
     /// </summary>
     public int Priority { get; set; }
 
     /// <summary>
-    /// 是否为手动触发
+    /// Whether manually triggered
     /// </summary>
     public bool IsManualTrigger { get; set; }
 
     /// <summary>
-    /// 上次处理的 Commit ID
+    /// Previous processed Commit ID
     /// </summary>
     public string? PreviousCommitId { get; set; }
 
     /// <summary>
-    /// 目标 Commit ID
+    /// Target Commit ID
     /// </summary>
     public string? TargetCommitId { get; set; }
 
     /// <summary>
-    /// 重试次数
+    /// Retry count
     /// </summary>
     public int RetryCount { get; set; }
 
     /// <summary>
-    /// 错误信息
+    /// Error message
     /// </summary>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
-    /// 创建时间
+    /// Created time
     /// </summary>
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// 开始处理时间
+    /// Processing start time
     /// </summary>
     public DateTime? StartedAt { get; set; }
 
     /// <summary>
-    /// 完成时间
+    /// Completion time
     /// </summary>
     public DateTime? CompletedAt { get; set; }
 }
 
 /// <summary>
-/// 重试任务响应
+/// Retry task response
 /// </summary>
 public class RetryTaskResponse
 {
     /// <summary>
-    /// 是否成功
+    /// Whether successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 任务ID
+    /// Task ID
     /// </summary>
     public string TaskId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 任务状态
+    /// Task status
     /// </summary>
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
-    /// 重试次数
+    /// Retry count
     /// </summary>
     public int RetryCount { get; set; }
 
     /// <summary>
-    /// 消息
+    /// Message
     /// </summary>
     public string Message { get; set; } = string.Empty;
 }
 
 /// <summary>
-/// 增量更新错误响应
+/// Incremental update error response
 /// </summary>
 public class IncrementalUpdateErrorResponse
 {
     /// <summary>
-    /// 是否成功
+    /// Whether successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 错误信息
+    /// Error message
     /// </summary>
     public string Error { get; set; } = string.Empty;
 
     /// <summary>
-    /// 错误代码
+    /// Error code
     /// </summary>
     public string ErrorCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// 详细信息
+    /// Details
     /// </summary>
     public string? Details { get; set; }
 }

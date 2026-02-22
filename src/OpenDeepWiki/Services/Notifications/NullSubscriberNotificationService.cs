@@ -5,9 +5,9 @@ using OpenDeepWiki.EFCore;
 namespace OpenDeepWiki.Services.Notifications;
 
 /// <summary>
-/// 订阅者通知服务的空实现
-/// 从数据库获取订阅者列表，但不发送实际通知
-/// 用于在通知渠道未配置时提供默认行为
+/// Null implementation of subscriber notification service
+/// Retrieves subscriber list from database but does not send actual notifications
+/// Used as default behavior when notification channels are not configured
 /// </summary>
 public class NullSubscriberNotificationService : ISubscriberNotificationService
 {
@@ -27,7 +27,7 @@ public class NullSubscriberNotificationService : ISubscriberNotificationService
         RepositoryUpdateNotification notification,
         CancellationToken cancellationToken = default)
     {
-        // 获取订阅者列表
+        // Get subscriber list
         var subscribers = await GetSubscribersAsync(notification.RepositoryId, cancellationToken);
 
         if (subscribers.Count == 0)
@@ -39,7 +39,7 @@ public class NullSubscriberNotificationService : ISubscriberNotificationService
             return;
         }
 
-        // 空实现：仅记录日志，不发送实际通知
+        // Null implementation: only log, do not send actual notifications
         _logger.LogInformation(
             "Skipping notification for repository {RepositoryName} (branch: {BranchName}, commit: {CommitId}). " +
             "Would notify {SubscriberCount} subscriber(s). Changed files: {ChangedFilesCount}",
@@ -49,7 +49,7 @@ public class NullSubscriberNotificationService : ISubscriberNotificationService
             subscribers.Count,
             notification.ChangedFilesCount);
 
-        // 记录每个订阅者（调试级别）
+        // Log each subscriber (debug level)
         foreach (var subscriberId in subscribers)
         {
             _logger.LogDebug(

@@ -4,41 +4,41 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 部门实体
+/// Department entity
 /// </summary>
 public class Department : AggregateRoot<string>
 {
     /// <summary>
-    /// 部门名称
+    /// Department name
     /// </summary>
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 父部门ID
+    /// Parent department ID
     /// </summary>
     [StringLength(36)]
     public string? ParentId { get; set; }
 
     /// <summary>
-    /// 部门描述
+    /// Department description
     /// </summary>
     [StringLength(500)]
     public string? Description { get; set; }
 
     /// <summary>
-    /// 排序号
+    /// Sort order
     /// </summary>
     public int SortOrder { get; set; } = 0;
 
     /// <summary>
-    /// 是否启用
+    /// Whether enabled
     /// </summary>
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// 父部门导航属性
+    /// Parent department navigation property
     /// </summary>
     [ForeignKey("ParentId")]
     public virtual Department? Parent { get; set; }

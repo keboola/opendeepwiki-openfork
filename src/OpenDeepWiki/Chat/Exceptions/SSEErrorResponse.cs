@@ -3,49 +3,49 @@ using System.Text.Json.Serialization;
 namespace OpenDeepWiki.Chat.Exceptions;
 
 /// <summary>
-/// SSE错误响应数据
-/// 用于统一SSE流中的错误事件格式
+/// SSE error response data
+/// Used to unify error event format in SSE streams
 /// Requirements: 11.1, 11.2, 11.3
 /// </summary>
 public class SSEErrorResponse
 {
     /// <summary>
-    /// 错误码
+    /// Error code
     /// </summary>
     [JsonPropertyName("code")]
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
-    /// 错误消息
+    /// Error message
     /// </summary>
     [JsonPropertyName("message")]
     public string Message { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否可重试
+    /// Whether retryable
     /// </summary>
     [JsonPropertyName("retryable")]
     public bool Retryable { get; set; }
 
     /// <summary>
-    /// 重试延迟（毫秒），仅当Retryable为true时有效
+    /// Retry delay (milliseconds), only valid when Retryable is true
     /// </summary>
     [JsonPropertyName("retryAfterMs")]
     public int? RetryAfterMs { get; set; }
 
     /// <summary>
-    /// 额外的错误详情（可选）
+    /// Additional error details (optional)
     /// </summary>
     [JsonPropertyName("details")]
     public object? Details { get; set; }
 
     /// <summary>
-    /// 创建一个SSE错误响应
+    /// Create an SSE error response
     /// </summary>
-    /// <param name="code">错误码</param>
-    /// <param name="message">错误消息，如果为空则使用默认消息</param>
-    /// <param name="details">额外详情</param>
-    /// <returns>SSE错误响应</returns>
+    /// <param name="code">Error code</param>
+    /// <param name="message">Error message, uses default message if empty</param>
+    /// <param name="details">Additional details</param>
+    /// <returns>SSE error response</returns>
     public static SSEErrorResponse Create(string code, string? message = null, object? details = null)
     {
         return new SSEErrorResponse
@@ -59,12 +59,12 @@ public class SSEErrorResponse
     }
 
     /// <summary>
-    /// 创建一个可重试的错误响应
+    /// Create a retryable error response
     /// </summary>
-    /// <param name="code">错误码</param>
-    /// <param name="message">错误消息</param>
-    /// <param name="retryAfterMs">重试延迟（毫秒）</param>
-    /// <returns>SSE错误响应</returns>
+    /// <param name="code">Error code</param>
+    /// <param name="message">Error message</param>
+    /// <param name="retryAfterMs">Retry delay (milliseconds)</param>
+    /// <returns>SSE error response</returns>
     public static SSEErrorResponse CreateRetryable(string code, string? message = null, int retryAfterMs = 1000)
     {
         return new SSEErrorResponse
@@ -77,11 +77,11 @@ public class SSEErrorResponse
     }
 
     /// <summary>
-    /// 创建一个不可重试的错误响应
+    /// Create a non-retryable error response
     /// </summary>
-    /// <param name="code">错误码</param>
-    /// <param name="message">错误消息</param>
-    /// <returns>SSE错误响应</returns>
+    /// <param name="code">Error code</param>
+    /// <param name="message">Error message</param>
+    /// <returns>SSE error response</returns>
     public static SSEErrorResponse CreateNonRetryable(string code, string? message = null)
     {
         return new SSEErrorResponse
@@ -94,13 +94,13 @@ public class SSEErrorResponse
     }
 
     /// <summary>
-    /// 获取错误码对应的默认重试延迟
+    /// Get the default retry delay for an error code
     /// </summary>
     private static int GetRetryDelay(string code)
     {
         return code switch
         {
-            ChatErrorCodes.RATE_LIMIT_EXCEEDED => 5000,  // 限流需要等待更长时间
+            ChatErrorCodes.RATE_LIMIT_EXCEEDED => 5000,  // Rate limiting requires longer wait
             ChatErrorCodes.REQUEST_TIMEOUT => 2000,
             ChatErrorCodes.CONNECTION_FAILED => 1000,
             ChatErrorCodes.STREAM_INTERRUPTED => 1000,

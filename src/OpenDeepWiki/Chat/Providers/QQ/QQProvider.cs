@@ -9,8 +9,8 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Providers.QQ;
 
 /// <summary>
-/// QQ 机器人消息 Provider 实现
-/// 支持频道消息、群聊消息和 C2C 私聊消息
+/// QQ bot message Provider implementation
+/// Supports channel messages, group chat messages, and C2C direct messages
 /// </summary>
 public class QQProvider : BaseMessageProvider
 {
@@ -21,7 +21,7 @@ public class QQProvider : BaseMessageProvider
     private readonly SemaphoreSlim _tokenLock = new(1, 1);
     
     /// <summary>
-    /// QQ 支持的消息类型
+    /// Message types supported by QQ
     /// </summary>
     private static readonly HashSet<ChatMessageType> SupportedMessageTypes = new()
     {
@@ -32,7 +32,7 @@ public class QQProvider : BaseMessageProvider
     };
     
     public override string PlatformId => "qq";
-    public override string DisplayName => "QQ机器人";
+    public override string DisplayName => "QQ Bot";
     
     public QQProvider(
         ILogger<QQProvider> logger,
@@ -45,7 +45,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 初始化 Provider，获取 Access Token
+    /// Initialize Provider and obtain Access Token
     /// </summary>
     public override async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -69,7 +69,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析 QQ 原始消息为统一格式
+    /// Parse raw QQ message into unified format
     /// </summary>
     public override async Task<IChatMessage?> ParseMessageAsync(string rawMessage, CancellationToken cancellationToken = default)
     {
@@ -82,7 +82,7 @@ public class QQProvider : BaseMessageProvider
                 return null;
             }
             
-            // 只处理消息事件
+            // Only process message events
             var eventType = webhookEvent.EventType;
             if (!IsMessageEvent(eventType))
             {
@@ -107,7 +107,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 发送消息到 QQ
+    /// Send message to QQ
     /// </summary>
     public override async Task<SendResult> SendMessageAsync(
         IChatMessage message, 
@@ -118,10 +118,10 @@ public class QQProvider : BaseMessageProvider
         {
             var token = await GetAccessTokenAsync(cancellationToken);
             
-            // 降级不支持的消息类型
+            // Downgrade unsupported message types
             var processedMessage = DegradeMessage(message, SupportedMessageTypes);
             
-            // 根据目标用户 ID 格式判断消息类型
+            // Determine message type based on target user ID format
             var (messageType, targetId, groupOpenId) = ParseTargetUserId(targetUserId);
             
             return messageType switch
@@ -135,7 +135,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 验证 QQ Webhook 请求
+    /// Validate QQ Webhook request
     /// </summary>
     public override async Task<WebhookValidationResult> ValidateWebhookAsync(
         HttpRequest request, 
@@ -154,10 +154,10 @@ public class QQProvider : BaseMessageProvider
                 return new WebhookValidationResult(false, ErrorMessage: "Invalid request body");
             }
             
-            // 处理 HTTP 回调验证请求（OpCode 13）
+            // Handle HTTP callback validation request (OpCode 13)
             if (webhookEvent.OpCode == 13)
             {
-                // 验证请求需要返回特定格式
+                // Validation request requires a specific response format
                 return new WebhookValidationResult(true, Challenge: webhookEvent.Data?.Id);
             }
             
@@ -171,10 +171,10 @@ public class QQProvider : BaseMessageProvider
     }
 
     
-    #region 消息解析方法
+    #region Message parsing methods
     
     /// <summary>
-    /// 判断是否为消息事件
+    /// Determine whether the event is a message event
     /// </summary>
     private static bool IsMessageEvent(string? eventType)
     {
@@ -186,7 +186,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析群聊消息
+    /// Parse group chat message
     /// </summary>
     private IChatMessage? ParseGroupMessage(QQWebhookEvent webhookEvent)
     {
@@ -218,14 +218,14 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析 C2C 私聊消息
+    /// Parse C2C direct message
     /// </summary>
     private IChatMessage? ParseC2CMessage(QQWebhookEvent webhookEvent)
     {
         var data = webhookEvent.Data;
         if (data == null) return null;
         
-        // C2C 消息的发送者 ID 在 author.user_openid 中
+        // The sender ID for C2C messages is in author.user_openid
         var senderId = data.Author?.MemberOpenId ?? data.Author?.Id ?? string.Empty;
         var messageType = DetermineMessageType(data);
         
@@ -248,7 +248,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析频道消息
+    /// Parse channel message
     /// </summary>
     private IChatMessage? ParseChannelMessage(QQWebhookEvent webhookEvent)
     {
@@ -280,7 +280,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析私信消息
+    /// Parse direct message
     /// </summary>
     private IChatMessage? ParseDirectMessage(QQWebhookEvent webhookEvent)
     {
@@ -309,22 +309,22 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 清理消息中的 @ 提及标记
+    /// Clean @ mention tags from message content
     /// </summary>
     private static string CleanMentions(string content)
     {
         if (string.IsNullOrEmpty(content)) return content;
         
-        // 移除 <@!用户ID> 格式的 @ 提及
+        // Remove @ mentions in <@!userID> format
         var cleaned = System.Text.RegularExpressions.Regex.Replace(content, @"<@!\d+>", "");
-        // 移除 <@用户ID> 格式的 @ 提及
+        // Remove @ mentions in <@userID> format
         cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"<@\d+>", "");
         
         return cleaned.Trim();
     }
     
     /// <summary>
-    /// 根据消息内容确定消息类型
+    /// Determine message type based on message content
     /// </summary>
     private static ChatMessageType DetermineMessageType(QQEventData data)
     {
@@ -345,10 +345,10 @@ public class QQProvider : BaseMessageProvider
     
     #endregion
     
-    #region 消息发送方法
+    #region Message sending methods
     
     /// <summary>
-    /// 发送群聊消息
+    /// Send group chat message
     /// </summary>
     private async Task<SendResult> SendGroupMessageAsync(
         IChatMessage message,
@@ -364,7 +364,7 @@ public class QQProvider : BaseMessageProvider
             MsgId = msgId
         };
         
-        // 如果有原始消息序列号，添加到请求中（被动回复）
+        // If there is an original message sequence number, add it to the request (passive reply)
         if (message.Metadata?.TryGetValue("msg_seq", out var msgSeqObj) == true && msgSeqObj is int msgSeq)
         {
             request.MsgSeq = msgSeq;
@@ -375,7 +375,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 发送 C2C 私聊消息
+    /// Send C2C direct message
     /// </summary>
     private async Task<SendResult> SendC2CMessageAsync(
         IChatMessage message,
@@ -389,7 +389,7 @@ public class QQProvider : BaseMessageProvider
             MsgType = ConvertToQQMsgType(message.MessageType)
         };
         
-        // 如果有原始消息 ID，添加到请求中（被动回复）
+        // If there is an original message ID, add it to the request (passive reply)
         if (message.Metadata?.TryGetValue("raw_msg_id", out var rawMsgId) == true && rawMsgId is string msgId)
         {
             request.MsgId = msgId;
@@ -400,7 +400,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 发送频道消息
+    /// Send channel message
     /// </summary>
     private async Task<SendResult> SendChannelMessageAsync(
         IChatMessage message,
@@ -413,13 +413,13 @@ public class QQProvider : BaseMessageProvider
             Content = message.Content
         };
         
-        // 如果有原始消息 ID，添加到请求中（被动回复）
+        // If there is an original message ID, add it to the request (passive reply)
         if (message.Metadata?.TryGetValue("raw_msg_id", out var rawMsgId) == true && rawMsgId is string msgId)
         {
             request.MsgId = msgId;
         }
         
-        // 处理图片消息
+        // Handle image message
         if (message.MessageType == ChatMessageType.Image)
         {
             request.Image = message.Content;
@@ -431,7 +431,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 发送 API 请求
+    /// Send API request
     /// </summary>
     private async Task<SendResult> SendApiRequestAsync<TRequest, TResponse>(
         string url,
@@ -461,7 +461,7 @@ public class QQProvider : BaseMessageProvider
             }
         }
         
-        // 解析错误响应
+        // Parse error response
         var errorResponse = JsonSerializer.Deserialize<QQApiResponse>(responseContent);
         var shouldRetry = IsRetryableError((int)response.StatusCode, errorResponse?.Code ?? 0);
         
@@ -473,7 +473,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 转换为 QQ 消息类型
+    /// Convert to QQ message type
     /// </summary>
     private static int ConvertToQQMsgType(ChatMessageType messageType)
     {
@@ -487,11 +487,11 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 解析目标用户 ID，确定消息类型
+    /// Parse target user ID and determine message type
     /// </summary>
     private static (QQMessageTargetType Type, string TargetId, string? GroupOpenId) ParseTargetUserId(string targetUserId)
     {
-        // 格式: group:{groupOpenId}:{msgId} 或 c2c:{userOpenId} 或 channel:{channelId}
+        // Format: group:{groupOpenId}:{msgId} or c2c:{userOpenId} or channel:{channelId}
         var parts = targetUserId.Split(':');
         
         if (parts.Length >= 2)
@@ -505,17 +505,17 @@ public class QQProvider : BaseMessageProvider
             };
         }
         
-        // 默认作为频道消息处理
+        // Default to channel message
         return (QQMessageTargetType.Channel, targetUserId, null);
     }
     
     #endregion
 
     
-    #region 鉴权和 Token 管理
+    #region Authentication and Token management
     
     /// <summary>
-    /// 获取 Access Token（带缓存）
+    /// Get Access Token (with caching)
     /// </summary>
     public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
@@ -527,7 +527,7 @@ public class QQProvider : BaseMessageProvider
         await _tokenLock.WaitAsync(cancellationToken);
         try
         {
-            // 双重检查
+            // Double-check
             if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpireTime)
             {
                 return _accessToken;
@@ -567,7 +567,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 获取 API 基础 URL
+    /// Get API base URL
     /// </summary>
     private string GetApiBaseUrl()
     {
@@ -576,29 +576,29 @@ public class QQProvider : BaseMessageProvider
     
     #endregion
     
-    #region 重试机制
+    #region Retry mechanism
     
     /// <summary>
-    /// 判断是否为可重试的错误
+    /// Determine whether the error is retryable
     /// </summary>
     private static bool IsRetryableError(int httpStatusCode, int errorCode)
     {
-        // HTTP 状态码判断
+        // HTTP status code check
         if (httpStatusCode is 429 or 500 or 502 or 503 or 504)
             return true;
         
-        // QQ 平台错误码判断
+        // QQ platform error code check
         return errorCode switch
         {
-            11281 => true,  // 频率限制
-            11282 => true,  // 并发限制
-            11264 => true,  // 服务器内部错误
+            11281 => true,  // Rate limit
+            11282 => true,  // Concurrency limit
+            11264 => true,  // Internal server error
             _ => false
         };
     }
     
     /// <summary>
-    /// 带重试的发送逻辑
+    /// Send logic with retry
     /// </summary>
     private async Task<SendResult> SendWithRetryAsync(
         Func<Task<SendResult>> sendFunc,
@@ -618,7 +618,7 @@ public class QQProvider : BaseMessageProvider
                     return result;
                 }
                 
-                // 指数退避
+                // Exponential backoff
                 var delay = retryDelayBase * (int)Math.Pow(2, attempt);
                 Logger.LogWarning(
                     "QQ API call failed (attempt {Attempt}/{MaxRetries}), retrying in {Delay}ms. Error: {Error}",
@@ -642,10 +642,10 @@ public class QQProvider : BaseMessageProvider
     
     #endregion
     
-    #region 辅助方法
+    #region Helper methods
     
     /// <summary>
-    /// 解析时间戳
+    /// Parse timestamp
     /// </summary>
     private static DateTimeOffset ParseTimestamp(string timestamp)
     {
@@ -663,7 +663,7 @@ public class QQProvider : BaseMessageProvider
     }
     
     /// <summary>
-    /// 转换消息为 QQ 格式（用于测试）
+    /// Convert message to QQ format (for testing)
     /// </summary>
     public (int MsgType, string Content) ConvertToQQFormat(IChatMessage message)
     {
@@ -675,27 +675,27 @@ public class QQProvider : BaseMessageProvider
 }
 
 /// <summary>
-/// QQ 消息目标类型
+/// QQ message target type
 /// </summary>
 public enum QQMessageTargetType
 {
     /// <summary>
-    /// 未知类型
+    /// Unknown type
     /// </summary>
     Unknown,
     
     /// <summary>
-    /// 群聊消息
+    /// Group chat message
     /// </summary>
     Group,
     
     /// <summary>
-    /// C2C 私聊消息
+    /// C2C direct message
     /// </summary>
     C2C,
     
     /// <summary>
-    /// 频道消息
+    /// Channel message
     /// </summary>
     Channel
 }

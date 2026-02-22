@@ -1,57 +1,57 @@
 namespace OpenDeepWiki.Chat.Providers.QQ;
 
 /// <summary>
-/// QQ 机器人 Provider 配置选项
+/// QQ bot Provider configuration options
 /// </summary>
 public class QQProviderOptions : ProviderOptions
 {
     /// <summary>
-    /// QQ 机器人 App ID
+    /// QQ bot App ID
     /// </summary>
     public string AppId { get; set; } = string.Empty;
     
     /// <summary>
-    /// QQ 机器人 App Secret
+    /// QQ bot App Secret
     /// </summary>
     public string AppSecret { get; set; } = string.Empty;
     
     /// <summary>
-    /// QQ 机器人 Token（用于 Webhook 验证）
+    /// QQ bot Token (used for Webhook verification)
     /// </summary>
     public string Token { get; set; } = string.Empty;
     
     /// <summary>
-    /// QQ 开放平台 API 基础 URL
+    /// QQ Open Platform API base URL
     /// </summary>
     public string ApiBaseUrl { get; set; } = "https://api.sgroup.qq.com";
     
     /// <summary>
-    /// 沙箱环境 API 基础 URL
+    /// Sandbox environment API base URL
     /// </summary>
     public string SandboxApiBaseUrl { get; set; } = "https://sandbox.api.sgroup.qq.com";
     
     /// <summary>
-    /// 是否使用沙箱环境
+    /// Whether to use sandbox environment
     /// </summary>
     public bool UseSandbox { get; set; } = false;
     
     /// <summary>
-    /// Access Token 缓存时间（秒），默认 7000 秒
+    /// Access Token cache duration (seconds), default 7000 seconds
     /// </summary>
     public int TokenCacheSeconds { get; set; } = 7000;
     
     /// <summary>
-    /// 心跳间隔（毫秒），默认 30000 毫秒（30秒）
+    /// Heartbeat interval (milliseconds), default 30000ms (30 seconds)
     /// </summary>
     public int HeartbeatInterval { get; set; } = 30000;
     
     /// <summary>
-    /// WebSocket 重连间隔（毫秒）
+    /// WebSocket reconnection interval (milliseconds)
     /// </summary>
     public int ReconnectInterval { get; set; } = 5000;
     
     /// <summary>
-    /// 最大重连次数
+    /// Maximum reconnection attempts
     /// </summary>
     public int MaxReconnectAttempts { get; set; } = 10;
 }

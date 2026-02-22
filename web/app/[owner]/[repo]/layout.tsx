@@ -5,7 +5,7 @@ import { RepositoryProcessingStatus } from "@/components/repo/repository-process
 import { RepositoryNotFound } from "@/components/repo/repository-not-found";
 import { RootProvider } from "fumadocs-ui/provider/next";
 
-// 禁用缓存
+// Disable caching
 export const dynamic = "force-dynamic";
 
 interface RepoLayoutProps {
@@ -47,13 +47,13 @@ export default async function RepoLayout({ children, params }: RepoLayoutProps) 
   
   const tree = await getTreeData(owner, repo);
   
-  // API请求失败或仓库不存在，检查GitHub
+  // API request failed or repository does not exist, check GitHub
   if (!tree || !tree.exists) {
     const gitHubInfo = await getGitHubInfo(owner, repo);
     return <RepositoryNotFound owner={owner} repo={repo} gitHubInfo={gitHubInfo} />;
   }
 
-  // 仓库正在处理中或等待处理
+  // Repository is processing or pending
   if (tree.statusName === "Pending" || tree.statusName === "Processing" || tree.statusName === "Failed") {
     return (
       <RepositoryProcessingStatus
@@ -64,7 +64,7 @@ export default async function RepoLayout({ children, params }: RepoLayoutProps) 
     );
   }
 
-  // 仓库已完成但没有文档
+  // Repository completed but has no documents
   if (tree.nodes.length === 0) {
     return (
       <RepositoryProcessingStatus
@@ -75,7 +75,7 @@ export default async function RepoLayout({ children, params }: RepoLayoutProps) 
     );
   }
 
-  // 获取分支和语言数据
+  // Fetch branch and language data
   const branches = await getBranchesData(owner, repo);
 
   return (

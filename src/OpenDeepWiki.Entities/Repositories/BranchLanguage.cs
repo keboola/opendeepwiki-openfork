@@ -4,75 +4,75 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 分支语言实体
+/// Branch language entity
 /// </summary>
 public class BranchLanguage : AggregateRoot<string>
 {
     /// <summary>
-    /// 仓库分支ID
+    /// Repository branch ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryBranchId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 语言代码
+    /// Language code
     /// </summary>
     [Required]
     [StringLength(50)]
     public string LanguageCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// 语言更新总结
+    /// Language update summary
     /// </summary>
     [StringLength(2000)]
     public string? UpdateSummary { get; set; }
 
     /// <summary>
-    /// 是否为默认语言
+    /// Whether this is the default language
     /// </summary>
     public bool IsDefault { get; set; }
 
     /// <summary>
-    /// 项目架构思维导图内容
-    /// 格式: # 一级标题\n## 二级标题:文件路径\n### 三级标题
+    /// Project architecture mind map content
+    /// Format: # Level 1 heading\n## Level 2 heading:file path\n### Level 3 heading
     /// </summary>
     public string? MindMapContent { get; set; }
 
     /// <summary>
-    /// 思维导图生成状态
+    /// Mind map generation status
     /// </summary>
     public MindMapStatus MindMapStatus { get; set; } = MindMapStatus.Pending;
 
     /// <summary>
-    /// 仓库分支导航属性
+    /// Repository branch navigation property
     /// </summary>
     [ForeignKey("RepositoryBranchId")]
     public virtual RepositoryBranch? RepositoryBranch { get; set; }
 }
 
 /// <summary>
-/// 思维导图生成状态
+/// Mind map generation status
 /// </summary>
 public enum MindMapStatus
 {
     /// <summary>
-    /// 等待生成
+    /// Pending generation
     /// </summary>
     Pending = 0,
 
     /// <summary>
-    /// 正在生成
+    /// Generating
     /// </summary>
     Processing = 1,
 
     /// <summary>
-    /// 生成完成
+    /// Generation completed
     /// </summary>
     Completed = 2,
 
     /// <summary>
-    /// 生成失败
+    /// Generation failed
     /// </summary>
     Failed = 3
 }

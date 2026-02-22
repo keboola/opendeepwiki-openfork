@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 /**
- * 工具调用信息
+ * Tool call information
  */
 export interface ToolCall {
   id: string
@@ -10,7 +10,7 @@ export interface ToolCall {
 }
 
 /**
- * 工具执行结果
+ * Tool execution result
  */
 export interface ToolResult {
   toolCallId: string
@@ -19,7 +19,7 @@ export interface ToolResult {
 }
 
 /**
- * 引用的选中文本
+ * Quoted selected text
  */
 export interface QuotedText {
   title?: string
@@ -27,7 +27,7 @@ export interface QuotedText {
 }
 
 /**
- * Token 使用统计
+ * Token usage statistics
  */
 export interface TokenUsage {
   inputTokens: number
@@ -35,48 +35,48 @@ export interface TokenUsage {
 }
 
 /**
- * 内容块类型
+ * Content block type
  */
 export type ContentBlockType = 'thinking' | 'text' | 'tool_call'
 
 /**
- * 内容块
+ * Content block
  */
 export interface ContentBlock {
   type: ContentBlockType
-  content?: string           // thinking 或 text 内容
-  toolCall?: ToolCall        // tool_call 时的工具调用信息
+  content?: string           // thinking or text content
+  toolCall?: ToolCall        // tool call info for tool_call type
 }
 
 /**
- * 聊天消息
+ * Chat message
  */
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant' | 'tool'
   content: string
-  thinking?: string          // AI 思考内容
-  contentBlocks?: ContentBlock[]  // 按顺序存储的内容块
-  images?: string[]          // Base64编码的图片
-  quotedText?: QuotedText    // 引用的选中文本
-  toolCalls?: ToolCall[]     // 工具调用 (兼容旧结构)
-  toolResult?: ToolResult    // 工具结果
-  tokenUsage?: TokenUsage    // Token 使用统计
+  thinking?: string          // AI thinking content
+  contentBlocks?: ContentBlock[]  // Content blocks stored in order
+  images?: string[]          // Base64-encoded images
+  quotedText?: QuotedText    // Quoted selected text
+  toolCalls?: ToolCall[]     // Tool calls (backward compatible)
+  toolResult?: ToolResult    // Tool result
+  tokenUsage?: TokenUsage    // Token usage statistics
   timestamp: number
 }
 
 /**
- * 新消息输入（不包含自动生成的字段）
+ * New message input (excluding auto-generated fields)
  */
 export type NewChatMessage = Omit<ChatMessage, 'id' | 'timestamp'>
 
 /**
- * 消息更新
+ * Message update
  */
 export type ChatMessageUpdate = Partial<Omit<ChatMessage, 'id' | 'timestamp'>>
 
 /**
- * useChatHistory Hook 返回类型
+ * useChatHistory Hook return type
  */
 export interface UseChatHistoryReturn {
   messages: ChatMessage[]
@@ -86,31 +86,31 @@ export interface UseChatHistoryReturn {
 }
 
 /**
- * 生成唯一消息ID
+ * Generate unique message ID
  */
 function generateMessageId(): string {
   return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 }
 
 /**
- * 对话历史管理Hook
- * 
- * 功能：
- * - 维护完整的对话历史（用户消息、AI回复、工具调用和工具结果）
- * - 支持添加、更新、清空消息
- * - 页面刷新时自动清空（不持久化）
- * 
+ * Chat history management Hook
+ *
+ * Features:
+ * - Maintains complete chat history (user messages, AI replies, tool calls, and tool results)
+ * - Supports adding, updating, and clearing messages
+ * - Automatically clears on page refresh (not persisted)
+ *
  * @returns UseChatHistoryReturn
- * 
+ *
  * Requirements: 8.1, 8.2, 8.4
  */
 export function useChatHistory(): UseChatHistoryReturn {
   const [messages, setMessages] = React.useState<ChatMessage[]>([])
 
   /**
-   * 添加新消息到历史记录
-   * @param msg 新消息（不包含id和timestamp）
-   * @returns 生成的消息ID
+   * Add a new message to the history
+   * @param msg New message (excluding id and timestamp)
+   * @returns Generated message ID
    */
   const addMessage = React.useCallback((msg: NewChatMessage): string => {
     const id = generateMessageId()
@@ -124,9 +124,9 @@ export function useChatHistory(): UseChatHistoryReturn {
   }, [])
 
   /**
-   * 更新指定ID的消息
-   * @param id 消息ID
-   * @param updates 要更新的字段
+   * Update message by ID
+   * @param id Message ID
+   * @param updates Fields to update
    */
   const updateMessage = React.useCallback((id: string, updates: ChatMessageUpdate): void => {
     setMessages(prev =>
@@ -137,7 +137,7 @@ export function useChatHistory(): UseChatHistoryReturn {
   }, [])
 
   /**
-   * 清空所有对话历史
+   * Clear all chat history
    */
   const clearHistory = React.useCallback((): void => {
     setMessages([])

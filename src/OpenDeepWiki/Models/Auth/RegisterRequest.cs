@@ -3,35 +3,35 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models.Auth;
 
 /// <summary>
-/// 注册请求
+/// Registration request
 /// </summary>
 public class RegisterRequest
 {
     /// <summary>
-    /// 用户名
+    /// Username
     /// </summary>
-    [Required(ErrorMessage = "用户名不能为空")]
-    [StringLength(50, MinimumLength = 2, ErrorMessage = "用户名长度必须在2-50之间")]
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "Username must be between 2 and 50 characters")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 邮箱
+    /// Email
     /// </summary>
-    [Required(ErrorMessage = "邮箱不能为空")]
-    [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// 密码
+    /// Password
     /// </summary>
-    [Required(ErrorMessage = "密码不能为空")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "密码长度必须在6-100之间")]
+    [Required(ErrorMessage = "Password is required")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 100 characters")]
     public string Password { get; set; } = string.Empty;
 
     /// <summary>
-    /// 确认密码
+    /// Confirm password
     /// </summary>
-    [Required(ErrorMessage = "确认密码不能为空")]
-    [Compare("Password", ErrorMessage = "两次密码输入不一致")]
+    [Required(ErrorMessage = "Password confirmation is required")]
+    [Compare("Password", ErrorMessage = "Passwords do not match")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }

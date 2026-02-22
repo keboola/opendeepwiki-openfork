@@ -6,7 +6,7 @@ using OpenDeepWiki.Chat.Abstractions;
 namespace OpenDeepWiki.Chat.Providers;
 
 /// <summary>
-/// Provider 基类，提供通用实现
+/// Provider base class, provides common implementation
 /// </summary>
 public abstract class BaseMessageProvider : IMessageProvider
 {
@@ -47,7 +47,7 @@ public abstract class BaseMessageProvider : IMessageProvider
             if (!result.Success && !result.ShouldRetry)
                 break;
                 
-            // 默认消息间隔
+            // Default message interval
             await Task.Delay(Options.Value.MessageInterval, cancellationToken);
         }
         return results;
@@ -65,22 +65,22 @@ public abstract class BaseMessageProvider : IMessageProvider
     }
     
     /// <summary>
-    /// 消息类型降级处理
-    /// 当消息类型不被目标平台支持时，将其降级为文本消息
+    /// Message type degradation handling
+    /// When a message type is not supported by the target platform, degrade it to a text message
     /// </summary>
-    /// <param name="message">原始消息</param>
-    /// <param name="supportedTypes">目标平台支持的消息类型集合</param>
-    /// <returns>降级后的消息（如果需要降级）或原始消息</returns>
+    /// <param name="message">Original message</param>
+    /// <param name="supportedTypes">Set of message types supported by the target platform</param>
+    /// <returns>Degraded message (if degradation is needed) or the original message</returns>
     protected virtual IChatMessage DegradeMessage(IChatMessage message, ISet<ChatMessageType>? supportedTypes = null)
     {
-        // 文本消息不需要降级
+        // Text messages do not need degradation
         if (message.MessageType == ChatMessageType.Text)
             return message;
         
-        // 如果没有指定支持的类型，默认只支持文本
+        // If no supported types specified, default to text only
         supportedTypes ??= new HashSet<ChatMessageType> { ChatMessageType.Text };
         
-        // 如果消息类型被支持，不需要降级
+        // If the message type is supported, no degradation needed
         if (supportedTypes.Contains(message.MessageType))
             return message;
             

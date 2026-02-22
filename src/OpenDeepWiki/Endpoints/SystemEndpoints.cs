@@ -3,7 +3,7 @@ using System.Reflection;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// 系统信息相关接口
+/// System information related endpoints
 /// </summary>
 public static class SystemEndpoints
 {
@@ -13,12 +13,12 @@ public static class SystemEndpoints
             .WithTags("System");
 
         group.MapGet("/version", GetVersion)
-            .WithSummary("获取系统版本信息")
-            .WithDescription("返回当前系统的版本号和构建信息");
+            .WithSummary("Get system version info")
+            .WithDescription("Returns the current system version number and build information");
     }
 
     /// <summary>
-    /// 获取系统版本信息
+    /// Get system version information
     /// </summary>
     private static IResult GetVersion()
     {

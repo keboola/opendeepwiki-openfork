@@ -1,7 +1,7 @@
 /**
- * 对话助手 API 客户端
- * 
- * 实现SSE流式对话功能，包含错误处理、超时和重试机制
+ * Chat assistant API client
+ *
+ * Implements SSE streaming chat with error handling, timeout, and retry mechanisms
  * Requirements: 9.2, 11.1, 11.2, 11.3, 11.4
  */
 
@@ -9,18 +9,18 @@ import { getApiProxyUrl } from './env'
 import { getToken } from './auth-api'
 import { ChatMessage, ToolCall, ToolResult, QuotedText, ContentBlock, TokenUsage } from '@/hooks/use-chat-history'
 
-// 重新导出类型以便其他模块使用
+// Re-export types for use by other modules
 export type { ChatMessage, ToolCall, ToolResult, QuotedText }
 
 const API_BASE_URL = getApiProxyUrl()
 
-/** 默认请求超时时间（毫秒） */
+/** Default request timeout (milliseconds) */
 const DEFAULT_TIMEOUT_MS = 30000
 
-/** 默认重试次数 */
+/** Default max retries */
 const DEFAULT_MAX_RETRIES = 2
 
-/** 默认重试延迟（毫秒） */
+/** Default retry delay (milliseconds) */
 const DEFAULT_RETRY_DELAY_MS = 1000
 
 function buildApiUrl(path: string): string {
@@ -34,7 +34,7 @@ function buildApiUrl(path: string): string {
 }
 
 /**
- * 目录项
+ * Catalog item
  */
 export interface CatalogItem {
   title: string
@@ -43,7 +43,7 @@ export interface CatalogItem {
 }
 
 /**
- * 文档上下文
+ * Document context
  */
 export interface DocContext {
   owner: string
@@ -57,7 +57,7 @@ export interface DocContext {
 }
 
 /**
- * 对话请求消息DTO
+ * Chat request message DTO
  */
 export interface ChatMessageDto {
   role: 'user' | 'assistant' | 'tool'
@@ -69,7 +69,7 @@ export interface ChatMessageDto {
 }
 
 /**
- * 分享消息 DTO
+ * Share message DTO
  */
 export interface ChatShareMessage {
   id: string
@@ -86,7 +86,7 @@ export interface ChatShareMessage {
 }
 
 /**
- * 创建分享请求载荷
+ * Create share request payload
  */
 export interface CreateChatSharePayload {
   messages: ChatShareMessage[]
@@ -98,7 +98,7 @@ export interface CreateChatSharePayload {
 }
 
 /**
- * 分享响应
+ * Share response
  */
 export interface ChatShareResponse {
   shareId: string
@@ -112,7 +112,7 @@ export interface ChatShareResponse {
 }
 
 /**
- * 对话请求
+ * Chat request
  */
 export interface ChatRequest {
   messages: ChatMessageDto[]
@@ -122,12 +122,12 @@ export interface ChatRequest {
 }
 
 /**
- * SSE事件类型
+ * SSE event type
  */
 export type SSEEventType = 'content' | 'thinking' | 'tool_call' | 'tool_result' | 'done' | 'error'
 
 /**
- * Thinking 事件数据
+ * Thinking event data
  */
 export interface ThinkingEvent {
   type: 'start' | 'delta'
@@ -136,7 +136,7 @@ export interface ThinkingEvent {
 }
 
 /**
- * ToolCall 事件数据（带 index）
+ * ToolCall event data (with index)
  */
 export interface ToolCallEvent {
   id: string
@@ -146,7 +146,7 @@ export interface ToolCallEvent {
 }
 
 /**
- * 错误信息
+ * Error info
  */
 export interface ErrorInfo {
   code: string
@@ -156,84 +156,84 @@ export interface ErrorInfo {
 }
 
 /**
- * 错误码常量（与后端保持一致）
+ * Error code constants (consistent with backend)
  * Requirements: 11.1, 11.2, 11.3
  */
 export const ChatErrorCodes = {
-  // 功能状态错误
+  // Feature status errors
   FEATURE_DISABLED: 'FEATURE_DISABLED',
   CONFIG_MISSING: 'CONFIG_MISSING',
-  
-  // 模型相关错误
+
+  // Model-related errors
   MODEL_UNAVAILABLE: 'MODEL_UNAVAILABLE',
   MODEL_CONFIG_INVALID: 'MODEL_CONFIG_INVALID',
   NO_AVAILABLE_MODELS: 'NO_AVAILABLE_MODELS',
-  
-  // 应用相关错误
+
+  // Application-related errors
   INVALID_APP_ID: 'INVALID_APP_ID',
   APP_MODEL_NOT_CONFIGURED: 'APP_MODEL_NOT_CONFIGURED',
   APP_DISABLED: 'APP_DISABLED',
-  
-  // 域名校验错误
+
+  // Domain validation errors
   DOMAIN_NOT_ALLOWED: 'DOMAIN_NOT_ALLOWED',
   DOMAIN_UNKNOWN: 'DOMAIN_UNKNOWN',
-  
-  // 限流错误
+
+  // Rate limiting errors
   RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-  
-  // 文档相关错误
+
+  // Document-related errors
   DOCUMENT_NOT_FOUND: 'DOCUMENT_NOT_FOUND',
   DOCUMENT_ACCESS_DENIED: 'DOCUMENT_ACCESS_DENIED',
   REPOSITORY_NOT_FOUND: 'REPOSITORY_NOT_FOUND',
-  
-  // 工具调用错误
+
+  // Tool call errors
   MCP_CALL_FAILED: 'MCP_CALL_FAILED',
   TOOL_EXECUTION_FAILED: 'TOOL_EXECUTION_FAILED',
   TOOL_NOT_FOUND: 'TOOL_NOT_FOUND',
-  
-  // 连接和超时错误
+
+  // Connection and timeout errors
   CONNECTION_FAILED: 'CONNECTION_FAILED',
   REQUEST_TIMEOUT: 'REQUEST_TIMEOUT',
   STREAM_INTERRUPTED: 'STREAM_INTERRUPTED',
-  
-  // 内部错误
+
+  // Internal errors
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 } as const
 
 /**
- * 获取错误码对应的默认消息
+ * Get the default message for an error code
  */
 export function getErrorMessage(code: string): string {
   const messages: Record<string, string> = {
-    [ChatErrorCodes.FEATURE_DISABLED]: '对话助手功能未启用',
-    [ChatErrorCodes.CONFIG_MISSING]: '功能配置缺失',
-    [ChatErrorCodes.MODEL_UNAVAILABLE]: '模型不可用，请选择其他模型',
-    [ChatErrorCodes.MODEL_CONFIG_INVALID]: '模型配置无效',
-    [ChatErrorCodes.NO_AVAILABLE_MODELS]: '暂无可用模型，请联系管理员配置',
-    [ChatErrorCodes.INVALID_APP_ID]: '无效的应用ID',
-    [ChatErrorCodes.APP_MODEL_NOT_CONFIGURED]: '应用未配置AI模型',
-    [ChatErrorCodes.APP_DISABLED]: '应用已禁用',
-    [ChatErrorCodes.DOMAIN_NOT_ALLOWED]: '当前域名不在允许列表中',
-    [ChatErrorCodes.DOMAIN_UNKNOWN]: '无法获取请求来源域名',
-    [ChatErrorCodes.RATE_LIMIT_EXCEEDED]: '请求频率超限，请稍后重试',
-    [ChatErrorCodes.DOCUMENT_NOT_FOUND]: '文档不存在',
-    [ChatErrorCodes.DOCUMENT_ACCESS_DENIED]: '文档访问被拒绝',
-    [ChatErrorCodes.REPOSITORY_NOT_FOUND]: '仓库不存在',
-    [ChatErrorCodes.MCP_CALL_FAILED]: 'MCP工具调用失败',
-    [ChatErrorCodes.TOOL_EXECUTION_FAILED]: '工具执行失败',
-    [ChatErrorCodes.TOOL_NOT_FOUND]: '工具不存在',
-    [ChatErrorCodes.CONNECTION_FAILED]: '连接失败，请检查网络',
-    [ChatErrorCodes.REQUEST_TIMEOUT]: '请求超时，请重试',
-    [ChatErrorCodes.STREAM_INTERRUPTED]: '数据流中断，请重试',
-    [ChatErrorCodes.INTERNAL_ERROR]: '服务器内部错误',
-    [ChatErrorCodes.UNKNOWN_ERROR]: '未知错误',
+    [ChatErrorCodes.FEATURE_DISABLED]: 'Chat assistant is not enabled',
+    [ChatErrorCodes.CONFIG_MISSING]: 'Feature configuration missing',
+    [ChatErrorCodes.MODEL_UNAVAILABLE]: 'Model unavailable, please select another',
+    [ChatErrorCodes.MODEL_CONFIG_INVALID]: 'Invalid model configuration',
+    [ChatErrorCodes.NO_AVAILABLE_MODELS]: 'No models available, contact admin',
+    [ChatErrorCodes.INVALID_APP_ID]: 'Invalid application ID',
+    [ChatErrorCodes.APP_MODEL_NOT_CONFIGURED]: 'Application has no AI model configured',
+    [ChatErrorCodes.APP_DISABLED]: 'Application is disabled',
+    [ChatErrorCodes.DOMAIN_NOT_ALLOWED]: 'Domain not in allowed list',
+    [ChatErrorCodes.DOMAIN_UNKNOWN]: 'Unable to determine request origin domain',
+    [ChatErrorCodes.RATE_LIMIT_EXCEEDED]: 'Rate limit exceeded, please retry later',
+    [ChatErrorCodes.DOCUMENT_NOT_FOUND]: 'Document not found',
+    [ChatErrorCodes.DOCUMENT_ACCESS_DENIED]: 'Document access denied',
+    [ChatErrorCodes.REPOSITORY_NOT_FOUND]: 'Repository not found',
+    [ChatErrorCodes.MCP_CALL_FAILED]: 'MCP tool call failed',
+    [ChatErrorCodes.TOOL_EXECUTION_FAILED]: 'Tool execution failed',
+    [ChatErrorCodes.TOOL_NOT_FOUND]: 'Tool not found',
+    [ChatErrorCodes.CONNECTION_FAILED]: 'Connection failed, check network',
+    [ChatErrorCodes.REQUEST_TIMEOUT]: 'Request timed out, please retry',
+    [ChatErrorCodes.STREAM_INTERRUPTED]: 'Stream interrupted, please retry',
+    [ChatErrorCodes.INTERNAL_ERROR]: 'Internal server error',
+    [ChatErrorCodes.UNKNOWN_ERROR]: 'Unknown error',
   }
-  return messages[code] || '发生错误'
+  return messages[code] || 'An error occurred'
 }
 
 /**
- * 判断错误是否可重试
+ * Determine if an error is retryable
  */
 export function isRetryableError(code: string): boolean {
   const retryableCodes: string[] = [
@@ -247,7 +247,7 @@ export function isRetryableError(code: string): boolean {
 }
 
 /**
- * 完成信息
+ * Completion info
  */
 export interface DoneInfo {
   inputTokens: number
@@ -255,7 +255,7 @@ export interface DoneInfo {
 }
 
 /**
- * SSE事件
+ * SSE event
  */
 export interface SSEEvent {
   type: SSEEventType
@@ -263,7 +263,7 @@ export interface SSEEvent {
 }
 
 /**
- * 模型配置
+ * Model configuration
  */
 export interface ModelConfig {
   id: string
@@ -273,7 +273,7 @@ export interface ModelConfig {
 }
 
 /**
- * 对话助手配置
+ * Chat assistant configuration
  */
 export interface ChatAssistantConfig {
   isEnabled: boolean
@@ -282,14 +282,14 @@ export interface ChatAssistantConfig {
 }
 
 /**
- * 解析SSE行
+ * Parse SSE line
  */
 function parseSSELine(line: string): SSEEvent | null {
   if (!line.startsWith('data: ')) {
     return null
   }
-  
-  const jsonStr = line.slice(6) // 移除 "data: " 前缀
+
+  const jsonStr = line.slice(6) // Remove "data: " prefix
   if (!jsonStr.trim()) {
     return null
   }
@@ -297,7 +297,7 @@ function parseSSELine(line: string): SSEEvent | null {
   try {
     return JSON.parse(jsonStr) as SSEEvent
   } catch {
-    // 如果解析失败，可能是纯文本内容
+    // If parsing fails, it may be plain text content
     return {
       type: 'content',
       data: jsonStr,
@@ -306,21 +306,21 @@ function parseSSELine(line: string): SSEEvent | null {
 }
 
 /**
- * 流式对话选项
+ * Streaming chat options
  */
 export interface StreamChatOptions {
-  /** 超时时间（毫秒），默认30秒 */
+  /** Timeout (milliseconds), default 30 seconds */
   timeoutMs?: number
-  /** 最大重试次数，默认2次 */
+  /** Max retries, default 2 */
   maxRetries?: number
-  /** 重试延迟（毫秒），默认1秒 */
+  /** Retry delay (milliseconds), default 1 second */
   retryDelayMs?: number
-  /** 取消信号 */
+  /** Abort signal */
   signal?: AbortSignal
 }
 
 /**
- * 创建带超时的fetch请求
+ * Create a fetch request with timeout
  */
 async function fetchWithTimeout(
   url: string,
@@ -342,22 +342,22 @@ async function fetchWithTimeout(
 }
 
 /**
- * 延迟函数
+ * Delay function
  */
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
- * SSE流式对话
- * 
- * 使用异步生成器函数解析SSE事件流
- * 支持超时处理和自动重试
- * 
- * @param request 对话请求
- * @param options 流式对话选项
- * @yields SSEEvent 事件
- * 
+ * SSE streaming chat
+ *
+ * Uses async generator function to parse SSE event stream
+ * Supports timeout handling and automatic retries
+ *
+ * @param request Chat request
+ * @param options Streaming chat options
+ * @yields SSEEvent events
+ *
  * Requirements: 9.2, 11.1, 11.2, 11.3, 11.4
  */
 export async function* streamChat(
@@ -386,19 +386,19 @@ export async function* streamChat(
   let retryCount = 0
   
   while (retryCount <= maxRetries) {
-    // 检查是否已取消
+    // Check if already cancelled
     if (signal?.aborted) {
       yield {
         type: 'error',
         data: {
           code: 'ABORTED',
-          message: '请求已取消',
+          message: 'Request cancelled',
           retryable: false,
         },
       }
       return
     }
-    
+
     try {
       const response = await fetchWithTimeout(
         url,
@@ -411,7 +411,7 @@ export async function* streamChat(
       )
       
       if (!response.ok) {
-        let errorMessage = '请求失败'
+        let errorMessage = 'Request failed'
         let errorCode = `HTTP_${response.status}`
         
         try {
@@ -427,7 +427,7 @@ export async function* streamChat(
         if (isRetryable && retryCount < maxRetries) {
           lastError = { code: errorCode, message: errorMessage, retryable: true }
           retryCount++
-          await delay(retryDelayMs * retryCount) // 指数退避
+          await delay(retryDelayMs * retryCount) // Exponential backoff
           continue
         }
         
@@ -448,7 +448,7 @@ export async function* streamChat(
           type: 'error',
           data: {
             code: 'NO_BODY',
-            message: '响应体为空',
+            message: 'Response body is empty',
             retryable: false,
           },
         }
@@ -460,14 +460,14 @@ export async function* streamChat(
       
       try {
         while (true) {
-          // 检查是否已取消
+          // Check if already cancelled
           if (signal?.aborted) {
             reader.releaseLock()
             yield {
               type: 'error',
               data: {
                 code: 'ABORTED',
-                message: '请求已取消',
+                message: 'Request cancelled',
                 retryable: false,
               },
             }
@@ -482,9 +482,9 @@ export async function* streamChat(
           
           buffer += decoder.decode(value, { stream: true })
           
-          // 按行分割处理
+          // Split and process by lines
           const lines = buffer.split('\n')
-          buffer = lines.pop() || '' // 保留最后一个不完整的行
+          buffer = lines.pop() || '' // Keep the last incomplete line
           
           for (const line of lines) {
             const trimmedLine = line.trim()
@@ -496,7 +496,7 @@ export async function* streamChat(
             if (event) {
               yield event
               
-              // 如果是完成或错误事件，结束流
+              // If it's a done or error event, end the stream
               if (event.type === 'done' || event.type === 'error') {
                 return
               }
@@ -504,7 +504,7 @@ export async function* streamChat(
           }
         }
         
-        // 处理剩余的buffer
+        // Process remaining buffer
         if (buffer.trim()) {
           const event = parseSSELine(buffer.trim())
           if (event) {
@@ -512,7 +512,7 @@ export async function* streamChat(
           }
         }
         
-        // 成功完成，退出重试循环
+        // Successfully completed, exit retry loop
         return
         
       } finally {
@@ -520,11 +520,11 @@ export async function* streamChat(
       }
       
     } catch (err) {
-      // 处理超时错误
+      // Handle timeout error
       if (err instanceof Error && err.name === 'AbortError') {
         const errorInfo: ErrorInfo = {
           code: ChatErrorCodes.REQUEST_TIMEOUT,
-          message: '请求超时，请重试',
+          message: 'Request timed out, please retry',
           retryable: true,
           retryAfterMs: retryDelayMs,
         }
@@ -543,11 +543,11 @@ export async function* streamChat(
         return
       }
       
-      // 处理网络错误
+      // Handle network error
       if (err instanceof TypeError && err.message.includes('fetch')) {
         const errorInfo: ErrorInfo = {
           code: ChatErrorCodes.CONNECTION_FAILED,
-          message: '连接失败，请检查网络',
+          message: 'Connection failed, check network',
           retryable: true,
           retryAfterMs: retryDelayMs,
         }
@@ -566,13 +566,13 @@ export async function* streamChat(
         return
       }
       
-      // 其他错误
-      console.error('对话失败:', err)
+      // Other errors
+      console.error('Chat failed:', err)
       yield {
         type: 'error',
         data: {
           code: ChatErrorCodes.UNKNOWN_ERROR,
-          message: err instanceof Error ? err.message : '对话失败，请重试',
+          message: err instanceof Error ? err.message : 'Chat failed, please retry',
           retryable: false,
         },
       }
@@ -580,13 +580,13 @@ export async function* streamChat(
     }
   }
   
-  // 重试次数用尽
+  // Retries exhausted
   if (lastError) {
     yield {
       type: 'error',
       data: {
         ...lastError,
-        message: `${lastError.message}（已重试${maxRetries}次）`,
+        message: `${lastError.message} (retried ${maxRetries} times)`,
         retryable: true,
       },
     }
@@ -594,7 +594,7 @@ export async function* streamChat(
 }
 
 /**
- * 获取对话助手配置
+ * Get chat assistant configuration
  */
 export async function getChatConfig(): Promise<ChatAssistantConfig> {
   const url = buildApiUrl('/api/v1/chat/config')
@@ -608,14 +608,14 @@ export async function getChatConfig(): Promise<ChatAssistantConfig> {
   const response = await fetch(url, { headers })
   
   if (!response.ok) {
-    throw new Error('获取配置失败')
+    throw new Error('Failed to get configuration')
   }
   
   return response.json()
 }
 
 /**
- * 将 ChatMessage 转换为 ChatShareMessage
+ * Convert ChatMessage to ChatShareMessage
  */
 export function toChatShareMessage(message: ChatMessage): ChatShareMessage {
   return {
@@ -634,7 +634,7 @@ export function toChatShareMessage(message: ChatMessage): ChatShareMessage {
 }
 
 /**
- * 创建对话分享
+ * Create chat share
  */
 export async function createChatShare(payload: CreateChatSharePayload): Promise<ChatShareResponse> {
   const url = buildApiUrl('/api/v1/chat/share')
@@ -654,14 +654,14 @@ export async function createChatShare(payload: CreateChatSharePayload): Promise<
   })
 
   if (!response.ok) {
-    throw new Error(await extractErrorMessage(response, '创建分享失败'))
+    throw new Error(await extractErrorMessage(response, 'Failed to create share'))
   }
 
   return response.json()
 }
 
 /**
- * 获取分享详情
+ * Get share details
  */
 export async function getChatShare(shareId: string, init?: RequestInit): Promise<ChatShareResponse> {
   const url = buildApiUrl(`/api/v1/chat/share/${shareId}`)
@@ -677,14 +677,14 @@ export async function getChatShare(shareId: string, init?: RequestInit): Promise
   })
 
   if (!response.ok) {
-    throw new Error(await extractErrorMessage(response, '分享不存在或已失效'))
+    throw new Error(await extractErrorMessage(response, 'Share not found or expired'))
   }
 
   return response.json()
 }
 
 /**
- * 撤销分享
+ * Revoke share
  */
 export async function revokeChatShare(shareId: string): Promise<void> {
   const url = buildApiUrl(`/api/v1/chat/share/${shareId}`)
@@ -700,7 +700,7 @@ export async function revokeChatShare(shareId: string): Promise<void> {
   })
 
   if (!response.ok && response.status !== 404) {
-    throw new Error(await extractErrorMessage(response, '撤销分享失败'))
+    throw new Error(await extractErrorMessage(response, 'Failed to revoke share'))
   }
 }
 
@@ -719,7 +719,7 @@ async function extractErrorMessage(response: Response, fallback: string): Promis
 }
 
 /**
- * 获取可用模型列表
+ * Get available models list
  */
 export async function getAvailableModels(): Promise<ModelConfig[]> {
   const url = buildApiUrl('/api/v1/chat/models')
@@ -733,14 +733,14 @@ export async function getAvailableModels(): Promise<ModelConfig[]> {
   const response = await fetch(url, { headers })
   
   if (!response.ok) {
-    throw new Error('获取模型列表失败')
+    throw new Error('Failed to get models list')
   }
   
   return response.json()
 }
 
 /**
- * 将ChatMessage转换为ChatMessageDto
+ * Convert ChatMessage to ChatMessageDto
  */
 export function toChatMessageDto(message: ChatMessage): ChatMessageDto {
   return {

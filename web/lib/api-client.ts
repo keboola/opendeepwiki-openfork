@@ -1,6 +1,6 @@
 /**
- * 统一的 API 客户端模块
- * 自动处理 token 认证、错误处理等通用逻辑
+ * Unified API client module
+ * Handles token authentication, error handling, and other common logic
  */
 
 import { getApiProxyUrl } from "./env";
@@ -19,7 +19,7 @@ function buildApiUrl(path: string): string {
 
 export interface ApiClientOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
-  /** 是否跳过自动添加 token，默认 false */
+  /** Whether to skip automatic token injection, default false */
   skipAuth?: boolean;
 }
 
@@ -35,10 +35,10 @@ export class ApiError extends Error {
 }
 
 /**
- * 统一的 API 请求方法
- * - 自动添加 Authorization header（如果有 token）
- * - 自动处理 JSON 序列化
- * - 统一错误处理
+ * Unified API request method
+ * - Automatically adds Authorization header (if token exists)
+ * - Automatically handles JSON serialization
+ * - Unified error handling
  */
 export async function apiClient<T>(
   path: string,
@@ -51,7 +51,7 @@ export async function apiClient<T>(
     ...(customHeaders as Record<string, string>),
   };
 
-  // 自动添加 token
+  // Automatically add token
   if (!skipAuth) {
     const token = getToken();
     if (token) {
@@ -67,14 +67,14 @@ export async function apiClient<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  // 处理 401 未授权
+  // Handle 401 Unauthorized
   if (response.status === 401) {
     removeToken();
-    throw new ApiError("请先登录", 401);
+    throw new ApiError("Please log in first", 401);
   }
 
   if (!response.ok) {
-    let errorMessage = "请求失败";
+    let errorMessage = "Request failed";
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorData.error || errorMessage;
@@ -84,7 +84,7 @@ export async function apiClient<T>(
     throw new ApiError(errorMessage, response.status);
   }
 
-  // 处理空响应
+  // Handle empty response
   const contentType = response.headers.get("content-type");
   if (!contentType || !contentType.includes("application/json")) {
     return {} as T;
@@ -93,7 +93,7 @@ export async function apiClient<T>(
   return response.json();
 }
 
-// 便捷方法
+// Convenience methods
 export const api = {
   get: <T>(path: string, options?: Omit<ApiClientOptions, "method">) =>
     apiClient<T>(path, { ...options, method: "GET" }),

@@ -1,32 +1,32 @@
 namespace OpenDeepWiki.Chat.Sessions;
 
 /// <summary>
-/// 会话状态枚举
+/// Session state enum
 /// </summary>
 public enum SessionState
 {
     /// <summary>
-    /// 活跃状态，可以接收和处理消息
+    /// Active state, can receive and process messages
     /// </summary>
     Active,
     
     /// <summary>
-    /// 处理中，正在执行 Agent
+    /// Processing, Agent is executing
     /// </summary>
     Processing,
     
     /// <summary>
-    /// 等待中，等待用户响应
+    /// Waiting, awaiting user response
     /// </summary>
     Waiting,
     
     /// <summary>
-    /// 已过期，超过配置的过期时间
+    /// Expired, exceeded configured expiration time
     /// </summary>
     Expired,
     
     /// <summary>
-    /// 已关闭，会话已结束
+    /// Closed, session has ended
     /// </summary>
     Closed
 }

@@ -11,9 +11,9 @@ using OpenDeepWiki.Services.Wiki;
 namespace OpenDeepWiki.Services.MindMap;
 
 /// <summary>
-/// 思维导图生成后台服务
-/// 独立于文档生成流程，异步处理思维导图生成任务
-/// 查询已完成处理但尚未生成思维导图的仓库
+/// Mind map generation background service
+/// Independent from the document generation flow, asynchronously processes mind map generation tasks
+/// Queries repositories that have completed processing but have not yet generated mind maps
 /// </summary>
 public class MindMapWorker : BackgroundService
 {
@@ -72,7 +72,7 @@ public class MindMapWorker : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            // 查询已完成处理但思维导图状态为 Pending 或 Failed 的分支语言
+            // Query branch languages where processing is completed but mind map status is Pending or Failed
             var branchLanguage = await context.BranchLanguages
                 .Include(bl => bl.RepositoryBranch)
                 .ThenInclude(rb => rb!.Repository)
@@ -118,25 +118,25 @@ public class MindMapWorker : BackgroundService
             "Starting mindmap generation. BranchLanguageId: {BranchLanguageId}, Repository: {Org}/{Repo}, Language: {Lang}",
             branchLanguage.Id, repository.OrgName, repository.RepoName, branchLanguage.LanguageCode);
 
-        // 设置当前仓库ID到WikiGenerator（用于日志记录）
+        // Set current repository ID on WikiGenerator (for logging)
         if (wikiGenerator is WikiGenerator generator)
         {
             generator.SetCurrentRepository(repository.Id);
         }
 
-        // 记录开始生成
+        // Log generation start
         if (processingLogService != null)
         {
             await processingLogService.LogAsync(
                 repository.Id,
                 ProcessingStep.MindMap,
-                $"开始生成思维导图: {branchLanguage.LanguageCode}",
+                $"Starting mind map generation: {branchLanguage.LanguageCode}",
                 cancellationToken: stoppingToken);
         }
 
         try
         {
-            // 准备工作区
+            // Prepare workspace
             var workspace = await repositoryAnalyzer.PrepareWorkspaceAsync(
                 repository,
                 branch!.BranchName,
@@ -145,7 +145,7 @@ public class MindMapWorker : BackgroundService
 
             try
             {
-                // 执行思维导图生成
+                // Execute mind map generation
                 await wikiGenerator.GenerateMindMapAsync(workspace, branchLanguage, stoppingToken);
 
                 stopwatch.Stop();
@@ -153,19 +153,19 @@ public class MindMapWorker : BackgroundService
                     "MindMap generation completed. BranchLanguageId: {BranchLanguageId}, Duration: {Duration}ms",
                     branchLanguage.Id, stopwatch.ElapsedMilliseconds);
 
-                // 记录完成
+                // Log completion
                 if (processingLogService != null)
                 {
                     await processingLogService.LogAsync(
                         repository.Id,
                         ProcessingStep.MindMap,
-                        $"思维导图生成完成: {branchLanguage.LanguageCode}，耗时 {stopwatch.ElapsedMilliseconds}ms",
+                        $"Mind map generation completed: {branchLanguage.LanguageCode}, elapsed: {stopwatch.ElapsedMilliseconds}ms",
                         cancellationToken: stoppingToken);
                 }
             }
             finally
             {
-                // 清理工作区
+                // Cleanup workspace
                 await repositoryAnalyzer.CleanupWorkspaceAsync(workspace, stoppingToken);
             }
         }
@@ -180,13 +180,13 @@ public class MindMapWorker : BackgroundService
                 "MindMap generation failed. BranchLanguageId: {BranchLanguageId}, Duration: {Duration}ms",
                 branchLanguage.Id, stopwatch.ElapsedMilliseconds);
 
-            // 记录失败（MindMapStatus 已在 WikiGenerator.GenerateMindMapAsync 中更新）
+            // Log failure (MindMapStatus is already updated in WikiGenerator.GenerateMindMapAsync)
             if (processingLogService != null)
             {
                 await processingLogService.LogAsync(
                     repository.Id,
                     ProcessingStep.MindMap,
-                    $"思维导图生成失败: {branchLanguage.LanguageCode} - {ex.Message}",
+                    $"Mind map generation failed: {branchLanguage.LanguageCode} - {ex.Message}",
                     cancellationToken: stoppingToken);
             }
         }

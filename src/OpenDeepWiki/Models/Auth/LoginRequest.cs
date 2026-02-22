@@ -3,21 +3,21 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models.Auth;
 
 /// <summary>
-/// 登录请求
+/// Login request
 /// </summary>
 public class LoginRequest
 {
     /// <summary>
-    /// 邮箱
+    /// Email address
     /// </summary>
-    [Required(ErrorMessage = "邮箱不能为空")]
-    [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// 密码
+    /// Password
     /// </summary>
-    [Required(ErrorMessage = "密码不能为空")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "密码长度必须在6-100之间")]
+    [Required(ErrorMessage = "Password is required")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password length must be between 6 and 100")]
     public string Password { get; set; } = string.Empty;
 }

@@ -349,7 +349,7 @@ public class RepositoryAnalyzer : IRepositoryAnalyzer
             RecurseSubmodules = false
         };
 
-        // 跳过 SSL 证书验证（解决 TLS 解密错误）
+        // Skip SSL certificate verification (to resolve TLS decryption errors)
         cloneOptions.FetchOptions.CertificateCheck = (_, _, _) => true;
 
         if (credentials != null)
@@ -469,7 +469,7 @@ public class RepositoryAnalyzer : IRepositoryAnalyzer
                     var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
 
                     var fetchOptions = new FetchOptions();
-                    // 跳过 SSL 证书验证（解决 TLS 解密错误）
+                    // Skip SSL certificate verification (to resolve TLS decryption errors)
                     fetchOptions.CertificateCheck = (_, _, _) => true;
                     
                     if (credentials != null)
@@ -678,7 +678,7 @@ public class RepositoryAnalyzer : IRepositoryAnalyzer
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // 跳过隐藏目录和常见的非代码目录
+                // Skip hidden directories and common non-code directories
                 var relativePath = Path.GetRelativePath(workspace.WorkingDirectory, file);
                 if (ShouldSkipPath(relativePath))
                     continue;

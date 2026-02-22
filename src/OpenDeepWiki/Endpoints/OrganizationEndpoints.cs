@@ -5,7 +5,7 @@ using OpenDeepWiki.Services.Organizations;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// 组织端点
+/// Organization endpoints
 /// </summary>
 public static class OrganizationEndpoints
 {
@@ -13,9 +13,9 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/api/organizations")
             .RequireAuthorization()
-            .WithTags("组织");
+            .WithTags("Organization");
 
-        // 获取当前用户的部门列表
+        // Get current user's department list
         group.MapGet("/my-departments", async (
             ClaimsPrincipal user,
             [FromServices] IOrganizationService orgService) =>
@@ -28,9 +28,9 @@ public static class OrganizationEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("GetMyDepartments")
-        .WithSummary("获取当前用户的部门列表");
+        .WithSummary("Get current user's department list");
 
-        // 获取当前用户部门下的仓库列表
+        // Get repository list for current user's departments
         group.MapGet("/my-repositories", async (
             ClaimsPrincipal user,
             [FromServices] IOrganizationService orgService) =>
@@ -43,7 +43,7 @@ public static class OrganizationEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("GetMyDepartmentRepositories")
-        .WithSummary("获取当前用户部门下的仓库列表");
+        .WithSummary("Get repository list for current user's departments");
 
         return app;
     }

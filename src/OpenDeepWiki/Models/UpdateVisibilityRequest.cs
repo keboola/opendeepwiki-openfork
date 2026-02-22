@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 更新仓库可见性请求
+/// Update repository visibility request
 /// </summary>
 public class UpdateVisibilityRequest
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否公开
+    /// Whether the repository is public
     /// </summary>
     public bool IsPublic { get; set; }
 }

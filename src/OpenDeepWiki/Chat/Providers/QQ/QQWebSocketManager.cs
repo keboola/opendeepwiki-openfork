@@ -7,8 +7,8 @@ using Microsoft.Extensions.Options;
 namespace OpenDeepWiki.Chat.Providers.QQ;
 
 /// <summary>
-/// QQ WebSocket 连接管理器
-/// 负责维护与 QQ 开放平台的 WebSocket 连接，处理鉴权和心跳
+/// QQ WebSocket connection manager
+/// Responsible for maintaining WebSocket connection with QQ Open Platform, handling authentication and heartbeat
 /// </summary>
 public class QQWebSocketManager : IDisposable
 {
@@ -31,22 +31,22 @@ public class QQWebSocketManager : IDisposable
     private bool _isDisposed;
     
     /// <summary>
-    /// 连接状态变更事件
+    /// Connection state change event
     /// </summary>
     public event EventHandler<QQConnectionStateChangedEventArgs>? ConnectionStateChanged;
     
     /// <summary>
-    /// 收到消息事件
+    /// Message received event
     /// </summary>
     public event EventHandler<QQMessageReceivedEventArgs>? MessageReceived;
     
     /// <summary>
-    /// 是否已连接
+    /// Whether connected
     /// </summary>
     public bool IsConnected => _isConnected && _webSocket?.State == WebSocketState.Open;
     
     /// <summary>
-    /// 会话 ID
+    /// Session ID
     /// </summary>
     public string? SessionId => _sessionId;
     
@@ -63,7 +63,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 连接到 QQ WebSocket 网关
+    /// Connect to QQ WebSocket gateway
     /// </summary>
     public async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
@@ -78,7 +78,7 @@ public class QQWebSocketManager : IDisposable
         
         try
         {
-            // 获取 WebSocket 网关地址
+            // Get WebSocket gateway URL
             var gatewayUrl = await GetGatewayUrlAsync(cancellationToken);
             if (string.IsNullOrEmpty(gatewayUrl))
             {
@@ -87,7 +87,7 @@ public class QQWebSocketManager : IDisposable
             
             _logger.LogInformation("Connecting to QQ WebSocket gateway: {Url}", gatewayUrl);
             
-            // 创建 WebSocket 连接
+            // Create WebSocket connection
             _webSocket = new ClientWebSocket();
             await _webSocket.ConnectAsync(new Uri(gatewayUrl), cancellationToken);
             
@@ -96,7 +96,7 @@ public class QQWebSocketManager : IDisposable
             
             OnConnectionStateChanged(QQConnectionState.Connected);
             
-            // 启动接收任务
+            // Start receive task
             _receiveCts = new CancellationTokenSource();
             _receiveTask = ReceiveLoopAsync(_receiveCts.Token);
             
@@ -112,7 +112,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 断开连接
+    /// Disconnect
     /// </summary>
     public async Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
@@ -121,13 +121,13 @@ public class QQWebSocketManager : IDisposable
         
         try
         {
-            // 停止心跳
+            // Stop heartbeat
             StopHeartbeat();
             
-            // 停止接收
+            // Stop receiving
             _receiveCts?.Cancel();
             
-            // 关闭 WebSocket
+            // Close WebSocket
             await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
             
             _isConnected = false;
@@ -142,7 +142,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 发送鉴权请求
+    /// Send authentication request
     /// </summary>
     public async Task IdentifyAsync(int intents, CancellationToken cancellationToken = default)
     {
@@ -154,7 +154,7 @@ public class QQWebSocketManager : IDisposable
             Data = new QQEventData()
         };
         
-        // 构建鉴权数据
+        // Build authentication data
         var identifyData = new
         {
             token = $"QQBot {token}",
@@ -173,7 +173,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 发送恢复连接请求
+    /// Send resume connection request
     /// </summary>
     public async Task ResumeAsync(CancellationToken cancellationToken = default)
     {
@@ -202,10 +202,10 @@ public class QQWebSocketManager : IDisposable
         _logger.LogDebug("Sent resume request for session: {SessionId}", _sessionId);
     }
     
-    #region 私有方法
+    #region Private methods
     
     /// <summary>
-    /// 获取 WebSocket 网关地址
+    /// Get WebSocket gateway URL
     /// </summary>
     private async Task<string?> GetGatewayUrlAsync(CancellationToken cancellationToken)
     {
@@ -230,7 +230,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 接收消息循环
+    /// Message receive loop
     /// </summary>
     private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
     {
@@ -278,7 +278,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 处理收到的消息
+    /// Process received message
     /// </summary>
     private async Task ProcessMessageAsync(string message, CancellationToken cancellationToken)
     {
@@ -287,7 +287,7 @@ public class QQWebSocketManager : IDisposable
             var payload = JsonSerializer.Deserialize<QQWebhookEvent>(message);
             if (payload == null) return;
             
-            // 更新序列号
+            // Update sequence number
             if (payload.Sequence.HasValue)
             {
                 _lastSequence = payload.Sequence.Value;
@@ -330,13 +330,13 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 处理 Hello 消息
+    /// Handle Hello message
     /// </summary>
     private async Task HandleHelloAsync(string message, CancellationToken cancellationToken)
     {
         try
         {
-            // 解析心跳间隔
+            // Parse heartbeat interval
             using var doc = JsonDocument.Parse(message);
             if (doc.RootElement.TryGetProperty("d", out var data) &&
                 data.TryGetProperty("heartbeat_interval", out var interval))
@@ -350,19 +350,19 @@ public class QQWebSocketManager : IDisposable
             
             _logger.LogDebug("Received Hello, heartbeat interval: {Interval}ms", _heartbeatInterval);
             
-            // 启动心跳
+            // Start heartbeat
             StartHeartbeat();
             
-            // 发送鉴权或恢复
+            // Send authentication or resume
             if (!string.IsNullOrEmpty(_sessionId))
             {
                 await ResumeAsync(cancellationToken);
             }
             else
             {
-                // 默认订阅公域消息事件
-                // 1 << 30 = 群聊 @ 消息
-                // 1 << 25 = C2C 私聊消息
+                // Subscribe to public domain message events by default
+                // 1 << 30 = Group chat @ message
+                // 1 << 25 = C2C direct message
                 var intents = (1 << 30) | (1 << 25);
                 await IdentifyAsync(intents, cancellationToken);
             }
@@ -374,7 +374,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 处理 Dispatch 消息
+    /// Handle Dispatch message
     /// </summary>
     private Task HandleDispatchAsync(QQWebhookEvent payload, string rawMessage, CancellationToken cancellationToken)
     {
@@ -382,7 +382,7 @@ public class QQWebSocketManager : IDisposable
         
         if (eventType == QQEventType.Ready)
         {
-            // 解析 Ready 数据获取 session_id
+            // Parse Ready data to get session_id
             try
             {
                 using var doc = JsonDocument.Parse(rawMessage);
@@ -406,7 +406,7 @@ public class QQWebSocketManager : IDisposable
         }
         else
         {
-            // 触发消息接收事件
+            // Trigger message received event
             OnMessageReceived(eventType ?? string.Empty, rawMessage);
         }
         
@@ -414,14 +414,14 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 处理断开连接
+    /// Handle disconnection
     /// </summary>
     private async Task HandleDisconnectionAsync(CancellationToken cancellationToken)
     {
         _isConnected = false;
         OnConnectionStateChanged(QQConnectionState.Disconnected);
         
-        // 尝试重连
+        // Attempt to reconnect
         if (_reconnectAttempts < _options.MaxReconnectAttempts)
         {
             _reconnectAttempts++;
@@ -450,7 +450,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 启动心跳
+    /// Start heartbeat
     /// </summary>
     private void StartHeartbeat()
     {
@@ -463,7 +463,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 停止心跳
+    /// Stop heartbeat
     /// </summary>
     private void StopHeartbeat()
     {
@@ -474,7 +474,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 心跳循环
+    /// Heartbeat loop
     /// </summary>
     private async Task HeartbeatLoopAsync(CancellationToken cancellationToken)
     {
@@ -501,7 +501,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 发送心跳
+    /// Send heartbeat
     /// </summary>
     private async Task SendHeartbeatAsync(CancellationToken cancellationToken)
     {
@@ -516,7 +516,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 发送消息
+    /// Send message
     /// </summary>
     private async Task SendAsync(string message, CancellationToken cancellationToken)
     {
@@ -531,7 +531,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 触发连接状态变更事件
+    /// Trigger connection state change event
     /// </summary>
     private void OnConnectionStateChanged(QQConnectionState state)
     {
@@ -539,7 +539,7 @@ public class QQWebSocketManager : IDisposable
     }
     
     /// <summary>
-    /// 触发消息接收事件
+    /// Trigger message received event
     /// </summary>
     private void OnMessageReceived(string eventType, string rawMessage)
     {
@@ -570,48 +570,48 @@ public class QQWebSocketManager : IDisposable
 
 
 /// <summary>
-/// QQ 连接状态
+/// QQ connection state
 /// </summary>
 public enum QQConnectionState
 {
     /// <summary>
-    /// 已断开
+    /// Disconnected
     /// </summary>
     Disconnected,
     
     /// <summary>
-    /// 连接中
+    /// Connecting
     /// </summary>
     Connecting,
     
     /// <summary>
-    /// 已连接
+    /// Connected
     /// </summary>
     Connected,
     
     /// <summary>
-    /// 就绪（已鉴权）
+    /// Ready (authenticated)
     /// </summary>
     Ready,
     
     /// <summary>
-    /// 重连中
+    /// Reconnecting
     /// </summary>
     Reconnecting,
     
     /// <summary>
-    /// 连接失败
+    /// Connection failed
     /// </summary>
     Failed
 }
 
 /// <summary>
-/// 连接状态变更事件参数
+/// Connection state change event arguments
 /// </summary>
 public class QQConnectionStateChangedEventArgs : EventArgs
 {
     /// <summary>
-    /// 新状态
+    /// New state
     /// </summary>
     public QQConnectionState State { get; }
     
@@ -622,17 +622,17 @@ public class QQConnectionStateChangedEventArgs : EventArgs
 }
 
 /// <summary>
-/// 消息接收事件参数
+/// Message received event arguments
 /// </summary>
 public class QQMessageReceivedEventArgs : EventArgs
 {
     /// <summary>
-    /// 事件类型
+    /// Event type
     /// </summary>
     public string EventType { get; }
     
     /// <summary>
-    /// 原始消息
+    /// Raw message
     /// </summary>
     public string RawMessage { get; }
     

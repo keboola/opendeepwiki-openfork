@@ -3,43 +3,43 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// MCP 配置实体
+/// MCP configuration entity
 /// </summary>
 public class McpConfig : AggregateRoot<string>
 {
     /// <summary>
-    /// MCP 名称
+    /// MCP name
     /// </summary>
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// MCP 描述
+    /// MCP description
     /// </summary>
     [StringLength(500)]
     public string? Description { get; set; }
 
     /// <summary>
-    /// MCP 服务器地址
+    /// MCP server URL
     /// </summary>
     [Required]
     [StringLength(500)]
     public string ServerUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// API 密钥
+    /// API key
     /// </summary>
     [StringLength(500)]
     public string? ApiKey { get; set; }
 
     /// <summary>
-    /// 是否启用
+    /// Whether enabled
     /// </summary>
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// 排序顺序
+    /// Sort order
     /// </summary>
     public int SortOrder { get; set; } = 0;
 }

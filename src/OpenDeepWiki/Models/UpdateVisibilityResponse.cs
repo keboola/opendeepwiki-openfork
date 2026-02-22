@@ -1,27 +1,27 @@
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 更新仓库可见性响应
+/// Update repository visibility response
 /// </summary>
 public class UpdateVisibilityResponse
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// 是否公开
+    /// Whether the repository is public
     /// </summary>
     public bool IsPublic { get; set; }
 
     /// <summary>
-    /// 操作是否成功
+    /// Whether the operation was successful
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// 错误消息（仅在失败时有值）
+    /// Error message (only has value on failure)
     /// </summary>
     public string? ErrorMessage { get; set; }
 }

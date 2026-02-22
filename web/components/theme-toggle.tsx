@@ -17,7 +17,7 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
-  // 避免水合不匹配
+  // Avoid hydration mismatch
   React.useEffect(() => {
     setMounted(true);
   }, []);

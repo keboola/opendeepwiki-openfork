@@ -4,111 +4,111 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 增量更新任务状态
+/// Incremental update task status
 /// </summary>
 public enum IncrementalUpdateStatus
 {
     /// <summary>
-    /// 等待处理
+    /// Pending processing
     /// </summary>
     Pending = 0,
 
     /// <summary>
-    /// 正在处理
+    /// Processing
     /// </summary>
     Processing = 1,
 
     /// <summary>
-    /// 处理完成
+    /// Processing completed
     /// </summary>
     Completed = 2,
 
     /// <summary>
-    /// 处理失败
+    /// Processing failed
     /// </summary>
     Failed = 3,
 
     /// <summary>
-    /// 已取消
+    /// Cancelled
     /// </summary>
     Cancelled = 4
 }
 
 /// <summary>
-/// 增量更新任务实体
-/// 跟踪增量更新任务的状态
+/// Incremental update task entity
+/// Tracks the status of incremental update tasks
 /// </summary>
 public class IncrementalUpdateTask : AggregateRoot<string>
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 分支ID
+    /// Branch ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string BranchId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 上次处理的 Commit ID
+    /// Previously processed commit ID
     /// </summary>
     [StringLength(40)]
     public string? PreviousCommitId { get; set; }
 
     /// <summary>
-    /// 当前目标 Commit ID
+    /// Current target commit ID
     /// </summary>
     [StringLength(40)]
     public string? TargetCommitId { get; set; }
 
     /// <summary>
-    /// 任务状态
+    /// Task status
     /// </summary>
     public IncrementalUpdateStatus Status { get; set; } = IncrementalUpdateStatus.Pending;
 
     /// <summary>
-    /// 任务优先级 (数值越大优先级越高)
+    /// Task priority (higher value means higher priority)
     /// </summary>
     public int Priority { get; set; } = 0;
 
     /// <summary>
-    /// 是否为手动触发
+    /// Whether manually triggered
     /// </summary>
     public bool IsManualTrigger { get; set; } = false;
 
     /// <summary>
-    /// 重试次数
+    /// Retry count
     /// </summary>
     public int RetryCount { get; set; } = 0;
 
     /// <summary>
-    /// 错误信息
+    /// Error message
     /// </summary>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
-    /// 开始处理时间
+    /// Processing start time
     /// </summary>
     public DateTime? StartedAt { get; set; }
 
     /// <summary>
-    /// 完成时间
+    /// Completion time
     /// </summary>
     public DateTime? CompletedAt { get; set; }
 
     /// <summary>
-    /// 仓库导航属性
+    /// Repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }
 
     /// <summary>
-    /// 分支导航属性
+    /// Branch navigation property
     /// </summary>
     [ForeignKey("BranchId")]
     public virtual RepositoryBranch? Branch { get; set; }

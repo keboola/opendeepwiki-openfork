@@ -5,66 +5,66 @@ using OpenDeepWiki.Services.Chat;
 namespace OpenDeepWiki.Endpoints;
 
 /// <summary>
-/// 用户应用管理端点
-/// 提供应用CRUD、统计查询、提问记录等API
+/// User app management endpoints
+/// Provides app CRUD, statistics queries, chat logs, and other APIs
 /// </summary>
 public static class ChatAppEndpoints
 {
     /// <summary>
-    /// 注册用户应用管理端点
+    /// Register user app management endpoints
     /// </summary>
     public static IEndpointRouteBuilder MapChatAppEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/apps")
-            .WithTags("用户应用")
+            .WithTags("User Apps")
             .RequireAuthorization();
 
-        // 获取用户应用列表
+        // Get user app list
         group.MapGet("/", GetUserAppsAsync)
             .WithName("GetUserApps")
-            .WithSummary("获取当前用户的应用列表");
+            .WithSummary("Get current user's app list");
 
-        // 创建应用
+        // Create app
         group.MapPost("/", CreateAppAsync)
             .WithName("CreateApp")
-            .WithSummary("创建新应用");
+            .WithSummary("Create new app");
 
-        // 获取应用详情
+        // Get app details
         group.MapGet("/{id:guid}", GetAppByIdAsync)
             .WithName("GetAppById")
-            .WithSummary("获取应用详情");
+            .WithSummary("Get app details");
 
-        // 更新应用
+        // Update app
         group.MapPut("/{id:guid}", UpdateAppAsync)
             .WithName("UpdateApp")
-            .WithSummary("更新应用配置");
+            .WithSummary("Update app configuration");
 
-        // 删除应用
+        // Delete app
         group.MapDelete("/{id:guid}", DeleteAppAsync)
             .WithName("DeleteApp")
-            .WithSummary("删除应用");
+            .WithSummary("Delete app");
 
-        // 重新生成密钥
+        // Regenerate secret
         group.MapPost("/{id:guid}/regenerate-secret", RegenerateSecretAsync)
             .WithName("RegenerateAppSecret")
-            .WithSummary("重新生成应用密钥");
+            .WithSummary("Regenerate app secret");
 
-        // 获取应用统计
+        // Get app statistics
         group.MapGet("/{id:guid}/statistics", GetAppStatisticsAsync)
             .WithName("GetAppStatistics")
-            .WithSummary("获取应用使用统计");
+            .WithSummary("Get app usage statistics");
 
-        // 获取提问记录
+        // Get query logs
         group.MapGet("/{id:guid}/logs", GetAppLogsAsync)
             .WithName("GetAppLogs")
-            .WithSummary("获取应用提问记录");
+            .WithSummary("Get app query logs");
 
         return app;
     }
 
 
     /// <summary>
-    /// 获取当前用户的应用列表
+    /// Get current user's app list
     /// </summary>
     private static async Task<IResult> GetUserAppsAsync(
         [FromServices] IChatAppService chatAppService,
@@ -81,7 +81,7 @@ public static class ChatAppEndpoints
     }
 
     /// <summary>
-    /// 创建新应用
+    /// Create new app
     /// </summary>
     private static async Task<IResult> CreateAppAsync(
         [FromBody] CreateChatAppDto dto,
@@ -96,7 +96,7 @@ public static class ChatAppEndpoints
 
         if (string.IsNullOrWhiteSpace(dto.Name))
         {
-            return Results.BadRequest(new { message = "应用名称不能为空" });
+            return Results.BadRequest(new { message = "App name cannot be empty" });
         }
 
         var app = await chatAppService.CreateAppAsync(userContext.UserId, dto, cancellationToken);
@@ -104,7 +104,7 @@ public static class ChatAppEndpoints
     }
 
     /// <summary>
-    /// 获取应用详情
+    /// Get app details
     /// </summary>
     private static async Task<IResult> GetAppByIdAsync(
         Guid id,
@@ -120,7 +120,7 @@ public static class ChatAppEndpoints
         var app = await chatAppService.GetAppByIdAsync(id, userContext.UserId, cancellationToken);
         if (app == null)
         {
-            return Results.NotFound(new { message = "应用不存在" });
+            return Results.NotFound(new { message = "App not found" });
         }
 
         return Results.Ok(app);
@@ -128,7 +128,7 @@ public static class ChatAppEndpoints
 
 
     /// <summary>
-    /// 更新应用配置
+    /// Update app configuration
     /// </summary>
     private static async Task<IResult> UpdateAppAsync(
         Guid id,
@@ -145,14 +145,14 @@ public static class ChatAppEndpoints
         var app = await chatAppService.UpdateAppAsync(id, userContext.UserId, dto, cancellationToken);
         if (app == null)
         {
-            return Results.NotFound(new { message = "应用不存在" });
+            return Results.NotFound(new { message = "App not found" });
         }
 
         return Results.Ok(app);
     }
 
     /// <summary>
-    /// 删除应用
+    /// Delete app
     /// </summary>
     private static async Task<IResult> DeleteAppAsync(
         Guid id,
@@ -168,14 +168,14 @@ public static class ChatAppEndpoints
         var success = await chatAppService.DeleteAppAsync(id, userContext.UserId, cancellationToken);
         if (!success)
         {
-            return Results.NotFound(new { message = "应用不存在" });
+            return Results.NotFound(new { message = "App not found" });
         }
 
         return Results.NoContent();
     }
 
     /// <summary>
-    /// 重新生成应用密钥
+    /// Regenerate app secret
     /// </summary>
     private static async Task<IResult> RegenerateSecretAsync(
         Guid id,
@@ -191,7 +191,7 @@ public static class ChatAppEndpoints
         var newSecret = await chatAppService.RegenerateSecretAsync(id, userContext.UserId, cancellationToken);
         if (newSecret == null)
         {
-            return Results.NotFound(new { message = "应用不存在" });
+            return Results.NotFound(new { message = "App not found" });
         }
 
         return Results.Ok(new { appSecret = newSecret });
@@ -199,7 +199,7 @@ public static class ChatAppEndpoints
 
 
     /// <summary>
-    /// 获取应用使用统计
+    /// Get app usage statistics
     /// </summary>
     private static async Task<IResult> GetAppStatisticsAsync(
         Guid id,
@@ -219,7 +219,7 @@ public static class ChatAppEndpoints
         var app = await chatAppService.GetAppByIdAsync(id, userContext.UserId, cancellationToken);
         if (app == null)
         {
-            return Results.NotFound(new { message = "应用不存在" });
+            return Results.NotFound(new { message = "App not found" });
         }
 
         // Default to last 30 days if not specified
@@ -231,7 +231,7 @@ public static class ChatAppEndpoints
     }
 
     /// <summary>
-    /// 获取应用提问记录
+    /// Get app query logs
     /// </summary>
     private static async Task<IResult> GetAppLogsAsync(
         Guid id,
@@ -254,7 +254,7 @@ public static class ChatAppEndpoints
         var app = await chatAppService.GetAppByIdAsync(id, userContext.UserId, cancellationToken);
         if (app == null)
         {
-            return Results.NotFound(new { message = "应用不存在" });
+            return Results.NotFound(new { message = "App not found" });
         }
 
         var query = new ChatLogQueryDto

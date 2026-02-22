@@ -1,37 +1,37 @@
 namespace OpenDeepWiki.Chat.Queue;
 
 /// <summary>
-/// 消息队列配置选项
+/// Message queue configuration options
 /// </summary>
 public class MessageQueueOptions
 {
     /// <summary>
-    /// 配置节名称
+    /// Configuration section name
     /// </summary>
     public const string SectionName = "Chat:MessageQueue";
     
     /// <summary>
-    /// 最大重试次数
+    /// Maximum retry count
     /// </summary>
     public int MaxRetryCount { get; set; } = 3;
     
     /// <summary>
-    /// 默认重试延迟（秒）
+    /// Default retry delay (seconds)
     /// </summary>
     public int DefaultRetryDelaySeconds { get; set; } = 30;
     
     /// <summary>
-    /// 消息发送间隔（毫秒）
+    /// Message send interval (milliseconds)
     /// </summary>
     public int MessageIntervalMs { get; set; } = 500;
     
     /// <summary>
-    /// 短消息合并阈值（字符数）
+    /// Short message merge threshold (character count)
     /// </summary>
     public int MergeThreshold { get; set; } = 500;
     
     /// <summary>
-    /// 短消息合并时间窗口（毫秒）
+    /// Short message merge time window (milliseconds)
     /// </summary>
     public int MergeWindowMs { get; set; } = 2000;
 }

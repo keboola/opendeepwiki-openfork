@@ -73,7 +73,7 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
     loadRepositories();
   }, [loadRepositories]);
 
-  // 当筛选条件变化时重置页码
+  // Reset page number when filter criteria change
   useEffect(() => {
     setPage(1);
   }, [keyword, selectedLanguage]);
@@ -142,7 +142,7 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
         </Button>
       </div>
 
-      {/* 语言标签筛选 */}
+      {/* Language tag filter */}
       <LanguageTags
         selectedLanguage={selectedLanguage}
         onLanguageChange={handleLanguageChange}
@@ -171,7 +171,7 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
             ))}
           </div>
 
-          {/* 分页控件 */}
+          {/* Pagination controls */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-4 mt-8">
               <Button

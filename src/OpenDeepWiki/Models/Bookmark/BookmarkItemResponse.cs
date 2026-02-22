@@ -1,52 +1,52 @@
 namespace OpenDeepWiki.Models.Bookmark;
 
 /// <summary>
-/// 收藏项响应
+/// Bookmark item response
 /// </summary>
 public class BookmarkItemResponse
 {
     /// <summary>
-    /// 收藏记录ID
+    /// Bookmark record ID
     /// </summary>
     public string BookmarkId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     public string RepoName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 组织名称
+    /// Organization name
     /// </summary>
     public string OrgName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库描述
+    /// Repository description
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// Star 数量
+    /// Star count
     /// </summary>
     public int StarCount { get; set; }
 
     /// <summary>
-    /// Fork 数量
+    /// Fork count
     /// </summary>
     public int ForkCount { get; set; }
 
     /// <summary>
-    /// 收藏数量
+    /// Bookmark count
     /// </summary>
     public int BookmarkCount { get; set; }
 
     /// <summary>
-    /// 收藏时间
+    /// Bookmarked at timestamp
     /// </summary>
     public DateTime BookmarkedAt { get; set; }
 }

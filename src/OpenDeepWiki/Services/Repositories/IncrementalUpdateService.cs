@@ -10,8 +10,8 @@ using OpenDeepWiki.Services.Wiki;
 namespace OpenDeepWiki.Services.Repositories;
 
 /// <summary>
-/// 增量更新服务实现
-/// 封装增量更新的核心业务逻辑
+/// Incremental update service implementation
+/// Encapsulates the core business logic for incremental updates
 /// </summary>
 public class IncrementalUpdateService : IIncrementalUpdateService
 {
@@ -50,7 +50,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
             "Checking for updates. RepositoryId: {RepositoryId}, BranchId: {BranchId}",
             repositoryId, branchId);
 
-        // 获取仓库和分支信息
+        // Get repository and branch information
         var repository = await _context.Repositories
             .FirstOrDefaultAsync(r => r.Id == repositoryId, cancellationToken);
 
@@ -73,13 +73,13 @@ public class IncrementalUpdateService : IIncrementalUpdateService
 
         try
         {
-            // 准备工作区（clone 或 pull）
+            // Prepare workspace (clone or pull)
             var workspace = await PrepareWorkspaceWithRetryAsync(
                 repository, branch.BranchName, previousCommitId, cancellationToken);
 
             var currentCommitId = workspace.CommitId;
 
-            // 如果 commit ID 相同，无需更新
+            // If commit IDs are the same, no update needed
             if (previousCommitId == currentCommitId)
             {
                 _logger.LogInformation(
@@ -95,7 +95,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
                 };
             }
 
-            // 获取变更文件列表
+            // Get list of changed files
             var changedFiles = await _repositoryAnalyzer.GetChangedFilesAsync(
                 workspace, previousCommitId, currentCommitId, cancellationToken);
 
@@ -139,7 +139,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
 
         try
         {
-            // 检查更新
+            // Check for updates
             var checkResult = await CheckForUpdatesAsync(repositoryId, branchId, cancellationToken);
 
             if (!checkResult.NeedsUpdate)
@@ -160,7 +160,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
                 };
             }
 
-            // 获取仓库和分支信息
+            // Get repository and branch information
             var repository = await _context.Repositories
                 .FirstOrDefaultAsync(r => r.Id == repositoryId, cancellationToken);
 
@@ -173,18 +173,18 @@ public class IncrementalUpdateService : IIncrementalUpdateService
                     $"Repository or branch not found. RepositoryId: {repositoryId}, BranchId: {branchId}");
             }
 
-            // 获取分支语言
+            // Get branch languages
             var branchLanguages = await _context.BranchLanguages
                 .Where(bl => bl.RepositoryBranchId == branchId)
                 .ToListAsync(cancellationToken);
 
-            // 准备工作区
+            // Prepare workspace
             var workspace = await PrepareWorkspaceWithRetryAsync(
                 repository, branch.BranchName, checkResult.PreviousCommitId, cancellationToken);
 
             var updatedDocumentsCount = 0;
 
-            // 对每个语言执行增量更新
+            // Execute incremental update for each language
             foreach (var branchLanguage in branchLanguages)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -202,16 +202,16 @@ public class IncrementalUpdateService : IIncrementalUpdateService
                 updatedDocumentsCount++;
             }
 
-            // 更新分支的 LastCommitId
+            // Update branch's LastCommitId
             branch.LastCommitId = checkResult.CurrentCommitId;
             branch.LastProcessedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
 
-            // 更新仓库的 LastUpdateCheckAt
+            // Update repository's LastUpdateCheckAt
             repository.LastUpdateCheckAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
 
-            // 通知订阅者
+            // Notify subscribers
             await NotifySubscribersSafelyAsync(
                 repository, branch, checkResult, cancellationToken);
 
@@ -259,7 +259,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
             "Manual update triggered. RepositoryId: {RepositoryId}, BranchId: {BranchId}",
             repositoryId, branchId);
 
-        // 检查是否已存在相同仓库/分支的待处理或处理中任务
+        // Check if a pending or processing task already exists for the same repository/branch
         var existingTask = await _context.IncrementalUpdateTasks
             .Where(t => t.RepositoryId == repositoryId
                         && t.BranchId == branchId
@@ -275,11 +275,11 @@ public class IncrementalUpdateService : IIncrementalUpdateService
             return existingTask.Id;
         }
 
-        // 获取分支信息以获取上次 CommitId
+        // Get branch info to obtain the last CommitId
         var branch = await _context.RepositoryBranches
             .FirstOrDefaultAsync(b => b.Id == branchId, cancellationToken);
 
-        // 创建高优先级任务
+        // Create high-priority task
         var task = new IncrementalUpdateTask
         {
             Id = Guid.NewGuid().ToString(),
@@ -303,7 +303,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
     }
 
     /// <summary>
-    /// 带重试逻辑的工作区准备
+    /// Workspace preparation with retry logic
     /// </summary>
     private async Task<RepositoryWorkspace> PrepareWorkspaceWithRetryAsync(
         Repository repository,
@@ -334,7 +334,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
 
                 if (retryCount < _options.MaxRetryAttempts)
                 {
-                    // 检查是否是工作区损坏
+                    // Check if the workspace is corrupted
                     if (IsWorkspaceCorrupted(ex))
                     {
                         _logger.LogInformation(
@@ -344,7 +344,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
                         await CleanupCorruptedWorkspaceAsync(repository, cancellationToken);
                     }
 
-                    // 指数退避
+                    // Exponential backoff
                     var delay = _options.RetryBaseDelayMs * (int)Math.Pow(2, retryCount - 1);
                     _logger.LogInformation(
                         "Retrying in {Delay}ms. Repository: {Org}/{Repo}",
@@ -361,7 +361,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
     }
 
     /// <summary>
-    /// 检查异常是否表示工作区损坏
+    /// Check if the exception indicates workspace corruption
     /// </summary>
     private static bool IsWorkspaceCorrupted(Exception ex)
     {
@@ -374,7 +374,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
     }
 
     /// <summary>
-    /// 清理损坏的工作区
+    /// Clean up a corrupted workspace
     /// </summary>
     private async Task CleanupCorruptedWorkspaceAsync(
         Repository repository,
@@ -382,7 +382,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
     {
         try
         {
-            // 创建一个临时工作区对象用于清理
+            // Create a temporary workspace object for cleanup
             var workspace = new RepositoryWorkspace
             {
                 Organization = repository.OrgName,
@@ -400,7 +400,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
     }
 
     /// <summary>
-    /// 安全地通知订阅者（不影响主流程）
+    /// Safely notify subscribers (does not affect the main flow)
     /// </summary>
     private async Task NotifySubscribersSafelyAsync(
         Repository repository,
@@ -425,7 +425,7 @@ public class IncrementalUpdateService : IIncrementalUpdateService
         }
         catch (Exception ex)
         {
-            // 通知失败不影响主流程
+            // Notification failure does not affect the main flow
             _logger.LogWarning(ex,
                 "Failed to notify subscribers. RepositoryId: {RepositoryId}",
                 repository.Id);

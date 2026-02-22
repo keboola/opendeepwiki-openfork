@@ -3,42 +3,42 @@ using System.ComponentModel.DataAnnotations;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 对话助手配置实体
-/// 存储管理员配置的模型、MCPs、Skills等
+/// Chat assistant configuration entity
+/// Stores admin-configured models, MCPs, Skills, etc.
 /// </summary>
 public class ChatAssistantConfig : AggregateRoot<Guid>
 {
     /// <summary>
-    /// 是否启用对话助手功能
+    /// Whether chat assistant feature is enabled
     /// </summary>
     public bool IsEnabled { get; set; } = false;
 
     /// <summary>
-    /// 启用的模型ID列表（JSON数组）
+    /// Enabled model ID list (JSON array)
     /// </summary>
     [StringLength(2000)]
     public string? EnabledModelIds { get; set; }
 
     /// <summary>
-    /// 启用的MCP ID列表（JSON数组）
+    /// Enabled MCP ID list (JSON array)
     /// </summary>
     [StringLength(2000)]
     public string? EnabledMcpIds { get; set; }
 
     /// <summary>
-    /// 启用的Skill ID列表（JSON数组）
+    /// Enabled Skill ID list (JSON array)
     /// </summary>
     [StringLength(2000)]
     public string? EnabledSkillIds { get; set; }
 
     /// <summary>
-    /// 默认模型ID
+    /// Default model ID
     /// </summary>
     [StringLength(100)]
     public string? DefaultModelId { get; set; }
 
     /// <summary>
-    /// 是否启用图片上传功能
+    /// Whether image upload feature is enabled
     /// </summary>
     public bool EnableImageUpload { get; set; } = false;
 }

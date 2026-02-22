@@ -1,28 +1,28 @@
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 仓库文档响应
+/// Repository document response
 /// </summary>
 public class RepositoryDocResponse
 {
     /// <summary>
-    /// 文档是否存在
+    /// Whether the document exists
     /// </summary>
     public bool Exists { get; set; } = true;
 
     /// <summary>
-    /// 文档路径（slug）
+    /// Document path (slug)
     /// </summary>
     public string Slug { get; set; } = string.Empty;
 
     /// <summary>
-    /// Markdown 内容
+    /// Markdown content
     /// </summary>
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// 来源文件列表
-    /// 记录生成此文档时读取的源代码文件路径
+    /// List of source files
+    /// Records the source code file paths read when generating this document
     /// </summary>
     public List<string> SourceFiles { get; set; } = [];
 }

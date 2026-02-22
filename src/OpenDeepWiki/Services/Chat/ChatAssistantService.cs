@@ -41,7 +41,7 @@ public class ModelConfigDto
     public string ModelId { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsDefault { get; set; }
-    public bool IsEnabled { get; set; } = true; // 返回的模型都是启用的
+    public bool IsEnabled { get; set; } = true; // All returned models are enabled
 }
 
 /// <summary>
@@ -55,7 +55,7 @@ public class ChatMessageDto
     public List<ToolCallDto>? ToolCalls { get; set; }
     public ToolResultDto? ToolResult { get; set; }
     /// <summary>
-    /// 引用的选中文本
+    /// Quoted selected text
     /// </summary>
     public QuotedTextDto? QuotedText { get; set; }
 }
@@ -66,11 +66,11 @@ public class ChatMessageDto
 public class QuotedTextDto
 {
     /// <summary>
-    /// 引用来源的标题（如文档标题）
+    /// Title of the quoted source (e.g., document title)
     /// </summary>
     public string? Title { get; set; }
     /// <summary>
-    /// 选中的文本内容
+    /// Selected text content
     /// </summary>
     public string Text { get; set; } = string.Empty;
 }
@@ -254,7 +254,7 @@ public class ChatAssistantService : IChatAssistantService
                 ModelId = m.ModelId,
                 Description = m.Description,
                 IsDefault = m.Id == config.DefaultModelId || m.IsDefault,
-                IsEnabled = true // 返回的模型都是启用的
+                IsEnabled = true // All returned models are enabled
             })
             .ToListAsync(cancellationToken);
 

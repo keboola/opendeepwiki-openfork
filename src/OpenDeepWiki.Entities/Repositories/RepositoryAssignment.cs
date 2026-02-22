@@ -4,45 +4,45 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpenDeepWiki.Entities;
 
 /// <summary>
-/// 仓库指派实体
+/// Repository assignment entity
 /// </summary>
 public class RepositoryAssignment : AggregateRoot<string>
 {
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 部门ID
+    /// Department ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string DepartmentId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 指派用户ID
+    /// Assignee user ID
     /// </summary>
     [Required]
     [StringLength(36)]
     public string AssigneeUserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库导航属性
+    /// Repository navigation property
     /// </summary>
     [ForeignKey("RepositoryId")]
     public virtual Repository? Repository { get; set; }
 
     /// <summary>
-    /// 部门导航属性
+    /// Department navigation property
     /// </summary>
     [ForeignKey("DepartmentId")]
     public virtual Department? Department { get; set; }
 
     /// <summary>
-    /// 指派用户导航属性
+    /// Assignee user navigation property
     /// </summary>
     [ForeignKey("AssigneeUserId")]
     public virtual User? AssigneeUser { get; set; }

@@ -3,17 +3,17 @@ using OpenDeepWiki.Models.Admin;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端统计服务接口
+/// Admin statistics service interface
 /// </summary>
 public interface IAdminStatisticsService
 {
     /// <summary>
-    /// 获取仪表盘统计数据
+    /// Get dashboard statistics
     /// </summary>
     Task<DashboardStatisticsResponse> GetDashboardStatisticsAsync(int days);
 
     /// <summary>
-    /// 获取 Token 消耗统计
+    /// Get token consumption statistics
     /// </summary>
     Task<TokenUsageStatisticsResponse> GetTokenUsageStatisticsAsync(int days);
 }

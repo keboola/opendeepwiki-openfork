@@ -6,7 +6,7 @@ using OpenDeepWiki.Models.Admin;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端角色服务实现
+/// Admin role service implementation
 /// </summary>
 public class AdminRoleService : IAdminRoleService
 {
@@ -66,7 +66,7 @@ public class AdminRoleService : IAdminRoleService
     public async Task<AdminRoleDto> CreateRoleAsync(CreateRoleRequest request)
     {
         var exists = await _context.Roles.AnyAsync(r => r.Name == request.Name && !r.IsDeleted);
-        if (exists) throw new InvalidOperationException("角色名称已存在");
+        if (exists) throw new InvalidOperationException("Role name already exists");
 
         var role = new Role
         {
@@ -90,12 +90,12 @@ public class AdminRoleService : IAdminRoleService
         if (role == null) return false;
 
         if (role.IsSystemRole)
-            throw new InvalidOperationException("系统角色不能修改");
+            throw new InvalidOperationException("System role cannot be modified");
 
         if (request.Name != null)
         {
             var exists = await _context.Roles.AnyAsync(r => r.Name == request.Name && r.Id != id && !r.IsDeleted);
-            if (exists) throw new InvalidOperationException("角色名称已存在");
+            if (exists) throw new InvalidOperationException("Role name already exists");
             role.Name = request.Name;
         }
 
@@ -113,11 +113,11 @@ public class AdminRoleService : IAdminRoleService
         if (role == null) return false;
 
         if (role.IsSystemRole)
-            throw new InvalidOperationException("系统角色不能删除");
+            throw new InvalidOperationException("System role cannot be deleted");
 
         var hasUsers = await _context.UserRoles.AnyAsync(ur => ur.RoleId == id && !ur.IsDeleted);
         if (hasUsers)
-            throw new InvalidOperationException("该角色下还有用户，不能删除");
+            throw new InvalidOperationException("Role has assigned users, cannot delete");
 
         role.IsDeleted = true;
         role.UpdatedAt = DateTime.UtcNow;

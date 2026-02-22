@@ -6,14 +6,14 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Repositories;
 
 /// <summary>
-/// 处理日志API服务
+/// Processing log API service
 /// </summary>
 [MiniApi(Route = "/api/v1/repos")]
-[Tags("处理日志")]
+[Tags("Processing Logs")]
 public class ProcessingLogApiService(IContext context, IProcessingLogService processingLogService)
 {
     /// <summary>
-    /// 获取仓库处理日志
+    /// Get repository processing logs
     /// </summary>
     [HttpGet("/{owner}/{repo}/processing-logs")]
     public async Task<IResult> GetProcessingLogsAsync(
@@ -31,7 +31,7 @@ public class ProcessingLogApiService(IContext context, IProcessingLogService pro
 
         if (repository is null)
         {
-            return Results.NotFound(new { error = "仓库不存在" });
+            return Results.NotFound(new { error = "Repository does not exist" });
         }
 
         var response = await processingLogService.GetLogsAsync(repository.Id, since, limit);
@@ -60,7 +60,7 @@ public class ProcessingLogApiService(IContext context, IProcessingLogService pro
 }
 
 /// <summary>
-/// 处理日志API响应
+/// Processing log API response
 /// </summary>
 public class ProcessingLogApiResponse
 {
@@ -75,7 +75,7 @@ public class ProcessingLogApiResponse
 }
 
 /// <summary>
-/// 处理日志API项
+/// Processing log API item
 /// </summary>
 public class ProcessingLogApiItem
 {

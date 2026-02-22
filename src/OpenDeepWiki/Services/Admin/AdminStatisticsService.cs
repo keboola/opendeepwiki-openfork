@@ -5,7 +5,7 @@ using OpenDeepWiki.Models.Admin;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端统计服务实现
+/// Admin statistics service implementation
 /// </summary>
 public class AdminStatisticsService : IAdminStatisticsService
 {
@@ -21,7 +21,7 @@ public class AdminStatisticsService : IAdminStatisticsService
         var startDate = DateTime.UtcNow.Date.AddDays(-days + 1);
         var response = new DashboardStatisticsResponse();
 
-        // 获取仓库统计
+        // Get repository statistics
         var repoStats = await _context.Repositories
             .Where(r => !r.IsDeleted && r.CreatedAt >= startDate)
             .GroupBy(r => r.CreatedAt.Date)
@@ -33,14 +33,14 @@ public class AdminStatisticsService : IAdminStatisticsService
             })
             .ToListAsync();
 
-        // 获取用户统计
+        // Get user statistics
         var userStats = await _context.Users
             .Where(u => !u.IsDeleted && u.CreatedAt >= startDate)
             .GroupBy(u => u.CreatedAt.Date)
             .Select(g => new { Date = g.Key, Count = g.Count() })
             .ToListAsync();
 
-        // 填充每日数据
+        // Populate daily data
         for (var date = startDate; date <= DateTime.UtcNow.Date; date = date.AddDays(1))
         {
             var repoStat = repoStats.FirstOrDefault(r => r.Date == date);
@@ -78,7 +78,7 @@ public class AdminStatisticsService : IAdminStatisticsService
             })
             .ToListAsync();
 
-        // 填充每日数据
+        // Populate daily data
         for (var date = startDate; date <= DateTime.UtcNow.Date; date = date.AddDays(1))
         {
             var stat = tokenStats.FirstOrDefault(s => s.Date == date);

@@ -41,11 +41,11 @@ Format:
 - Append :file_path after title to link to source file
 
 Example:
-# 系统架构
-## 前端应用:web
-### 页面路由:web/app
-## 后端服务:src/Api
-### 控制器:src/Api/Controllers
+# System Architecture
+## Frontend Application:web
+### Page Routes:web/app
+## Backend Services:src/Api
+### Controllers:src/Api/Controllers
 
 Usage:
 - Call this tool once with the complete mind map content

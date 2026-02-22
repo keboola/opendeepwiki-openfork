@@ -166,18 +166,18 @@ public class AdminToolsService : IAdminToolsService
         {
             using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Read))
                 archive.ExtractToDirectory(tempDir);
-            var skillMdPath = FindSkillMd(tempDir) ?? throw new InvalidOperationException("压缩包中未找到 SKILL.md");
+            var skillMdPath = FindSkillMd(tempDir) ?? throw new InvalidOperationException("SKILL.md not found in the archive");
             var skillRootDir = Path.GetDirectoryName(skillMdPath)!;
             var (frontmatter, _) = ParseSkillMd(await File.ReadAllTextAsync(skillMdPath));
             if (!frontmatter.TryGetValue("name", out var nameObj) || string.IsNullOrEmpty(nameObj?.ToString()))
-                throw new InvalidOperationException("SKILL.md 缺少 name 字段");
+                throw new InvalidOperationException("SKILL.md is missing the name field");
             var name = nameObj.ToString()!;
             if (!Regex.IsMatch(name, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
-                throw new InvalidOperationException("name 格式无效");
+                throw new InvalidOperationException("Invalid name format");
             if (!frontmatter.TryGetValue("description", out var descObj) || string.IsNullOrEmpty(descObj?.ToString()))
-                throw new InvalidOperationException("SKILL.md 缺少 description 字段");
+                throw new InvalidOperationException("SKILL.md is missing the description field");
             if (await _context.SkillConfigs.AnyAsync(s => s.Name == name && !s.IsDeleted))
-                throw new InvalidOperationException($"已存在同名 Skill: {name}");
+                throw new InvalidOperationException($"A skill with the same name already exists: {name}");
             var targetPath = Path.Combine(_skillsBasePath, name);
             if (Directory.Exists(targetPath)) Directory.Delete(targetPath, true);
             Directory.Move(skillRootDir, targetPath);
@@ -201,7 +201,7 @@ public class AdminToolsService : IAdminToolsService
             }
             _context.SkillConfigs.Add(config);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("上传 Skill: {Name}", name);
+            _logger.LogInformation("Uploaded Skill: {Name}", name);
             return new SkillConfigDto
             {
                 Id = config.Id, Name = config.Name, Description = config.Description, License = config.License,
@@ -234,7 +234,7 @@ public class AdminToolsService : IAdminToolsService
         if (Directory.Exists(skillPath)) Directory.Delete(skillPath, true);
         config.IsDeleted = true; config.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        _logger.LogInformation("删除 Skill: {Name}", config.Name);
+        _logger.LogInformation("Deleted Skill: {Name}", config.Name);
         return true;
     }
 
@@ -244,7 +244,7 @@ public class AdminToolsService : IAdminToolsService
         if (config == null) return null;
         var normalizedPath = Path.GetFullPath(Path.Combine(_skillsBasePath, config.FolderPath, filePath));
         var skillBasePath = Path.GetFullPath(Path.Combine(_skillsBasePath, config.FolderPath));
-        if (!normalizedPath.StartsWith(skillBasePath)) throw new UnauthorizedAccessException("非法路径");
+        if (!normalizedPath.StartsWith(skillBasePath)) throw new UnauthorizedAccessException("Illegal path");
         return File.Exists(normalizedPath) ? await File.ReadAllTextAsync(normalizedPath) : null;
     }
 
@@ -280,9 +280,9 @@ public class AdminToolsService : IAdminToolsService
                     TotalSize = CalculateDirectorySize(dir), CreatedAt = DateTime.UtcNow
                 };
                 _context.SkillConfigs.Add(config);
-                _logger.LogInformation("发现 Skill: {Name}", name);
+                _logger.LogInformation("Discovered Skill: {Name}", name);
             }
-            catch (Exception ex) { _logger.LogWarning(ex, "解析失败: {Path}", dir); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Parse failed: {Path}", dir); }
         }
         await _context.SaveChangesAsync();
     }

@@ -1,58 +1,58 @@
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// Wiki 目录响应
+/// Wiki catalog response
 /// </summary>
 public class WikiCatalogResponse
 {
     /// <summary>
-    /// 组织名称
+    /// Organization name
     /// </summary>
     public string Owner { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     public string Repo { get; set; } = string.Empty;
 
     /// <summary>
-    /// 默认路径
+    /// Default path
     /// </summary>
     public string DefaultPath { get; set; } = string.Empty;
 
     /// <summary>
-    /// 目录项列表
+    /// List of catalog items
     /// </summary>
     public List<WikiCatalogItemResponse> Items { get; set; } = [];
 }
 
 /// <summary>
-/// Wiki 目录项响应
+/// Wiki catalog item response
 /// </summary>
 public class WikiCatalogItemResponse
 {
     /// <summary>
-    /// 标题
+    /// Title
     /// </summary>
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// 路径
+    /// Path
     /// </summary>
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
-    /// 排序顺序
+    /// Sort order
     /// </summary>
     public int Order { get; set; }
 
     /// <summary>
-    /// 是否有文档内容
+    /// Whether the item has document content
     /// </summary>
     public bool HasContent { get; set; }
 
     /// <summary>
-    /// 子目录项
+    /// Child catalog items
     /// </summary>
     public List<WikiCatalogItemResponse> Children { get; set; } = [];
 }

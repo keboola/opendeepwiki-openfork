@@ -1,78 +1,78 @@
 namespace OpenDeepWiki.Models.Subscription;
 
 /// <summary>
-/// 订阅列表响应
+/// Subscription list response
 /// </summary>
 public class SubscriptionListResponse
 {
     /// <summary>
-    /// 订阅项列表
+    /// List of subscription items
     /// </summary>
     public List<SubscriptionItemResponse> Items { get; set; } = [];
 
     /// <summary>
-    /// 总数
+    /// Total count
     /// </summary>
     public int Total { get; set; }
 
     /// <summary>
-    /// 当前页码
+    /// Current page number
     /// </summary>
     public int Page { get; set; }
 
     /// <summary>
-    /// 每页数量
+    /// Page size
     /// </summary>
     public int PageSize { get; set; }
 }
 
 /// <summary>
-/// 订阅项响应
+/// Subscription item response
 /// </summary>
 public class SubscriptionItemResponse
 {
     /// <summary>
-    /// 订阅记录ID
+    /// Subscription record ID
     /// </summary>
     public string SubscriptionId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库ID
+    /// Repository ID
     /// </summary>
     public string RepositoryId { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库名称
+    /// Repository name
     /// </summary>
     public string RepoName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 组织名称
+    /// Organization name
     /// </summary>
     public string OrgName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 仓库描述
+    /// Repository description
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// Star数量
+    /// Star count
     /// </summary>
     public int StarCount { get; set; }
 
     /// <summary>
-    /// Fork数量
+    /// Fork count
     /// </summary>
     public int ForkCount { get; set; }
 
     /// <summary>
-    /// 订阅数量
+    /// Subscription count
     /// </summary>
     public int SubscriptionCount { get; set; }
 
     /// <summary>
-    /// 订阅时间
+    /// Subscribed at timestamp
     /// </summary>
     public DateTime SubscribedAt { get; set; }
 }

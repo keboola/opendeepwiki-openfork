@@ -6,7 +6,7 @@ using OpenDeepWiki.Models.UserProfile;
 namespace OpenDeepWiki.Services.UserProfile;
 
 /// <summary>
-/// 用户资料服务实现
+/// User profile service implementation
 /// </summary>
 public class UserProfileService : IUserProfileService
 {
@@ -24,10 +24,10 @@ public class UserProfileService : IUserProfileService
 
         if (user == null)
         {
-            throw new InvalidOperationException("用户不存在");
+            throw new InvalidOperationException("User not found");
         }
 
-        // 检查邮箱是否被其他用户使用
+        // Check if email is used by another user
         if (user.Email != request.Email)
         {
             var existingUser = await _context.Users
@@ -35,11 +35,11 @@ public class UserProfileService : IUserProfileService
 
             if (existingUser != null)
             {
-                throw new InvalidOperationException("该邮箱已被其他用户使用");
+                throw new InvalidOperationException("Email already in use");
             }
         }
 
-        // 更新用户信息
+        // Update user information
         user.Name = request.Name;
         user.Email = request.Email;
         user.Phone = request.Phone;
@@ -48,7 +48,7 @@ public class UserProfileService : IUserProfileService
 
         await _context.SaveChangesAsync();
 
-        // 获取用户角色
+        // Get user roles
         var roles = await _context.UserRoles
             .Where(ur => ur.UserId == userId && !ur.IsDeleted)
             .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
@@ -71,16 +71,16 @@ public class UserProfileService : IUserProfileService
 
         if (user == null)
         {
-            throw new InvalidOperationException("用户不存在");
+            throw new InvalidOperationException("User not found");
         }
 
-        // 验证当前密码
+        // Verify current password
         if (!VerifyPassword(request.CurrentPassword, user.Password))
         {
-            throw new UnauthorizedAccessException("当前密码错误");
+            throw new UnauthorizedAccessException("Current password is incorrect");
         }
 
-        // 更新密码
+        // Update password
         user.Password = HashPassword(request.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;
 
@@ -94,11 +94,11 @@ public class UserProfileService : IUserProfileService
 
         if (user == null)
         {
-            throw new InvalidOperationException("用户不存在");
+            throw new InvalidOperationException("User not found");
         }
 
-        // 目前设置存储在用户扩展字段中，如果没有则返回默认值
-        // 后续可以创建独立的 UserSettings 表
+        // Settings are currently stored in user extension fields; return defaults if none exist
+        // A dedicated UserSettings table can be created later
         return new UserSettingsDto
         {
             Theme = "system",
@@ -115,11 +115,11 @@ public class UserProfileService : IUserProfileService
 
         if (user == null)
         {
-            throw new InvalidOperationException("用户不存在");
+            throw new InvalidOperationException("User not found");
         }
 
-        // 目前设置存储在用户扩展字段中
-        // 后续可以创建独立的 UserSettings 表来存储更多设置
+        // Settings are currently stored in user extension fields
+        // A dedicated UserSettings table can be created later to store more settings
         user.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 

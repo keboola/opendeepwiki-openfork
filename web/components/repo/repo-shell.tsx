@@ -23,7 +23,7 @@ interface RepoShellProps {
 }
 
 /**
- * 将 RepoTreeNode 转换为 fumadocs PageTree.Node
+ * Convert RepoTreeNode to fumadocs PageTree.Node
  */
 function convertToPageTreeNode(
   node: RepoTreeNode,
@@ -32,7 +32,7 @@ function convertToPageTreeNode(
   queryString: string
 ): PageTree.Node {
   const baseUrl = `/${owner}/${repo}/${node.slug}`;
-  // 链接需要带上查询参数以保持 branch 和 lang 状态
+  // Links need query params to preserve branch and lang state
   const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
 
   if (node.children && node.children.length > 0) {
@@ -54,7 +54,7 @@ function convertToPageTreeNode(
 }
 
 /**
- * 将 RepoTreeNode[] 转换为 fumadocs PageTree.Root
+ * Convert RepoTreeNode[] to fumadocs PageTree.Root
  */
 function convertToPageTree(
   nodes: RepoTreeNode[],
@@ -90,9 +90,9 @@ export function RepoShell({
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // 从pathname提取当前文档路径
+  // Extract current document path from pathname
   const currentDocPath = React.useMemo(() => {
-    // pathname格式: /owner/repo/slug 或 /owner/repo/path/to/doc
+    // pathname format: /owner/repo/slug or /owner/repo/path/to/doc
     const prefix = `/${owner}/${repo}/`;
     if (pathname.startsWith(prefix)) {
       return pathname.slice(prefix.length);
@@ -100,17 +100,17 @@ export function RepoShell({
     return "";
   }, [pathname, owner, repo]);
 
-  // 当 URL 参数变化时，重新获取数据
+  // Re-fetch data when URL params change
   useEffect(() => {
     const branch = urlBranch || undefined;
     const lang = urlLang || undefined;
     
-    // 如果没有指定参数，使用初始值
+    // If no params specified, use initial values
     if (!branch && !lang) {
       return;
     }
 
-    // 如果参数和当前状态相同，不需要重新获取
+    // No need to re-fetch if params are the same as current state
     if (branch === currentBranch && lang === currentLanguage) {
       return;
     }
@@ -141,15 +141,15 @@ export function RepoShell({
     fetchData();
   }, [urlBranch, urlLang, owner, repo, currentBranch, currentLanguage]);
 
-  // 构建查询字符串 - 优先使用 URL 参数，确保链接始终保持当前 URL 的参数
+  // Build query string - prioritize URL params, ensure links always preserve current URL params
   const queryString = searchParams.toString();
 
-  // 构建思维导图链接
+  // Build mind map link
   const mindMapUrl = queryString 
     ? `/${owner}/${repo}/mindmap?${queryString}` 
     : `/${owner}/${repo}/mindmap`;
 
-  // 导出功能处理
+  // Export handler
   const handleExport = async () => {
     if (isExporting) return;
     
@@ -163,10 +163,10 @@ export function RepoShell({
       
       const response = await fetch(exportUrl);
       if (!response.ok) {
-        throw new Error("导出失败");
+        throw new Error("Export failed");
       }
       
-      // 获取文件名
+      // Get filename
       const contentDisposition = response.headers.get("content-disposition");
       let fileName = `${owner}-${repo}-${currentBranch || "main"}-${currentLanguage || "zh"}.zip`;
       if (contentDisposition) {
@@ -176,7 +176,7 @@ export function RepoShell({
         }
       }
       
-      // 下载文件
+      // Download file
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -187,8 +187,8 @@ export function RepoShell({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error("导出失败:", error);
-      // 可以在这里添加错误提示
+      console.error("Export failed:", error);
+      // Error notification can be added here
     } finally {
       setIsExporting(false);
     }
@@ -197,7 +197,7 @@ export function RepoShell({
   const tree = convertToPageTree(nodes, owner, repo, queryString);
   const title = `${owner}/${repo}`;
 
-  // 构建侧边栏顶部的选择器和操作按钮
+  // Build sidebar top selector and action buttons
   const sidebarBanner = (
     <div className="space-y-3">
       {branches && (
@@ -224,7 +224,7 @@ export function RepoShell({
         >
           <Download className="h-4 w-4" />
           <span className="font-medium text-sm">
-            {isExporting ? "导出中..." : "导出文档"}
+            {isExporting ? "Exporting..." : "Export document"}
           </span>
         </button>
       </div>
@@ -251,7 +251,7 @@ export function RepoShell({
         children
       )}
       
-      {/* 文档对话助手悬浮球 */}
+      {/* Document chat assistant floating button */}
       <ChatAssistant
         context={{
           owner,

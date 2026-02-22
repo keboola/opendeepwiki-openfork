@@ -26,9 +26,9 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
   const handleSubmit = async () => {
     if (!gitHubInfo?.gitUrl || !gitHubInfo.defaultBranch) return;
 
-    // 检查是否已登录
+    // Check if user is logged in
     if (!isAuthenticated) {
-      // 未登录，跳转到登录页并携带当前URL
+      // Not logged in, redirect to login page with current URL
       const returnUrl = encodeURIComponent(pathname);
       router.push(`/auth?returnUrl=${returnUrl}`);
       return;
@@ -47,7 +47,7 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
         isPublic: true,
       });
       
-      // 刷新页面以显示处理状态
+      // Refresh page to show processing status
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.submitFailed"));
@@ -56,7 +56,7 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
     }
   };
 
-  // GitHub上也不存在
+  // Does not exist on GitHub either
   if (!gitHubInfo?.exists) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center p-4">
@@ -80,12 +80,12 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
     );
   }
 
-  // GitHub上存在，可以提交生成
+  // Exists on GitHub, can submit for generation
   return (
     <div className="flex min-h-[80vh] items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          {/* 仓库头部 */}
+          {/* Repository header */}
           <div className="flex items-start gap-4 mb-6">
             {gitHubInfo.avatarUrl && (
               <img
@@ -106,7 +106,7 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
             </div>
           </div>
 
-          {/* 统计信息 */}
+          {/* Statistics */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4" />
@@ -130,21 +130,21 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
             )}
           </div>
 
-          {/* 提示信息 */}
+          {/* Info message */}
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
             <p className="text-sm text-blue-600 dark:text-blue-400">
               {t("common.repository.notFound.existsButNoDoc")}
             </p>
           </div>
 
-          {/* 错误信息 */}
+          {/* Error message */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
-          {/* 操作按钮 */}
+          {/* Action buttons */}
           <div className="flex gap-3">
             <Button
               className="flex-1"
@@ -172,7 +172,7 @@ export function RepositoryNotFound({ owner, repo, gitHubInfo }: RepositoryNotFou
             </Button>
           </div>
 
-          {/* 返回首页按钮 */}
+          {/* Back to home button */}
           <div className="mt-4 pt-4 border-t">
             <Button
               variant="ghost"

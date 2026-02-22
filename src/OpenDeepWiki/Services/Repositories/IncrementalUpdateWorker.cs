@@ -6,8 +6,8 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Repositories;
 
 /// <summary>
-/// 增量更新后台工作器
-/// 独立轮询和处理需要增量更新的仓库
+/// Incremental update background worker
+/// Independently polls and processes repositories needing incremental updates
 /// </summary>
 public class IncrementalUpdateWorker : BackgroundService
 {
@@ -26,7 +26,7 @@ public class IncrementalUpdateWorker : BackgroundService
     }
 
     /// <summary>
-    /// 执行后台任务
+    /// Execute background task
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -34,7 +34,7 @@ public class IncrementalUpdateWorker : BackgroundService
             "IncrementalUpdateWorker started. PollingInterval: {PollingInterval}s",
             _options.PollingIntervalSeconds);
 
-        // 等待应用启动完成
+        // Wait for application startup to complete
         await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -45,7 +45,7 @@ public class IncrementalUpdateWorker : BackgroundService
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                // 正常关闭，不记录错误
+                // Normal shutdown, do not log error
                 break;
             }
             catch (Exception ex)
@@ -53,7 +53,7 @@ public class IncrementalUpdateWorker : BackgroundService
                 _logger.LogError(ex, "Error occurred during incremental update polling");
             }
 
-            // 等待下一次轮询
+            // Wait for next polling cycle
             try
             {
                 await Task.Delay(
@@ -71,7 +71,7 @@ public class IncrementalUpdateWorker : BackgroundService
 
 
     /// <summary>
-    /// 处理待处理的任务
+    /// Process pending tasks
     /// </summary>
     private async Task ProcessPendingTasksAsync(CancellationToken stoppingToken)
     {
@@ -79,7 +79,7 @@ public class IncrementalUpdateWorker : BackgroundService
         var context = scope.ServiceProvider.GetRequiredService<IContext>();
         var updateService = scope.ServiceProvider.GetRequiredService<IIncrementalUpdateService>();
 
-        // 1. 优先处理高优先级任务（手动触发）
+        // 1. Process high-priority tasks first (manually triggered)
         var pendingTasks = await GetPendingTasksAsync(context, stoppingToken);
 
         foreach (var task in pendingTasks)
@@ -93,12 +93,12 @@ public class IncrementalUpdateWorker : BackgroundService
             await ProcessSingleTaskAsync(context, updateService, task, stoppingToken);
         }
 
-        // 2. 检查需要定期更新的仓库
+        // 2. Check repositories that need scheduled updates
         await CheckScheduledUpdatesAsync(context, stoppingToken);
     }
 
     /// <summary>
-    /// 获取待处理的任务（按优先级排序）
+    /// Get pending tasks (sorted by priority)
     /// </summary>
     private async Task<List<IncrementalUpdateTask>> GetPendingTasksAsync(
         IContext context,
@@ -112,7 +112,7 @@ public class IncrementalUpdateWorker : BackgroundService
     }
 
     /// <summary>
-    /// 处理单个任务
+    /// Process a single task
     /// </summary>
     private async Task ProcessSingleTaskAsync(
         IContext context,
@@ -126,17 +126,17 @@ public class IncrementalUpdateWorker : BackgroundService
 
         try
         {
-            // 更新状态为 Processing
+            // Update status to Processing
             await UpdateTaskStatusAsync(
                 context, task, IncrementalUpdateStatus.Processing, null, stoppingToken);
 
-            // 执行增量更新
+            // Execute incremental update
             var result = await updateService.ProcessIncrementalUpdateAsync(
                 task.RepositoryId, task.BranchId, stoppingToken);
 
             if (result.Success)
             {
-                // 更新状态为 Completed
+                // Update status to Completed
                 task.TargetCommitId = result.CurrentCommitId;
                 await UpdateTaskStatusAsync(
                     context, task, IncrementalUpdateStatus.Completed, null, stoppingToken);
@@ -147,7 +147,7 @@ public class IncrementalUpdateWorker : BackgroundService
             }
             else
             {
-                // 更新状态为 Failed，保留上次 CommitId
+                // Update status to Failed, keep last CommitId
                 await UpdateTaskStatusAsync(
                     context, task, IncrementalUpdateStatus.Failed, result.ErrorMessage, stoppingToken);
 
@@ -158,14 +158,14 @@ public class IncrementalUpdateWorker : BackgroundService
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            // 取消时保持任务状态为 Pending，以便下次重试
+            // Keep task status as Pending on cancellation, for retry next time
             _logger.LogInformation(
                 "Task processing cancelled. TaskId: {TaskId}", task.Id);
             throw;
         }
         catch (Exception ex)
         {
-            // 更新状态为 Failed
+            // Update status to Failed
             await UpdateTaskStatusAsync(
                 context, task, IncrementalUpdateStatus.Failed, ex.Message, stoppingToken);
 
@@ -177,7 +177,7 @@ public class IncrementalUpdateWorker : BackgroundService
 
 
     /// <summary>
-    /// 更新任务状态
+    /// Update task status
     /// </summary>
     private async Task UpdateTaskStatusAsync(
         IContext context,
@@ -209,7 +209,7 @@ public class IncrementalUpdateWorker : BackgroundService
     }
 
     /// <summary>
-    /// 检查需要定期更新的仓库
+    /// Check repositories that need scheduled updates
     /// </summary>
     private async Task CheckScheduledUpdatesAsync(
         IContext context,
@@ -217,14 +217,14 @@ public class IncrementalUpdateWorker : BackgroundService
     {
         var now = DateTime.UtcNow;
 
-        // 查询需要检查更新的仓库
-        // 条件：状态为 Completed 且距离上次检查时间超过配置的间隔
+        // Query repositories that need update checks
+        // Condition: status is Completed and time since last check exceeds configured interval
         var repositoriesToCheck = await context.Repositories
             .Where(r => r.Status == RepositoryStatus.Completed)
             .Where(r => r.LastUpdateCheckAt == null ||
                         r.LastUpdateCheckAt.Value.AddMinutes(
                             r.UpdateIntervalMinutes ?? _options.DefaultUpdateIntervalMinutes) <= now)
-            .Take(10) // 每次最多检查10个仓库，避免单次处理过多
+            .Take(10) // Check at most 10 repositories per cycle to avoid processing too many at once
             .ToListAsync(stoppingToken);
 
         foreach (var repository in repositoriesToCheck)
@@ -239,7 +239,7 @@ public class IncrementalUpdateWorker : BackgroundService
     }
 
     /// <summary>
-    /// 为仓库创建定期更新任务
+    /// Create scheduled update tasks for a repository
     /// </summary>
     private async Task CreateScheduledUpdateTasksAsync(
         IContext context,
@@ -248,14 +248,14 @@ public class IncrementalUpdateWorker : BackgroundService
     {
         try
         {
-            // 获取仓库的所有分支
+            // Get all branches for the repository
             var branches = await context.RepositoryBranches
                 .Where(b => b.RepositoryId == repository.Id)
                 .ToListAsync(stoppingToken);
 
             foreach (var branch in branches)
             {
-                // 检查是否已存在待处理或处理中的任务
+                // Check if a pending or processing task already exists
                 var existingTask = await context.IncrementalUpdateTasks
                     .AnyAsync(t => t.RepositoryId == repository.Id
                                    && t.BranchId == branch.Id
@@ -271,7 +271,7 @@ public class IncrementalUpdateWorker : BackgroundService
                     continue;
                 }
 
-                // 创建定期更新任务（普通优先级）
+                // Create scheduled update task (normal priority)
                 var task = new IncrementalUpdateTask
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -279,7 +279,7 @@ public class IncrementalUpdateWorker : BackgroundService
                     BranchId = branch.Id,
                     PreviousCommitId = branch.LastCommitId,
                     Status = IncrementalUpdateStatus.Pending,
-                    Priority = 0, // 普通优先级
+                    Priority = 0, // Normal priority
                     IsManualTrigger = false,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -291,7 +291,7 @@ public class IncrementalUpdateWorker : BackgroundService
                     task.Id, repository.OrgName, repository.RepoName, branch.BranchName);
             }
 
-            // 更新仓库的 LastUpdateCheckAt
+            // Update repository's LastUpdateCheckAt
             repository.LastUpdateCheckAt = DateTime.UtcNow;
             await context.SaveChangesAsync(stoppingToken);
         }

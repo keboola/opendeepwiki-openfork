@@ -4,56 +4,56 @@ using OpenDeepWiki.Chat.Providers;
 namespace OpenDeepWiki.Chat.Routing;
 
 /// <summary>
-/// 消息路由器接口
-/// 负责将消息路由到正确的 Provider
+/// Message router interface
+/// Responsible for routing messages to the correct Provider
 /// </summary>
 public interface IMessageRouter
 {
     /// <summary>
-    /// 路由入站消息
+    /// Route incoming message
     /// </summary>
-    /// <param name="message">入站消息</param>
-    /// <param name="cancellationToken">取消令牌</param>
+    /// <param name="message">Incoming message</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     Task RouteIncomingAsync(IChatMessage message, CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// 路由出站消息
+    /// Route outgoing message
     /// </summary>
-    /// <param name="message">出站消息</param>
-    /// <param name="targetUserId">目标用户ID</param>
-    /// <param name="cancellationToken">取消令牌</param>
+    /// <param name="message">Outgoing message</param>
+    /// <param name="targetUserId">Target user ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     Task RouteOutgoingAsync(IChatMessage message, string targetUserId, CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// 获取指定平台的 Provider
+    /// Get the Provider for a specified platform
     /// </summary>
-    /// <param name="platform">平台标识</param>
-    /// <returns>Provider 实例，如果不存在则返回 null</returns>
+    /// <param name="platform">Platform identifier</param>
+    /// <returns>Provider instance, or null if not found</returns>
     IMessageProvider? GetProvider(string platform);
     
     /// <summary>
-    /// 获取所有已注册的 Provider
+    /// Get all registered Providers
     /// </summary>
-    /// <returns>所有已注册的 Provider 集合</returns>
+    /// <returns>Collection of all registered Providers</returns>
     IEnumerable<IMessageProvider> GetAllProviders();
     
     /// <summary>
-    /// 注册 Provider
+    /// Register a Provider
     /// </summary>
-    /// <param name="provider">要注册的 Provider</param>
+    /// <param name="provider">Provider to register</param>
     void RegisterProvider(IMessageProvider provider);
     
     /// <summary>
-    /// 注销 Provider
+    /// Unregister a Provider
     /// </summary>
-    /// <param name="platform">平台标识</param>
-    /// <returns>是否成功注销</returns>
+    /// <param name="platform">Platform identifier</param>
+    /// <returns>Whether the unregistration was successful</returns>
     bool UnregisterProvider(string platform);
     
     /// <summary>
-    /// 检查指定平台是否有已注册的 Provider
+    /// Check whether a Provider is registered for the specified platform
     /// </summary>
-    /// <param name="platform">平台标识</param>
-    /// <returns>是否存在</returns>
+    /// <param name="platform">Platform identifier</param>
+    /// <returns>Whether it exists</returns>
     bool HasProvider(string platform);
 }

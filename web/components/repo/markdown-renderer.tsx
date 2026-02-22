@@ -21,30 +21,30 @@ interface CodeBlockProps {
   isDark: boolean;
 }
 
-// 清理 mermaid 在 body 中创建的错误元素
+// Clean up error elements created by mermaid in body
 function cleanupMermaidErrors(diagramId: string) {
-  // 清理指定 id 的元素
+  // Clean up element with specified id
   const element = document.getElementById(diagramId);
   if (element) {
     element.remove();
   }
   
-  // 清理 mermaid 可能创建的 d + id 格式的元素
+  // Clean up elements in d + id format that mermaid may create
   const dElement = document.getElementById(`d${diagramId}`);
   if (dElement) {
     dElement.remove();
   }
   
-  // 清理 body 直接子元素中的 mermaid 错误元素
+  // Clean up mermaid error elements that are direct children of body
   document.querySelectorAll('body > div[id^="mermaid-"], body > div[id^="d"], body > svg[id^="mermaid-"]').forEach((el) => {
-    // 检查是否是 mermaid 错误元素（通常包含错误文本或是空的 svg）
+    // Check if this is a mermaid error element (usually contains error text or is an empty svg)
     if (el.textContent?.includes('Syntax error') || el.innerHTML === '') {
       el.remove();
     }
   });
 }
 
-// Mermaid 全屏模态框组件 - 支持缩放和拖动
+// Mermaid fullscreen modal component - supports zoom and drag
 function MermaidFullscreenModal({ 
   svg, 
   isOpen, 
@@ -62,13 +62,13 @@ function MermaidFullscreenModal({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // 重置状态
+  // Reset state
   const resetView = useCallback(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
   }, []);
 
-  // 缩放
+  // Zoom
   const handleZoomIn = useCallback(() => {
     setScale((s) => Math.min(s + 0.25, 4));
   }, []);
@@ -77,21 +77,21 @@ function MermaidFullscreenModal({
     setScale((s) => Math.max(s - 0.25, 0.25));
   }, []);
 
-  // 鼠标滚轮缩放
+  // Mouse wheel zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
     setScale((s) => Math.min(Math.max(s + delta, 0.25), 4));
   }, []);
 
-  // 拖动开始
+  // Drag start
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return; // 只响应左键
+    if (e.button !== 0) return; // Only respond to left click
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   }, [position]);
 
-  // 拖动中
+  // Dragging
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging) return;
     setPosition({
@@ -100,12 +100,12 @@ function MermaidFullscreenModal({
     });
   }, [isDragging, dragStart]);
 
-  // 拖动结束
+  // Drag end
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
 
-  // ESC 键关闭，重置状态
+  // ESC key to close, reset state
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -117,7 +117,7 @@ function MermaidFullscreenModal({
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden";
     } else {
-      // 关闭时重置状态
+      // Reset state on close
       resetView();
     }
 
@@ -134,7 +134,7 @@ function MermaidFullscreenModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={onClose}
     >
-      {/* 工具栏 */}
+      {/* Toolbar */}
       <div 
         className="absolute left-1/2 top-4 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-background/90 px-4 py-2 shadow-lg"
         onClick={(e) => e.stopPropagation()}
@@ -166,7 +166,7 @@ function MermaidFullscreenModal({
         </button>
       </div>
 
-      {/* 关闭按钮 */}
+      {/* Close button */}
       <button
         onClick={onClose}
         className="absolute right-4 top-4 z-50 rounded-full bg-background/90 p-2 text-foreground shadow-lg transition-colors hover:bg-muted"
@@ -175,7 +175,7 @@ function MermaidFullscreenModal({
         <X className="h-6 w-6" />
       </button>
 
-      {/* 图表容器 */}
+      {/* Chart container */}
       <div 
         ref={containerRef}
         className="h-full w-full overflow-hidden"
@@ -201,15 +201,15 @@ function MermaidFullscreenModal({
         </div>
       </div>
 
-      {/* 操作提示 */}
+      {/* Usage hint */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-background/70 px-4 py-2 text-xs text-muted-foreground">
-        滚轮缩放 · 拖动平移 · ESC 关闭
+        Scroll to zoom · Drag to pan · ESC to close
       </div>
     </div>
   );
 }
 
-// Mermaid 图表组件
+// Mermaid diagram component
 function MermaidDiagram({ code, isDark, t }: { code: string; isDark: boolean; t?: (key: string) => string }) {
   const id = useId().replace(/:/g, "");
   const [svg, setSvg] = useState<string>("");
@@ -242,7 +242,7 @@ function MermaidDiagram({ code, isDark, t }: { code: string; isDark: boolean; t?
         setError(err instanceof Error ? err.message : "Failed to render diagram");
         setSvg("");
       } finally {
-        // 无论成功失败，都清理可能残留的错误元素
+        // Clean up any remaining error elements regardless of success or failure
         cleanupMermaidErrors(diagramId);
       }
     };
@@ -251,14 +251,14 @@ function MermaidDiagram({ code, isDark, t }: { code: string; isDark: boolean; t?
   }, [code, isDark, id]);
 
   if (error) {
-    // 渲染失败时显示为普通代码块
+    // Show as plain code block when rendering fails
     return <CodeBlock code={code} language="mermaid" isDark={isDark} />;
   }
 
   if (!svg) {
     return (
       <div className="my-4 flex items-center justify-center rounded-lg border border-border bg-muted/50 p-8 not-prose">
-        <div className="text-sm text-muted-foreground">加载图表中...</div>
+        <div className="text-sm text-muted-foreground">Loading chart...</div>
       </div>
     );
   }
@@ -268,7 +268,7 @@ function MermaidDiagram({ code, isDark, t }: { code: string; isDark: boolean; t?
       <div 
         className="group relative my-4 flex cursor-pointer justify-center overflow-auto rounded-lg border border-border bg-background p-4 not-prose transition-shadow hover:shadow-md"
         onClick={handleOpenFullscreen}
-        title="点击放大查看"
+        title="Click to enlarge"
       >
         <div 
           className="pointer-events-none"
@@ -302,7 +302,7 @@ function CodeBlock({ code, language, isDark }: CodeBlockProps) {
       <button
         onClick={handleCopy}
         className="absolute right-2 top-2 z-10 rounded-md bg-background/80 p-2 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-        title="复制代码"
+        title="Copy code"
       >
         {copied ? (
           <Check className="h-4 w-4 text-green-500" />
@@ -352,7 +352,7 @@ function getText(children: React.ReactNode): string {
   return "";
 }
 
-// 预先从 markdown 中提取所有 heading 文本，用于生成唯一 id
+// Pre-extract all heading texts from markdown to generate unique ids
 function extractHeadingTexts(markdown: string): string[] {
   const lines = markdown.split(/\r?\n/);
   const texts: string[] = [];
@@ -380,7 +380,7 @@ function extractHeadingTexts(markdown: string): string[] {
   return texts;
 }
 
-// 生成 heading id 映射
+// Generate heading id mapping
 function createHeadingIdMap(texts: string[]): Map<string, string[]> {
   const idMap = new Map<string, string[]>();
   const counts = new Map<string, number>();
@@ -405,21 +405,21 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   
-  // 等待客户端挂载后再确定主题
+  // Wait for client mount before determining theme
   useEffect(() => {
     setMounted(true);
   }, []);
   
-  // 默认使用暗色主题，挂载后使用实际主题
+  // Default to dark theme, use actual theme after mount
   const isDark = mounted ? resolvedTheme === "dark" : true;
   
-  // 预计算所有 heading 的 id
+  // Pre-compute all heading ids
   const headingIdMap = useMemo(() => {
     const texts = extractHeadingTexts(content);
     return createHeadingIdMap(texts);
   }, [content]);
 
-  // 追踪每个 heading text 使用的次数
+  // Track the number of times each heading text has been used
   const usedCounts = useMemo(() => new Map<string, number>(), [content]);
 
   const getHeadingId = (text: string) => {
@@ -498,7 +498,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             const language = match ? match[1] : "";
             const codeString = String(children).replace(/\n$/, "");
             
-            // 处理 mermaid 图表
+            // Handle mermaid diagrams
             if (language === "mermaid") {
               return <MermaidDiagram code={codeString} isDark={isDark} t={t} />;
             }

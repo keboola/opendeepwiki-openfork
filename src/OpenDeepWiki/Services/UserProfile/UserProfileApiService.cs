@@ -6,10 +6,10 @@ using OpenDeepWiki.Models.UserProfile;
 namespace OpenDeepWiki.Services.UserProfile;
 
 /// <summary>
-/// 用户资料API服务
+/// User profile API service
 /// </summary>
 [MiniApi(Route = "/api/user")]
-[Tags("用户资料")]
+[Tags("User Profile")]
 [Authorize]
 public class UserProfileApiService(IUserProfileService profileService, IHttpContextAccessor httpContextAccessor)
 {
@@ -19,7 +19,7 @@ public class UserProfileApiService(IUserProfileService profileService, IHttpCont
     }
 
     /// <summary>
-    /// 更新个人资料
+    /// Update user profile
     /// </summary>
     [HttpPut("/profile")]
     public async Task<IResult> UpdateProfileAsync([FromBody] UpdateProfileRequest request)
@@ -42,7 +42,7 @@ public class UserProfileApiService(IUserProfileService profileService, IHttpCont
     }
 
     /// <summary>
-    /// 修改密码
+    /// Change password
     /// </summary>
     [HttpPut("/password")]
     public async Task<IResult> ChangePasswordAsync([FromBody] ChangePasswordRequest request)
@@ -56,11 +56,11 @@ public class UserProfileApiService(IUserProfileService profileService, IHttpCont
         try
         {
             await profileService.ChangePasswordAsync(userId, request);
-            return Results.Ok(new { success = true, message = "密码修改成功" });
+            return Results.Ok(new { success = true, message = "Password changed successfully" });
         }
         catch (UnauthorizedAccessException)
         {
-            return Results.BadRequest(new { success = false, message = "当前密码错误" });
+            return Results.BadRequest(new { success = false, message = "Current password is incorrect" });
         }
         catch (Exception ex)
         {
@@ -69,7 +69,7 @@ public class UserProfileApiService(IUserProfileService profileService, IHttpCont
     }
 
     /// <summary>
-    /// 获取用户设置
+    /// Get user settings
     /// </summary>
     [HttpGet("/settings")]
     public async Task<IResult> GetSettingsAsync()
@@ -92,7 +92,7 @@ public class UserProfileApiService(IUserProfileService profileService, IHttpCont
     }
 
     /// <summary>
-    /// 更新用户设置
+    /// Update user settings
     /// </summary>
     [HttpPut("/settings")]
     public async Task<IResult> UpdateSettingsAsync([FromBody] UserSettingsDto request)

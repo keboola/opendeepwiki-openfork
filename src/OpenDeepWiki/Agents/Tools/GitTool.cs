@@ -49,7 +49,7 @@ public class GitTool
             throw new DirectoryNotFoundException($"Working directory does not exist: {_workingDirectory}");
         }
 
-        // 解析 .gitignore 文件
+        // Parse .gitignore file
         _gitIgnoreRules = ParseGitIgnore(_workingDirectory);
     }
 
@@ -220,7 +220,7 @@ Usage:
             var startIndex = Math.Max(0, offset - 1);
             var endIndex = Math.Min(lines.Length, startIndex + limit);
 
-            // 记录读取的文件
+            // Record the read file
             _readFiles.Add(normalizedPath);
 
             var result = new StringBuilder();

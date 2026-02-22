@@ -1,7 +1,7 @@
 namespace OpenDeepWiki.Endpoints.Admin;
 
 /// <summary>
-/// 管理端端点注册
+/// Admin endpoint registration
 /// </summary>
 public static class AdminEndpoints
 {
@@ -9,9 +9,9 @@ public static class AdminEndpoints
     {
         var adminGroup = app.MapGroup("/api/admin")
             .RequireAuthorization("AdminOnly")
-            .WithTags("管理端");
+            .WithTags("Admin");
 
-        // 注册各个管理模块的端点
+        // Register endpoints for each admin module
         adminGroup.MapAdminStatisticsEndpoints();
         adminGroup.MapAdminRepositoryEndpoints();
         adminGroup.MapAdminUserEndpoints();

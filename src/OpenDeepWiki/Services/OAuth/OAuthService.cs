@@ -10,7 +10,7 @@ using OpenDeepWiki.Services.Auth;
 namespace OpenDeepWiki.Services.OAuth;
 
 /// <summary>
-/// OAuth服务实现
+/// OAuth service implementation
 /// </summary>
 public class OAuthService : IOAuthService
 {
@@ -58,16 +58,16 @@ public class OAuthService : IOAuthService
     {
         var provider = await GetProviderAsync(providerName);
 
-        // 1. 交换授权码获取访问令牌
+        // 1. Exchange authorization code for access token
         var tokenResponse = await ExchangeCodeForTokenAsync(provider, code);
 
-        // 2. 使用访问令牌获取用户信息
+        // 2. Use access token to get user information
         var userInfo = await GetOAuthUserInfoAsync(provider, tokenResponse.AccessToken);
 
-        // 3. 查找或创建用户
+        // 3. Find or create user
         var user = await FindOrCreateUserAsync(provider, userInfo, tokenResponse);
 
-        // 4. 生成JWT令牌
+        // 4. Generate JWT token
         var roles = await GetUserRolesAsync(user.Id);
         var token = _jwtService.GenerateToken(user, roles);
 
@@ -93,7 +93,7 @@ public class OAuthService : IOAuthService
 
         if (provider == null)
         {
-            throw new InvalidOperationException($"OAuth提供商 '{providerName}' 不存在或未启用");
+            throw new InvalidOperationException($"OAuth provider '{providerName}' does not exist or is not enabled");
         }
 
         return provider;
@@ -139,7 +139,7 @@ public class OAuthService : IOAuthService
         var content = await response.Content.ReadAsStringAsync();
         var userData = JsonSerializer.Deserialize<JsonElement>(content);
 
-        // 解析用户信息映射
+        // Parse user info mapping
         var mapping = string.IsNullOrEmpty(provider.UserInfoMapping)
             ? GetDefaultMapping(provider.Name)
             : JsonSerializer.Deserialize<Dictionary<string, string>>(provider.UserInfoMapping) ?? GetDefaultMapping(provider.Name);
@@ -155,7 +155,7 @@ public class OAuthService : IOAuthService
 
     private async Task<User> FindOrCreateUserAsync(OAuthProvider provider, OAuthUserInfo oauthUserInfo, OAuthTokenResponse tokenResponse)
     {
-        // 查找现有的OAuth绑定
+        // Find existing OAuth binding
         var userOAuth = await _context.UserOAuths
             .Include(uo => uo.User)
             .FirstOrDefaultAsync(uo =>
@@ -167,7 +167,7 @@ public class OAuthService : IOAuthService
 
         if (userOAuth != null && userOAuth.User != null)
         {
-            // 更新现有绑定
+            // Update existing binding
             user = userOAuth.User;
             userOAuth.AccessToken = tokenResponse.AccessToken;
             userOAuth.RefreshToken = tokenResponse.RefreshToken;
@@ -177,13 +177,13 @@ public class OAuthService : IOAuthService
         }
         else
         {
-            // 尝试通过邮箱查找现有用户
+            // Try to find existing user by email
             user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == oauthUserInfo.Email && !u.IsDeleted);
 
             if (user == null)
             {
-                // 创建新用户
+                // Create new user
                 user = new User
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -195,7 +195,7 @@ public class OAuthService : IOAuthService
                 };
                 _context.Users.Add(user);
 
-                // 分配默认角色
+                // Assign default role
                 var defaultRole = await _context.Roles
                     .FirstOrDefaultAsync(r => r.Name == "User" && !r.IsDeleted);
 
@@ -212,7 +212,7 @@ public class OAuthService : IOAuthService
                 }
             }
 
-            // 创建OAuth绑定
+            // Create OAuth binding
             userOAuth = new UserOAuth
             {
                 Id = Guid.NewGuid().ToString(),
@@ -234,7 +234,7 @@ public class OAuthService : IOAuthService
             _context.UserOAuths.Add(userOAuth);
         }
 
-        // 更新用户最后登录时间
+        // Update user last login time
         user.LastLoginAt = DateTime.UtcNow;
         user.UpdateTimestamp();
 

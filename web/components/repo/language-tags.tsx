@@ -13,7 +13,7 @@ interface LanguageTagsProps {
   className?: string;
 }
 
-// 语言颜色映射
+// Language color mapping
 const languageColors: Record<string, string> = {
   TypeScript: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20",
   JavaScript: "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border-yellow-500/20",
@@ -80,7 +80,7 @@ export function LanguageTags({ selectedLanguage, onLanguageChange, className }: 
         )}
         onClick={() => onLanguageChange(null)}
       >
-        全部
+        All
       </Badge>
       {languages.map((lang) => (
         <Badge

@@ -13,7 +13,7 @@ public class WikiService(IContext context)
     private const string DefaultLanguageCode = "zh";
 
     /// <summary>
-    /// 获取 Wiki 目录结构
+    /// Get Wiki catalog structure
     /// </summary>
     [HttpGet("/{org}/{repo}/catalog")]
     public async Task<WikiCatalogResponse> GetCatalogAsync(string org, string repo)
@@ -30,7 +30,7 @@ public class WikiService(IContext context)
 
         if (catalogs.Count == 0)
         {
-            throw new InvalidOperationException("未找到 Wiki 目录");
+            throw new InvalidOperationException("Wiki catalog not found");
         }
 
         var rootItems = BuildCatalogTree(catalogs);
@@ -46,7 +46,7 @@ public class WikiService(IContext context)
     }
 
     /// <summary>
-    /// 获取 Wiki 文档内容
+    /// Get Wiki document content
     /// </summary>
     [HttpGet("/{org}/{repo}/doc/{*path}")]
     public async Task<WikiDocResponse> GetDocAsync(string org, string repo, string path)
@@ -62,12 +62,12 @@ public class WikiService(IContext context)
 
         if (catalog is null)
         {
-            throw new KeyNotFoundException($"文档路径 '{normalizedPath}' 不存在");
+            throw new KeyNotFoundException($"Document path '{normalizedPath}' does not exist");
         }
 
         if (string.IsNullOrEmpty(catalog.DocFileId))
         {
-            throw new KeyNotFoundException($"文档路径 '{normalizedPath}' 没有关联的文档内容");
+            throw new KeyNotFoundException($"Document path '{normalizedPath}' has no associated content");
         }
 
         var docFile = await context.DocFiles
@@ -76,7 +76,7 @@ public class WikiService(IContext context)
 
         if (docFile is null)
         {
-            throw new KeyNotFoundException($"文档内容不存在");
+            throw new KeyNotFoundException($"Document content does not exist");
         }
 
         return new WikiDocResponse
@@ -95,7 +95,7 @@ public class WikiService(IContext context)
 
         if (repository is null)
         {
-            throw new KeyNotFoundException($"仓库 '{org}/{repo}' 不存在");
+            throw new KeyNotFoundException($"Repository '{org}/{repo}' does not exist");
         }
 
         return repository;
@@ -110,7 +110,7 @@ public class WikiService(IContext context)
 
         if (branches.Count == 0)
         {
-            throw new KeyNotFoundException("仓库分支不存在");
+            throw new KeyNotFoundException("Repository branch does not exist");
         }
 
         return branches.FirstOrDefault(b => string.Equals(b.BranchName, "main", StringComparison.OrdinalIgnoreCase))
@@ -127,7 +127,7 @@ public class WikiService(IContext context)
 
         if (languages.Count == 0)
         {
-            throw new KeyNotFoundException("仓库语言不存在");
+            throw new KeyNotFoundException("Repository language does not exist");
         }
 
         return languages.FirstOrDefault(l => string.Equals(l.LanguageCode, DefaultLanguageCode, StringComparison.OrdinalIgnoreCase))

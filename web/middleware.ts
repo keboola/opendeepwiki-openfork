@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 const supportedLocales = ['zh', 'en', 'ko', 'ja'];
 
 export function middleware(request: NextRequest) {
-  // 优先从 URL 查询参数获取语言设置（用于仓库文档页面）
+  // Prefer language setting from URL query parameter (for repository doc pages)
   const urlLang = request.nextUrl.searchParams.get('lang');
   
-  // 从 cookie 中获取语言设置
+  // Get language setting from cookie
   const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
   
   // Priority: URL lang param > cookie > default en
@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
     locale = cookieLocale;
   }
   
-  // 将 locale 添加到请求头中，供 i18n 配置使用
+  // Add locale to request headers for i18n configuration
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-next-intl-locale', locale);
 

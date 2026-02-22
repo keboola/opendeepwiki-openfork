@@ -1,22 +1,22 @@
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// Wiki 文档响应
+/// Wiki document response
 /// </summary>
 public class WikiDocResponse
 {
     /// <summary>
-    /// 文档路径
+    /// Document path
     /// </summary>
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
-    /// 文档标题
+    /// Document title
     /// </summary>
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// Markdown 内容
+    /// Markdown content
     /// </summary>
     public string Content { get; set; } = string.Empty;
 }

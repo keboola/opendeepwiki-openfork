@@ -4,18 +4,18 @@ using OpenDeepWiki.Services.Wiki;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 动态配置管理器，用于从系统设置中更新配置
+/// Dynamic configuration manager for updating configuration from system settings
 /// </summary>
 public interface IDynamicConfigManager
 {
     /// <summary>
-    /// 刷新WikiGeneratorOptions配置
+    /// Refresh WikiGeneratorOptions configuration
     /// </summary>
     Task RefreshWikiGeneratorOptionsAsync();
 }
 
 /// <summary>
-/// 动态配置管理器实现
+/// Dynamic configuration manager implementation
 /// </summary>
 public class DynamicConfigManager : IDynamicConfigManager
 {
@@ -34,29 +34,29 @@ public class DynamicConfigManager : IDynamicConfigManager
     }
 
     /// <summary>
-    /// 刷新WikiGeneratorOptions配置
+    /// Refresh WikiGeneratorOptions configuration
     /// </summary>
     public async Task RefreshWikiGeneratorOptionsAsync()
     {
         try
         {
-            // 获取当前配置
+            // Get current configuration
             var currentOptions = _optionsMonitor.CurrentValue;
-            
-            // 获取所有AI相关的系统设置
+
+            // Get all AI-related system settings
             var aiSettings = await _settingsService.GetSettingsAsync("ai");
-            
-            // 应用设置到配置对象
+
+            // Apply settings to configuration object
             foreach (var setting in aiSettings)
             {
                 SystemSettingDefaults.ApplySettingToOption(currentOptions, setting.Key, setting.Value ?? string.Empty);
             }
 
-            _logger.LogDebug("WikiGeneratorOptions配置已从系统设置刷新");
+            _logger.LogDebug("WikiGeneratorOptions configuration refreshed from system settings");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "刷新WikiGeneratorOptions配置失败");
+            _logger.LogError(ex, "Failed to refresh WikiGeneratorOptions configuration");
             throw;
         }
     }

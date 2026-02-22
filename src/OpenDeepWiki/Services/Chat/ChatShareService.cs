@@ -10,7 +10,7 @@ using OpenDeepWiki.Entities;
 namespace OpenDeepWiki.Services.Chat;
 
 /// <summary>
-/// 分享内容中的 Token 使用情况
+/// Token usage in shared content
 /// </summary>
 public class ChatShareTokenUsageDto
 {
@@ -19,7 +19,7 @@ public class ChatShareTokenUsageDto
 }
 
 /// <summary>
-/// 分享内容中的工具结果
+/// Tool result in shared content
 /// </summary>
 public class ChatShareToolResultDto
 {
@@ -29,7 +29,7 @@ public class ChatShareToolResultDto
 }
 
 /// <summary>
-/// 分享内容中的工具调用
+/// Tool call in shared content
 /// </summary>
 public class ChatShareToolCallDto
 {
@@ -39,7 +39,7 @@ public class ChatShareToolCallDto
 }
 
 /// <summary>
-/// 分享内容中的引用文本
+/// Quoted text in shared content
 /// </summary>
 public class ChatShareQuotedTextDto
 {
@@ -48,7 +48,7 @@ public class ChatShareQuotedTextDto
 }
 
 /// <summary>
-/// 分享内容块
+/// Shared content block
 /// </summary>
 public class ChatShareContentBlockDto
 {
@@ -58,7 +58,7 @@ public class ChatShareContentBlockDto
 }
 
 /// <summary>
-/// 分享的对话消息
+/// Shared conversation message
 /// </summary>
 public class ChatShareMessageDto
 {
@@ -76,7 +76,7 @@ public class ChatShareMessageDto
 }
 
 /// <summary>
-/// 创建分享请求
+/// Create share request
 /// </summary>
 public class CreateChatShareRequest
 {
@@ -91,7 +91,7 @@ public class CreateChatShareRequest
 }
 
 /// <summary>
-/// 分享详情响应
+/// Share details response
 /// </summary>
 public class ChatShareResponse
 {
@@ -106,7 +106,7 @@ public class ChatShareResponse
 }
 
 /// <summary>
-/// 聊天分享服务接口
+/// Chat share service interface
 /// </summary>
 public interface IChatShareService
 {
@@ -116,11 +116,11 @@ public interface IChatShareService
 }
 
 /// <summary>
-/// 聊天分享服务实现
+/// Chat share service implementation
 /// </summary>
 public class ChatShareService : IChatShareService
 {
-    private const int DefaultExpireMinutes = 60 * 24 * 30; // 30天
+    private const int DefaultExpireMinutes = 60 * 24 * 30; // 30 days
     private const int MaxMessages = 400;
     private const int MaxSnapshotSizeBytes = 512 * 1024; // 512KB
 
@@ -239,7 +239,7 @@ public class ChatShareService : IChatShareService
         var payload = JsonSerializer.Deserialize<ChatShareSnapshotPayload>(snapshot.SnapshotJson, SerializerOptions);
         if (payload == null)
         {
-            _logger.LogWarning("分享 {ShareId} 的快照数据无法解析", shareId);
+            _logger.LogWarning("Share {ShareId} snapshot data could not be parsed", shareId);
             return null;
         }
 

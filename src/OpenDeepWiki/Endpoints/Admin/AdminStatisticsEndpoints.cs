@@ -4,16 +4,16 @@ using OpenDeepWiki.Services.Admin;
 namespace OpenDeepWiki.Endpoints.Admin;
 
 /// <summary>
-/// 管理端统计数据端点
+/// Admin statistics endpoints
 /// </summary>
 public static class AdminStatisticsEndpoints
 {
     public static RouteGroupBuilder MapAdminStatisticsEndpoints(this RouteGroupBuilder group)
     {
         var statisticsGroup = group.MapGroup("/statistics")
-            .WithTags("管理端-统计");
+            .WithTags("Admin - Statistics");
 
-        // 获取仪表盘统计数据
+        // Get dashboard statistics
         statisticsGroup.MapGet("/dashboard", async (
             [FromQuery] int days,
             [FromServices] IAdminStatisticsService statisticsService) =>
@@ -23,9 +23,9 @@ public static class AdminStatisticsEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("GetDashboardStatistics")
-        .WithSummary("获取仪表盘统计数据");
+        .WithSummary("Get dashboard statistics");
 
-        // 获取 Token 消耗统计
+        // Get token usage statistics
         statisticsGroup.MapGet("/token-usage", async (
             [FromQuery] int days,
             [FromServices] IAdminStatisticsService statisticsService) =>
@@ -35,7 +35,7 @@ public static class AdminStatisticsEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("GetTokenUsageStatistics")
-        .WithSummary("获取 Token 消耗统计");
+        .WithSummary("Get token usage statistics");
 
         return group;
     }

@@ -7,7 +7,7 @@ using OpenDeepWiki.Models.Admin;
 namespace OpenDeepWiki.Services.Admin;
 
 /// <summary>
-/// 管理端对话助手配置服务实现
+/// Admin chat assistant configuration service implementation
 /// </summary>
 public class AdminChatAssistantService : IAdminChatAssistantService
 {
@@ -27,7 +27,7 @@ public class AdminChatAssistantService : IAdminChatAssistantService
         var enabledMcpIds = ParseJsonArray(config.EnabledMcpIds);
         var enabledSkillIds = ParseJsonArray(config.EnabledSkillIds);
 
-        // 获取所有可用的模型
+        // Get all available models
         var models = await _context.ModelConfigs
             .Where(m => !m.IsDeleted)
             .OrderByDescending(m => m.IsDefault)
@@ -42,7 +42,7 @@ public class AdminChatAssistantService : IAdminChatAssistantService
             })
             .ToListAsync();
 
-        // 获取所有可用的MCP
+        // Get all available MCPs
         var mcps = await _context.McpConfigs
             .Where(m => !m.IsDeleted)
             .OrderBy(m => m.SortOrder)
@@ -57,7 +57,7 @@ public class AdminChatAssistantService : IAdminChatAssistantService
             })
             .ToListAsync();
 
-        // 获取所有可用的Skill
+        // Get all available Skills
         var skills = await _context.SkillConfigs
             .Where(s => !s.IsDeleted)
             .OrderBy(s => s.SortOrder)
@@ -101,7 +101,7 @@ public class AdminChatAssistantService : IAdminChatAssistantService
 
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("对话助手配置已更新: IsEnabled={IsEnabled}, Models={ModelCount}, MCPs={McpCount}, Skills={SkillCount}, EnableImageUpload={EnableImageUpload}",
+        _logger.LogInformation("Chat assistant config updated: IsEnabled={IsEnabled}, Models={ModelCount}, MCPs={McpCount}, Skills={SkillCount}, EnableImageUpload={EnableImageUpload}",
             config.IsEnabled, request.EnabledModelIds.Count, request.EnabledMcpIds.Count, request.EnabledSkillIds.Count, config.EnableImageUpload);
 
         return MapToDto(config);
@@ -122,7 +122,7 @@ public class AdminChatAssistantService : IAdminChatAssistantService
             };
             _context.ChatAssistantConfigs.Add(config);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("创建了新的对话助手配置");
+            _logger.LogInformation("Created new chat assistant configuration");
         }
 
         return config;

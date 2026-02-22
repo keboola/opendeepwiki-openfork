@@ -5,16 +5,16 @@ using OpenDeepWiki.Services.Admin;
 namespace OpenDeepWiki.Endpoints.Admin;
 
 /// <summary>
-/// 管理端用户管理端点
+/// Admin user management endpoints
 /// </summary>
 public static class AdminUserEndpoints
 {
     public static RouteGroupBuilder MapAdminUserEndpoints(this RouteGroupBuilder group)
     {
         var userGroup = group.MapGroup("/users")
-            .WithTags("管理端-用户管理");
+            .WithTags("Admin - User Management");
 
-        // 获取用户列表
+        // Get user list
         userGroup.MapGet("/", async (
             [FromQuery] int page,
             [FromQuery] int pageSize,
@@ -28,22 +28,22 @@ public static class AdminUserEndpoints
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetUsers")
-        .WithSummary("获取用户列表");
+        .WithSummary("Get user list");
 
-        // 获取用户详情
+        // Get user details
         userGroup.MapGet("/{id}", async (
             string id,
             [FromServices] IAdminUserService userService) =>
         {
             var result = await userService.GetUserByIdAsync(id);
             if (result == null)
-                return Results.NotFound(new { success = false, message = "用户不存在" });
+                return Results.NotFound(new { success = false, message = "User not found" });
             return Results.Ok(new { success = true, data = result });
         })
         .WithName("AdminGetUser")
-        .WithSummary("获取用户详情");
+        .WithSummary("Get user details");
 
-        // 创建用户
+        // Create user
         userGroup.MapPost("/", async (
             [FromBody] CreateUserRequest request,
             [FromServices] IAdminUserService userService) =>
@@ -59,9 +59,9 @@ public static class AdminUserEndpoints
             }
         })
         .WithName("AdminCreateUser")
-        .WithSummary("创建用户");
+        .WithSummary("Create user");
 
-        // 更新用户
+        // Update user
         userGroup.MapPut("/{id}", async (
             string id,
             [FromBody] UpdateUserRequest request,
@@ -69,26 +69,26 @@ public static class AdminUserEndpoints
         {
             var result = await userService.UpdateUserAsync(id, request);
             if (!result)
-                return Results.NotFound(new { success = false, message = "用户不存在" });
-            return Results.Ok(new { success = true, message = "更新成功" });
+                return Results.NotFound(new { success = false, message = "User not found" });
+            return Results.Ok(new { success = true, message = "Updated successfully" });
         })
         .WithName("AdminUpdateUser")
-        .WithSummary("更新用户");
+        .WithSummary("Update user");
 
-        // 删除用户
+        // Delete user
         userGroup.MapDelete("/{id}", async (
             string id,
             [FromServices] IAdminUserService userService) =>
         {
             var result = await userService.DeleteUserAsync(id);
             if (!result)
-                return Results.NotFound(new { success = false, message = "用户不存在" });
-            return Results.Ok(new { success = true, message = "删除成功" });
+                return Results.NotFound(new { success = false, message = "User not found" });
+            return Results.Ok(new { success = true, message = "Deleted successfully" });
         })
         .WithName("AdminDeleteUser")
-        .WithSummary("删除用户");
+        .WithSummary("Delete user");
 
-        // 更新用户状态
+        // Update user status
         userGroup.MapPut("/{id}/status", async (
             string id,
             [FromBody] UpdateStatusRequest request,
@@ -96,13 +96,13 @@ public static class AdminUserEndpoints
         {
             var result = await userService.UpdateUserStatusAsync(id, request.Status);
             if (!result)
-                return Results.NotFound(new { success = false, message = "用户不存在" });
-            return Results.Ok(new { success = true, message = "状态更新成功" });
+                return Results.NotFound(new { success = false, message = "User not found" });
+            return Results.Ok(new { success = true, message = "Status updated successfully" });
         })
         .WithName("AdminUpdateUserStatus")
-        .WithSummary("更新用户状态");
+        .WithSummary("Update user status");
 
-        // 更新用户角色
+        // Update user roles
         userGroup.MapPut("/{id}/roles", async (
             string id,
             [FromBody] UpdateUserRolesRequest request,
@@ -110,13 +110,13 @@ public static class AdminUserEndpoints
         {
             var result = await userService.UpdateUserRolesAsync(id, request.RoleIds);
             if (!result)
-                return Results.NotFound(new { success = false, message = "用户不存在" });
-            return Results.Ok(new { success = true, message = "角色更新成功" });
+                return Results.NotFound(new { success = false, message = "User not found" });
+            return Results.Ok(new { success = true, message = "Roles updated successfully" });
         })
         .WithName("AdminUpdateUserRoles")
-        .WithSummary("更新用户角色");
+        .WithSummary("Update user roles");
 
-        // 重置密码
+        // Reset password
         userGroup.MapPost("/{id}/reset-password", async (
             string id,
             [FromBody] ResetPasswordRequest request,
@@ -124,11 +124,11 @@ public static class AdminUserEndpoints
         {
             var result = await userService.ResetPasswordAsync(id, request.NewPassword);
             if (!result)
-                return Results.NotFound(new { success = false, message = "用户不存在" });
-            return Results.Ok(new { success = true, message = "密码重置成功" });
+                return Results.NotFound(new { success = false, message = "User not found" });
+            return Results.Ok(new { success = true, message = "Password reset successfully" });
         })
         .WithName("AdminResetPassword")
-        .WithSummary("重置用户密码");
+        .WithSummary("Reset user password");
 
         return group;
     }

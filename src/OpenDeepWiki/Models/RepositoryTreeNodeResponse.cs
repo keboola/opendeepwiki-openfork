@@ -1,22 +1,22 @@
 namespace OpenDeepWiki.Models;
 
 /// <summary>
-/// 仓库目录树节点
+/// Repository directory tree node
 /// </summary>
 public class RepositoryTreeNodeResponse
 {
     /// <summary>
-    /// 显示名称
+    /// Display name
     /// </summary>
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// 路由 slug
+    /// Route slug
     /// </summary>
     public string Slug { get; set; } = string.Empty;
 
     /// <summary>
-    /// 子节点
+    /// Child nodes
     /// </summary>
     public List<RepositoryTreeNodeResponse> Children { get; set; } = [];
 }

@@ -58,11 +58,15 @@ export function getToken(): string | null {
 export function setToken(token: string): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(TOKEN_KEY, token);
+  // Also set as cookie for SSR access
+  document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
 }
 
 export function removeToken(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
+  // Also clear cookie
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`;
 }
 
 export async function login(request: LoginRequest): Promise<LoginResponse> {

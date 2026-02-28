@@ -135,6 +135,7 @@ try
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IOAuthService, OAuthService>();
     builder.Services.AddScoped<IUserContext, UserContext>();
+    builder.Services.AddScoped<IRepositoryAccessService, RepositoryAccessService>();
 
     // Add HttpClient
     builder.Services.AddHttpClient();

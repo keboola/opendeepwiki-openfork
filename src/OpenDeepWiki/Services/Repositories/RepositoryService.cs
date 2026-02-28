@@ -142,6 +142,12 @@ public class RepositoryService(IContext context, IGitPlatformService gitPlatform
         [FromQuery] string? sortOrder = null,
         [FromQuery] RepositoryStatus? status = null)
     {
+        // Unauthenticated users can ONLY see public repositories
+        if (!userContext.IsAuthenticated)
+        {
+            isPublic = true;
+        }
+
         var query = context.Repositories.AsNoTracking().Where(r => !r.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(ownerId))

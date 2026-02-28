@@ -1,5 +1,6 @@
 import React from "react";
 import { fetchRepoTree, fetchRepoBranches, checkGitHubRepo } from "@/lib/repository-api";
+import { getServerAuthHeaders } from "@/lib/server-auth";
 import { RepoShell } from "@/components/repo/repo-shell";
 import { RepositoryProcessingStatus } from "@/components/repo/repository-processing-status";
 import { RepositoryNotFound } from "@/components/repo/repository-not-found";
@@ -16,27 +17,27 @@ interface RepoLayoutProps {
   }>;
 }
 
-async function getTreeData(owner: string, repo: string) {
+async function getTreeData(owner: string, repo: string, headers?: HeadersInit) {
   try {
-    const tree = await fetchRepoTree(owner, repo);
+    const tree = await fetchRepoTree(owner, repo, undefined, undefined, headers);
     return tree;
   } catch {
     return null;
   }
 }
 
-async function getBranchesData(owner: string, repo: string) {
+async function getBranchesData(owner: string, repo: string, headers?: HeadersInit) {
   try {
-    const branches = await fetchRepoBranches(owner, repo);
+    const branches = await fetchRepoBranches(owner, repo, headers);
     return branches;
   } catch {
     return null;
   }
 }
 
-async function getGitHubInfo(owner: string, repo: string) {
+async function getGitHubInfo(owner: string, repo: string, headers?: HeadersInit) {
   try {
-    return await checkGitHubRepo(owner, repo);
+    return await checkGitHubRepo(owner, repo, headers);
   } catch {
     return null;
   }
@@ -44,12 +45,13 @@ async function getGitHubInfo(owner: string, repo: string) {
 
 export default async function RepoLayout({ children, params }: RepoLayoutProps) {
   const { owner, repo } = await params;
-  
-  const tree = await getTreeData(owner, repo);
-  
+  const headers = await getServerAuthHeaders();
+
+  const tree = await getTreeData(owner, repo, headers);
+
   // API request failed or repository does not exist, check GitHub
   if (!tree || !tree.exists) {
-    const gitHubInfo = await getGitHubInfo(owner, repo);
+    const gitHubInfo = await getGitHubInfo(owner, repo, headers);
     return <RepositoryNotFound owner={owner} repo={repo} gitHubInfo={gitHubInfo} />;
   }
 
@@ -76,7 +78,7 @@ export default async function RepoLayout({ children, params }: RepoLayoutProps) 
   }
 
   // Fetch branch and language data
-  const branches = await getBranchesData(owner, repo);
+  const branches = await getBranchesData(owner, repo, headers);
 
   return (
     <RootProvider>

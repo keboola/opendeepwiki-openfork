@@ -3,12 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using OpenDeepWiki.EFCore;
 using OpenDeepWiki.Entities;
 using OpenDeepWiki.Models;
+using OpenDeepWiki.Services.Auth;
 
 namespace OpenDeepWiki.Services.Wiki;
 
 [MiniApi(Route = "/api/v1/wiki")]
 [Tags("Wiki")]
-public class WikiService(IContext context)
+public class WikiService(IContext context, IRepositoryAccessService accessService)
 {
     private const string DefaultLanguageCode = "zh";
 
@@ -19,6 +20,12 @@ public class WikiService(IContext context)
     public async Task<WikiCatalogResponse> GetCatalogAsync(string org, string repo)
     {
         var repository = await GetRepositoryAsync(org, repo);
+
+        if (!await accessService.CanAccessRepositoryAsync(repository))
+        {
+            throw new KeyNotFoundException($"Repository '{org}/{repo}' does not exist");
+        }
+
         var branch = await GetDefaultBranchAsync(repository.Id);
         var language = await GetDefaultLanguageAsync(branch.Id);
 
@@ -52,6 +59,12 @@ public class WikiService(IContext context)
     public async Task<WikiDocResponse> GetDocAsync(string org, string repo, string path)
     {
         var repository = await GetRepositoryAsync(org, repo);
+
+        if (!await accessService.CanAccessRepositoryAsync(repository))
+        {
+            throw new KeyNotFoundException($"Repository '{org}/{repo}' does not exist");
+        }
+
         var branch = await GetDefaultBranchAsync(repository.Id);
         var language = await GetDefaultLanguageAsync(branch.Id);
         var normalizedPath = NormalizePath(path);

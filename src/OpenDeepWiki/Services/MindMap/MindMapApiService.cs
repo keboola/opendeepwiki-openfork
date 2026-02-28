@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenDeepWiki.EFCore;
 using OpenDeepWiki.Entities;
+using OpenDeepWiki.Services.Auth;
 
 namespace OpenDeepWiki.Services.MindMap;
 
@@ -10,7 +11,7 @@ namespace OpenDeepWiki.Services.MindMap;
 /// </summary>
 [MiniApi(Route = "/api/v1/repos")]
 [Tags("Mind Map")]
-public class MindMapApiService(IContext context)
+public class MindMapApiService(IContext context, IRepositoryAccessService accessService)
 {
     /// <summary>
     /// Get repository project architecture mind map
@@ -27,6 +28,11 @@ public class MindMapApiService(IContext context)
             .FirstOrDefaultAsync(r => r.OrgName == owner && r.RepoName == repo);
 
         if (repository is null)
+        {
+            return Results.NotFound(new { error = "Repository does not exist" });
+        }
+
+        if (!await accessService.CanAccessRepositoryAsync(repository))
         {
             return Results.NotFound(new { error = "Repository does not exist" });
         }

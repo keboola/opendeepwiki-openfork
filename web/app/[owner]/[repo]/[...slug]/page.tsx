@@ -1,4 +1,5 @@
 import { fetchRepoDoc } from "@/lib/repository-api";
+import { getServerAuthHeaders } from "@/lib/server-auth";
 import { extractHeadings } from "@/lib/markdown";
 import { MarkdownRenderer } from "@/components/repo/markdown-renderer";
 import { DocNotFound } from "@/components/repo/doc-not-found";
@@ -18,9 +19,9 @@ interface RepoDocPageProps {
   }>;
 }
 
-async function getDocData(owner: string, repo: string, slug: string, branch?: string, lang?: string) {
+async function getDocData(owner: string, repo: string, slug: string, branch?: string, lang?: string, headers?: HeadersInit) {
   try {
-    const doc = await fetchRepoDoc(owner, repo, slug, branch, lang);
+    const doc = await fetchRepoDoc(owner, repo, slug, branch, lang, headers);
     if (!doc.exists) {
       return null;
     }
@@ -37,8 +38,9 @@ export default async function RepoDocPage({ params, searchParams }: RepoDocPageP
   const branch = resolvedSearchParams?.branch;
   const lang = resolvedSearchParams?.lang;
   const slug = slugParts.join("/");
+  const headers = await getServerAuthHeaders();
 
-  const data = await getDocData(owner, repo, slug, branch, lang);
+  const data = await getDocData(owner, repo, slug, branch, lang, headers);
   
   // Document does not exist, but keep sidebar (provided by layout)
   if (!data) {

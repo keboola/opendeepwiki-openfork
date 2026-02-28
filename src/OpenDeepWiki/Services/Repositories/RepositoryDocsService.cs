@@ -7,12 +7,13 @@ using OpenDeepWiki.Models;
 using System.IO.Compression;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using OpenDeepWiki.Services.Auth;
 
 namespace OpenDeepWiki.Services.Repositories;
 
 [MiniApi(Route = "/api/v1/repos")]
 [Tags("Repository Documents")]
-public class RepositoryDocsService(IContext context, IGitPlatformService gitPlatformService, ICache cache)
+public class RepositoryDocsService(IContext context, IGitPlatformService gitPlatformService, ICache cache, IRepositoryAccessService accessService)
 {
     private const string FallbackLanguageCode = "zh"; // Fallback language when no default language is marked
     private const int ExportRateLimitMinutes = 5; // Export rate limit: only one export allowed per 5 minutes
@@ -32,6 +33,11 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             .FirstOrDefaultAsync(item => item.OrgName == owner && item.RepoName == repo);
 
         if (repository is null)
+        {
+            return new RepositoryBranchesResponse { Branches = [], Languages = [] };
+        }
+
+        if (!await accessService.CanAccessRepositoryAsync(repository))
         {
             return new RepositoryBranchesResponse { Branches = [], Languages = [] };
         }
@@ -106,6 +112,18 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
 
         // Repository does not exist
         if (repository is null)
+        {
+            return new RepositoryTreeResponse
+            {
+                Owner = owner,
+                Repo = repo,
+                Exists = false,
+                Status = RepositoryStatus.Pending,
+                Nodes = []
+            };
+        }
+
+        if (!await accessService.CanAccessRepositoryAsync(repository))
         {
             return new RepositoryTreeResponse
             {
@@ -202,6 +220,11 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
             return new RepositoryDocResponse { Slug = normalizedSlug, Exists = false };
         }
 
+        if (!await accessService.CanAccessRepositoryAsync(repository))
+        {
+            return new RepositoryDocResponse { Slug = normalizedSlug, Exists = false };
+        }
+
         var branchEntity = await GetBranchAsync(repository.Id, branch);
         if (branchEntity is null)
         {
@@ -261,6 +284,13 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
     [HttpGet("/{owner}/{repo}/check")]
     public async Task<GitRepoCheckResponse> CheckRepoAsync(string owner, string repo)
     {
+        // If repo exists in our DB as private, deny access to unauthenticated users
+        var existingRepo = await GetRepositoryAsync(owner, repo);
+        if (existingRepo != null && !await accessService.CanAccessRepositoryAsync(existingRepo))
+        {
+            return new GitRepoCheckResponse { Exists = false };
+        }
+
         var repoInfo = await gitPlatformService.CheckRepoExistsAsync(owner, repo);
         
         return new GitRepoCheckResponse
@@ -422,6 +452,11 @@ public class RepositoryDocsService(IContext context, IGitPlatformService gitPlat
     {
         var repository = await GetRepositoryAsync(owner, repo);
         if (repository is null)
+        {
+            return new NotFoundObjectResult("Repository does not exist");
+        }
+
+        if (!await accessService.CanAccessRepositoryAsync(repository))
         {
             return new NotFoundObjectResult("Repository does not exist");
         }

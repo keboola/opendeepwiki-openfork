@@ -21,12 +21,12 @@ function encodePathSegments(path: string) {
     .join("/");
 }
 
-export async function fetchRepoBranches(owner: string, repo: string) {
+export async function fetchRepoBranches(owner: string, repo: string, headers?: HeadersInit) {
   const url = buildApiUrl(
     `/api/v1/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches`,
   );
 
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "no-store", headers });
 
   if (!response.ok) {
     throw new Error("Failed to fetch repository branches");
@@ -53,17 +53,17 @@ export async function fetchGitBranches(gitUrl: string): Promise<GitBranchesRespo
   return (await response.json()) as GitBranchesResponse;
 }
 
-export async function fetchRepoTree(owner: string, repo: string, branch?: string, lang?: string) {
+export async function fetchRepoTree(owner: string, repo: string, branch?: string, lang?: string, headers?: HeadersInit) {
   const params = new URLSearchParams();
   if (branch) params.set("branch", branch);
   if (lang) params.set("lang", lang);
-  
+
   const queryString = params.toString();
   const url = buildApiUrl(
     `/api/v1/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tree${queryString ? `?${queryString}` : ""}`,
   );
 
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "no-store", headers });
 
   if (!response.ok) {
     throw new Error("Failed to fetch repository tree");
@@ -72,18 +72,18 @@ export async function fetchRepoTree(owner: string, repo: string, branch?: string
   return (await response.json()) as RepoTreeResponse;
 }
 
-export async function fetchRepoDoc(owner: string, repo: string, slug: string, branch?: string, lang?: string) {
+export async function fetchRepoDoc(owner: string, repo: string, slug: string, branch?: string, lang?: string, headers?: HeadersInit) {
   const encodedSlug = encodePathSegments(slug);
   const params = new URLSearchParams();
   if (branch) params.set("branch", branch);
   if (lang) params.set("lang", lang);
-  
+
   const queryString = params.toString();
   const url = buildApiUrl(
     `/api/v1/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/docs/${encodedSlug}${queryString ? `?${queryString}` : ""}`,
   );
 
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "no-store", headers });
 
   if (!response.ok) {
     throw new Error("Failed to fetch repository doc");
@@ -178,7 +178,8 @@ export async function fetchProcessingLogs(
   owner: string,
   repo: string,
   since?: Date,
-  limit: number = 100
+  limit: number = 100,
+  headers?: HeadersInit
 ): Promise<ProcessingLogResponse> {
   const params = new URLSearchParams();
   if (since) {
@@ -191,7 +192,7 @@ export async function fetchProcessingLogs(
     `/api/v1/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/processing-logs${queryString ? `?${queryString}` : ""}`
   );
 
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "no-store", headers });
 
   if (!response.ok) {
     throw new Error("Failed to fetch processing logs");
@@ -206,13 +207,14 @@ export async function fetchProcessingLogs(
  */
 export async function checkGitHubRepo(
   owner: string,
-  repo: string
+  repo: string,
+  headers?: HeadersInit
 ): Promise<GitRepoCheckResponse> {
   const url = buildApiUrl(
     `/api/v1/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/check`
   );
 
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "no-store", headers });
 
   if (!response.ok) {
     return {
@@ -251,7 +253,8 @@ export async function fetchMindMap(
   owner: string,
   repo: string,
   branch?: string,
-  lang?: string
+  lang?: string,
+  headers?: HeadersInit
 ): Promise<MindMapResponse> {
   const params = new URLSearchParams();
   if (branch) params.set("branch", branch);
@@ -262,7 +265,7 @@ export async function fetchMindMap(
     `/api/v1/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/mindmap${queryString ? `?${queryString}` : ""}`
   );
 
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "no-store", headers });
 
   if (!response.ok) {
     throw new Error("Failed to fetch mind map");

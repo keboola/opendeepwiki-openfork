@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenDeepWiki.EFCore;
 using OpenDeepWiki.Entities;
+using OpenDeepWiki.Services.Auth;
 
 namespace OpenDeepWiki.Services.Repositories;
 
@@ -10,7 +11,7 @@ namespace OpenDeepWiki.Services.Repositories;
 /// </summary>
 [MiniApi(Route = "/api/v1/repos")]
 [Tags("Processing Logs")]
-public class ProcessingLogApiService(IContext context, IProcessingLogService processingLogService)
+public class ProcessingLogApiService(IContext context, IProcessingLogService processingLogService, IRepositoryAccessService accessService)
 {
     /// <summary>
     /// Get repository processing logs
@@ -30,6 +31,11 @@ public class ProcessingLogApiService(IContext context, IProcessingLogService pro
             .FirstOrDefaultAsync(r => r.OrgName == owner && r.RepoName == repo);
 
         if (repository is null)
+        {
+            return Results.NotFound(new { error = "Repository does not exist" });
+        }
+
+        if (!await accessService.CanAccessRepositoryAsync(repository))
         {
             return Results.NotFound(new { error = "Repository does not exist" });
         }

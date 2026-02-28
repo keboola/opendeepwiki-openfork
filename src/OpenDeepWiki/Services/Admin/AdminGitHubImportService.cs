@@ -246,7 +246,7 @@ public class AdminGitHubImportService : IAdminGitHubImportService
                 GitUrl = repo.CloneUrl,
                 RepoName = repo.Name,
                 OrgName = repo.Owner,
-                IsPublic = true, // GitHub App imports default to Shared (visible to all org members)
+                IsPublic = !repo.Private,
                 Status = RepositoryStatus.Pending,
                 PrimaryLanguage = repo.Language,
                 StarCount = repo.StargazersCount,

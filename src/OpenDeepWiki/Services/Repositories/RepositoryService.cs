@@ -271,26 +271,6 @@ public class RepositoryService(IContext context, IGitPlatformService gitPlatform
                 }, statusCode: StatusCodes.Status403Forbidden);
             }
 
-            // Allow private repos without credentials if a GitHub App installation exists for the org
-            if (!request.IsPublic && string.IsNullOrWhiteSpace(repository.AuthPassword))
-            {
-                var hasAppInstallation = gitHubAppService.IsConfigured &&
-                    !string.IsNullOrWhiteSpace(repository.OrgName) &&
-                    await context.GitHubAppInstallations.AnyAsync(
-                        i => i.AccountLogin == repository.OrgName && !i.IsDeleted);
-
-                if (!hasAppInstallation)
-                {
-                    return Results.BadRequest(new UpdateVisibilityResponse
-                    {
-                        Id = request.RepositoryId,
-                        IsPublic = repository.IsPublic,
-                        Success = false,
-                        ErrorMessage = "Private repositories require credentials or a GitHub App installation for the organization"
-                    });
-                }
-            }
-
             // Update visibility
             repository.IsPublic = request.IsPublic;
             await context.SaveChangesAsync();

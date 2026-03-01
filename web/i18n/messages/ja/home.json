@@ -159,6 +159,14 @@
     "myReposEmpty": "まだリポジトリを追加していません",
     "shareWithOrg": "組織に共有",
     "sharedWithOrg": "組織に共有されました",
-    "unsharedFromOrg": "組織から削除されました"
+    "unsharedFromOrg": "組織から削除されました",
+    "restricted": "組織から制限",
+    "visibleToOrg": "組織に表示"
+  },
+  "icons": {
+    "public": "パブリックリポジトリ",
+    "organization": "組織と共有",
+    "private": "個人プライベートリポジトリ",
+    "restricted": "制限 - 管理者のみ"
   }
 }

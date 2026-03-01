@@ -159,6 +159,14 @@
     "myReposEmpty": "아직 추가한 저장소가 없습니다",
     "shareWithOrg": "조직에 공유",
     "sharedWithOrg": "조직에 공유됨",
-    "unsharedFromOrg": "조직에서 제거됨"
+    "unsharedFromOrg": "조직에서 제거됨",
+    "restricted": "조직에서 제한됨",
+    "visibleToOrg": "조직에 표시"
+  },
+  "icons": {
+    "public": "공개 저장소",
+    "organization": "조직과 공유됨",
+    "private": "개인 비공개 저장소",
+    "restricted": "제한됨 - 관리자만"
   }
 }

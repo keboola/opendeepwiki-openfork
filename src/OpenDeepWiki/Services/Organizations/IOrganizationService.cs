@@ -8,9 +8,11 @@ namespace OpenDeepWiki.Services.Organizations;
 public interface IOrganizationService
 {
     Task<List<UserDepartmentInfo>> GetUserDepartmentsAsync(string userId);
-    Task<List<DepartmentRepositoryInfo>> GetDepartmentRepositoriesAsync(string userId);
+    Task<List<DepartmentRepositoryInfo>> GetDepartmentRepositoriesAsync(string userId, bool includeRestricted = false);
     Task<bool> ShareRepositoryWithMyDepartmentsAsync(string userId, string repositoryId);
     Task<bool> UnshareRepositoryFromMyDepartmentsAsync(string userId, string repositoryId);
+    Task<bool> RestrictRepositoryInDepartmentsAsync(string repositoryId, string adminUserId);
+    Task<bool> UnrestrictRepositoryInDepartmentsAsync(string repositoryId, string adminUserId);
 }
 
 /// <summary>
@@ -39,4 +41,5 @@ public class DepartmentRepositoryInfo
     public string DepartmentName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public string? PrimaryLanguage { get; set; }
+    public bool IsRestricted { get; set; }
 }

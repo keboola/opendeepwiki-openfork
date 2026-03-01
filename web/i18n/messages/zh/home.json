@@ -171,6 +171,14 @@
     "myReposEmpty": "您还没有添加任何仓库",
     "shareWithOrg": "共享给组织",
     "sharedWithOrg": "已共享给组织",
-    "unsharedFromOrg": "已从组织移除"
+    "unsharedFromOrg": "已从组织移除",
+    "restricted": "已从组织中限制",
+    "visibleToOrg": "对组织可见"
+  },
+  "icons": {
+    "public": "公共仓库",
+    "organization": "已共享给组织",
+    "private": "个人私有仓库",
+    "restricted": "已限制 - 仅管理员可见"
   }
 }

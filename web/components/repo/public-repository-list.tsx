@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/use-translations";
 import { fetchRepositoryList } from "@/lib/repository-api";
-import { getMyDepartmentRepositories } from "@/lib/organization-api";
+import { getMyDepartmentRepositories, restrictRepoInOrganization, unrestrictRepoInOrganization } from "@/lib/organization-api";
 import type { DepartmentRepository } from "@/lib/organization-api";
 import { PublicRepositoryCard } from "./public-repository-card";
 import { LanguageTags } from "./language-tags";
@@ -45,6 +45,7 @@ function mapDepartmentRepoToItem(repo: DepartmentRepository): RepositoryItemResp
     createdAt: repo.createdAt || "",
     departmentName: repo.departmentName,
     primaryLanguage: repo.primaryLanguage,
+    isRestricted: repo.isRestricted || false,
   };
 }
 
@@ -140,37 +141,25 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
             getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
           ]);
 
-          // Build a map of department repo IDs to department names
-          const deptRepoMap = new Map(mineDeptRepos.map((r) => [r.repositoryId, r.departmentName]));
-
-          // Keep only private (non-public) repos, enrich with departmentName if shared
-          let myRepos = mineResponse.items
-            .filter((r) => !r.isPublic)
-            .map((r) => ({
-              ...r,
-              departmentName: deptRepoMap.get(r.id) || r.departmentName,
-            }));
+          // Subtract department repos - these belong to org, not "mine"
+          const mineDeptRepoIds = new Set(mineDeptRepos.map(r => r.repositoryId));
+          let myRepos = mineResponse.items.filter(r => !r.isPublic && !mineDeptRepoIds.has(r.id));
 
           setViewLanguages(computeLanguageStats(myRepos));
-
-          // Client-side language filter
           if (selectedLanguage) {
-            myRepos = myRepos.filter(
-              (r) => r.primaryLanguage?.toLowerCase() === selectedLanguage.toLowerCase()
-            );
+            myRepos = myRepos.filter(r => r.primaryLanguage === selectedLanguage);
           }
-
-          setTotal(myRepos.length);
-          // Client-side pagination
+          const mineTotal = myRepos.length;
           const mineStart = (page - 1) * PAGE_SIZE;
+          setTotal(mineTotal);
           setRepositories(myRepos.slice(mineStart, mineStart + PAGE_SIZE));
           break;
         }
 
         case "organization": {
           if (!user) break;
-          const deptRepos = await getMyDepartmentRepositories();
-          let mapped = deptRepos.map(mapDepartmentRepoToItem);
+          const orgDeptRepos = await getMyDepartmentRepositories(isAdmin);
+          let mapped = orgDeptRepos.map(mapDepartmentRepoToItem);
 
           setViewLanguages(computeLanguageStats(mapped));
 
@@ -231,16 +220,19 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
             }).catch(() => ({ items: [] as RepositoryItemResponse[], total: 0 })),
           ]);
 
-          // Merge and deduplicate (public first, then own, then dept)
+          // Merge: start with owned repos, then OVERWRITE with dept repos (they have departmentName), then add remaining public
           const repoMap = new Map<string, RepositoryItemResponse>();
-          for (const r of allPublicResponse.items) repoMap.set(r.id, r);
-          for (const r of allOwnResponse.items) {
-            if (!repoMap.has(r.id)) repoMap.set(r.id, r);
+          // First: owned repos (these may lack departmentName)
+          if (user) {
+            for (const r of allOwnResponse.items) repoMap.set(r.id, r);
           }
+          // Second: dept repos OVERWRITE owned versions (to get correct departmentName + icon)
           for (const dr of allDeptRepos) {
-            if (!repoMap.has(dr.repositoryId)) {
-              repoMap.set(dr.repositoryId, mapDepartmentRepoToItem(dr));
-            }
+            repoMap.set(dr.repositoryId, mapDepartmentRepoToItem(dr));
+          }
+          // Third: public repos (don't overwrite)
+          for (const r of allPublicResponse.items) {
+            if (!repoMap.has(r.id)) repoMap.set(r.id, r);
           }
 
           const allRepos = Array.from(repoMap.values());
@@ -492,7 +484,11 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
               <PublicRepositoryCard
                 key={repo.id}
                 repository={repo}
-                {...((effectiveView === "mine" || (effectiveView === "organization" && isAdmin)) ? { onShareToggle: () => loadRepositories() } : {})}
+                {...(effectiveView === "mine"
+                  ? { onShareToggle: () => loadRepositories(), toggleMode: "share" as const }
+                  : (effectiveView === "organization" && isAdmin)
+                    ? { onShareToggle: () => loadRepositories(), toggleMode: "restrict" as const }
+                    : {})}
               />
             ))}
           </div>

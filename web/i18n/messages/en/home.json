@@ -171,6 +171,14 @@
     "myReposEmpty": "You haven't added any repositories yet",
     "shareWithOrg": "Share with organization",
     "sharedWithOrg": "Shared with organization",
-    "unsharedFromOrg": "Removed from organization"
+    "unsharedFromOrg": "Removed from organization",
+    "restricted": "Restricted from organization",
+    "visibleToOrg": "Visible to organization"
+  },
+  "icons": {
+    "public": "Public repository",
+    "organization": "Shared with organization",
+    "private": "Personal private repository",
+    "restricted": "Restricted - admin only"
   }
 }

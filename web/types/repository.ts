@@ -82,6 +82,7 @@ export interface RepositoryItemResponse {
   forkCount?: number;
   primaryLanguage?: string;
   departmentName?: string;
+  isRestricted?: boolean;
 }
 
 export interface RepositoryListResponse {

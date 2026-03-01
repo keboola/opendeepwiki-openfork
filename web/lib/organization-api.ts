@@ -50,6 +50,7 @@ export interface DepartmentRepository {
   departmentName: string;
   createdAt?: string;
   primaryLanguage?: string;
+  isRestricted?: boolean;
 }
 
 /**
@@ -64,8 +65,9 @@ export async function getMyDepartments(): Promise<UserDepartment[]> {
 /**
  * Get the repository list under the current user's departments
  */
-export async function getMyDepartmentRepositories(): Promise<DepartmentRepository[]> {
-  const url = buildApiUrl("/api/organizations/my-repositories");
+export async function getMyDepartmentRepositories(includeRestricted = false): Promise<DepartmentRepository[]> {
+  const params = includeRestricted ? '?includeRestricted=true' : '';
+  const url = buildApiUrl(`/api/organizations/my-repositories${params}`);
   const result = await fetchWithAuth(url);
   return result.data;
 }
@@ -78,4 +80,24 @@ export async function shareRepoWithOrganization(repositoryId: string): Promise<{
 export async function unshareRepoFromOrganization(repositoryId: string): Promise<{ success: boolean }> {
   const url = buildApiUrl(`/api/organizations/my-repositories/${repositoryId}/share`);
   return fetchWithAuth(url, { method: "DELETE" });
+}
+
+export async function restrictRepoInOrganization(repositoryId: string): Promise<{ success: boolean }> {
+  const url = buildApiUrl(`/api/organizations/repositories/${repositoryId}/restrict`);
+  const response = await fetch(url, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) throw new Error("Failed to restrict repository");
+  return response.json();
+}
+
+export async function unrestrictRepoInOrganization(repositoryId: string): Promise<{ success: boolean }> {
+  const url = buildApiUrl(`/api/organizations/repositories/${repositoryId}/unrestrict`);
+  const response = await fetch(url, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) throw new Error("Failed to unrestrict repository");
+  return response.json();
 }

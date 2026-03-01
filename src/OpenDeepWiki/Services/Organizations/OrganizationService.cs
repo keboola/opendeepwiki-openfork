@@ -38,7 +38,7 @@ public class OrganizationService : IOrganizationService
             }).ToList();
     }
 
-    public async Task<List<DepartmentRepositoryInfo>> GetDepartmentRepositoriesAsync(string userId)
+    public async Task<List<DepartmentRepositoryInfo>> GetDepartmentRepositoriesAsync(string userId, bool includeRestricted = false)
     {
         // Get departments the user belongs to
         var userDeptIds = await _context.UserDepartments
@@ -55,9 +55,13 @@ public class OrganizationService : IOrganizationService
             .ToDictionaryAsync(d => d.Id);
 
         // Get repositories assigned to these departments
-        var assignments = await _context.RepositoryAssignments
-            .Where(ra => userDeptIds.Contains(ra.DepartmentId) && !ra.IsDeleted)
-            .ToListAsync();
+        var assignmentsQuery = _context.RepositoryAssignments
+            .Where(ra => userDeptIds.Contains(ra.DepartmentId));
+
+        if (!includeRestricted)
+            assignmentsQuery = assignmentsQuery.Where(ra => !ra.IsDeleted);
+
+        var assignments = await assignmentsQuery.ToListAsync();
 
         var repoIds = assignments.Select(a => a.RepositoryId).Distinct().ToList();
         var repos = await _context.Repositories
@@ -77,7 +81,8 @@ public class OrganizationService : IOrganizationService
                 DepartmentId = a.DepartmentId,
                 DepartmentName = depts[a.DepartmentId].Name,
                 CreatedAt = repos[a.RepositoryId].CreatedAt,
-                PrimaryLanguage = repos[a.RepositoryId].PrimaryLanguage
+                PrimaryLanguage = repos[a.RepositoryId].PrimaryLanguage,
+                IsRestricted = a.IsDeleted
             })
             .DistinctBy(r => r.RepositoryId)
             .ToList();
@@ -85,11 +90,9 @@ public class OrganizationService : IOrganizationService
 
     public async Task<bool> ShareRepositoryWithMyDepartmentsAsync(string userId, string repositoryId)
     {
-        // 1. Verify user owns the repository
         var repo = await _context.Repositories.FirstOrDefaultAsync(r => r.Id == repositoryId && !r.IsDeleted);
         if (repo == null || repo.OwnerUserId != userId) return false;
 
-        // 2. Get user's departments
         var userDeptIds = await _context.UserDepartments
             .Where(ud => ud.UserId == userId && !ud.IsDeleted)
             .Select(ud => ud.DepartmentId)
@@ -97,16 +100,24 @@ public class OrganizationService : IOrganizationService
 
         if (userDeptIds.Count == 0) return false;
 
-        // 3. Get existing assignments to avoid duplicates
+        // Get ALL existing assignments (including soft-deleted)
         var existingAssignments = await _context.RepositoryAssignments
-            .Where(ra => ra.RepositoryId == repositoryId && userDeptIds.Contains(ra.DepartmentId) && !ra.IsDeleted)
-            .Select(ra => ra.DepartmentId)
+            .Where(ra => ra.RepositoryId == repositoryId && userDeptIds.Contains(ra.DepartmentId))
             .ToListAsync();
 
-        // 4. Create assignments for departments that don't already have one
         foreach (var deptId in userDeptIds)
         {
-            if (!existingAssignments.Contains(deptId))
+            var existing = existingAssignments.FirstOrDefault(a => a.DepartmentId == deptId);
+            if (existing != null)
+            {
+                // Un-soft-delete if it was restricted
+                if (existing.IsDeleted)
+                {
+                    existing.IsDeleted = false;
+                    existing.DeletedAt = null;
+                }
+            }
+            else
             {
                 _context.RepositoryAssignments.Add(new RepositoryAssignment
                 {
@@ -143,6 +154,60 @@ public class OrganizationService : IOrganizationService
         {
             assignment.IsDeleted = true;
             assignment.DeletedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RestrictRepositoryInDepartmentsAsync(string repositoryId, string adminUserId)
+    {
+        // Get admin's departments
+        var adminDeptIds = await _context.UserDepartments
+            .Where(ud => ud.UserId == adminUserId && !ud.IsDeleted)
+            .Select(ud => ud.DepartmentId)
+            .ToListAsync();
+
+        if (adminDeptIds.Count == 0) return false;
+
+        // Soft-delete active assignments for these departments
+        var assignments = await _context.RepositoryAssignments
+            .Where(ra => ra.RepositoryId == repositoryId && adminDeptIds.Contains(ra.DepartmentId) && !ra.IsDeleted)
+            .ToListAsync();
+
+        if (assignments.Count == 0) return false;
+
+        foreach (var assignment in assignments)
+        {
+            assignment.IsDeleted = true;
+            assignment.DeletedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> UnrestrictRepositoryInDepartmentsAsync(string repositoryId, string adminUserId)
+    {
+        // Get admin's departments
+        var adminDeptIds = await _context.UserDepartments
+            .Where(ud => ud.UserId == adminUserId && !ud.IsDeleted)
+            .Select(ud => ud.DepartmentId)
+            .ToListAsync();
+
+        if (adminDeptIds.Count == 0) return false;
+
+        // Un-soft-delete restricted assignments for these departments
+        var assignments = await _context.RepositoryAssignments
+            .Where(ra => ra.RepositoryId == repositoryId && adminDeptIds.Contains(ra.DepartmentId) && ra.IsDeleted)
+            .ToListAsync();
+
+        if (assignments.Count == 0) return false;
+
+        foreach (var assignment in assignments)
+        {
+            assignment.IsDeleted = false;
+            assignment.DeletedAt = null;
         }
 
         await _context.SaveChangesAsync();

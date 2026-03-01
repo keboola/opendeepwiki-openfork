@@ -20,11 +20,12 @@ import {
   Star,
   GitFork,
   Lock,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { addBookmark, removeBookmark, getBookmarkStatus } from "@/lib/bookmark-api";
 import { addSubscription, removeSubscription, getSubscriptionStatus } from "@/lib/subscription-api";
-import { shareRepoWithOrganization, unshareRepoFromOrganization } from "@/lib/organization-api";
+import { shareRepoWithOrganization, unshareRepoFromOrganization, restrictRepoInOrganization, unrestrictRepoInOrganization } from "@/lib/organization-api";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -79,9 +80,10 @@ function StatusBadge({ status }: { status: RepositoryStatus }) {
 interface PublicRepositoryCardProps {
   repository: RepositoryItemResponse;
   onShareToggle?: (repositoryId: string, shared: boolean) => void;
+  toggleMode?: "share" | "restrict";
 }
 
-export function PublicRepositoryCard({ repository, onShareToggle }: PublicRepositoryCardProps) {
+export function PublicRepositoryCard({ repository, onShareToggle, toggleMode = "share" }: PublicRepositoryCardProps) {
   const t = useTranslations();
   const { user } = useAuth();
   const createdDate = repository.createdAt
@@ -164,12 +166,26 @@ export function PublicRepositoryCard({ repository, onShareToggle }: PublicReposi
     if (shareLoading) return;
     setShareLoading(true);
     try {
-      if (checked) {
-        await shareRepoWithOrganization(repository.id);
-        toast.success(t("home.filter.sharedWithOrg"));
+      if (toggleMode === "restrict") {
+        // Admin restrict/unrestrict in org view
+        if (checked) {
+          // Toggle ON = visible = unrestrict
+          await unrestrictRepoInOrganization(repository.id);
+          toast.success(t("home.filter.visibleToOrg"));
+        } else {
+          // Toggle OFF = restricted
+          await restrictRepoInOrganization(repository.id);
+          toast.success(t("home.filter.restricted"));
+        }
       } else {
-        await unshareRepoFromOrganization(repository.id);
-        toast.success(t("home.filter.unsharedFromOrg"));
+        // User share/unshare in mine view
+        if (checked) {
+          await shareRepoWithOrganization(repository.id);
+          toast.success(t("home.filter.sharedWithOrg"));
+        } else {
+          await unshareRepoFromOrganization(repository.id);
+          toast.success(t("home.filter.unsharedFromOrg"));
+        }
       }
       onShareToggle?.(repository.id, checked);
     } catch {
@@ -177,21 +193,26 @@ export function PublicRepositoryCard({ repository, onShareToggle }: PublicReposi
     } finally {
       setShareLoading(false);
     }
-  }, [repository.id, shareLoading, onShareToggle, t]);
+  }, [repository.id, shareLoading, onShareToggle, toggleMode, t]);
 
   return (
     <Link href={`/${repository.orgName}/${repository.repoName}`}>
-      <Card className="h-full transition-all hover:shadow-md hover:border-primary/50 cursor-pointer">
+      <Card className={cn(
+        "h-full transition-all hover:shadow-md hover:border-primary/50 cursor-pointer",
+        repository.isRestricted && "opacity-60"
+      )}>
         <CardContent className="p-4">
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                {repository.isPublic ? (
-                  <Globe className="h-4 w-4 text-green-500 shrink-0" />
+                {repository.isRestricted ? (
+                  <span title={t("home.icons.restricted")}><EyeOff className="h-4 w-4 text-gray-400 shrink-0" /></span>
+                ) : repository.isPublic ? (
+                  <span title={t("home.icons.public")}><Globe className="h-4 w-4 text-green-500 shrink-0" /></span>
                 ) : repository.departmentName ? (
-                  <Building2 className="h-4 w-4 text-blue-500 shrink-0" />
+                  <span title={t("home.icons.organization")}><Building2 className="h-4 w-4 text-blue-500 shrink-0" /></span>
                 ) : (
-                  <Lock className="h-4 w-4 text-amber-500 shrink-0" />
+                  <span title={t("home.icons.private")}><Lock className="h-4 w-4 text-amber-500 shrink-0" /></span>
                 )}
                 <h3 className="font-medium truncate">
                   {repository.orgName}/{repository.repoName}
@@ -269,14 +290,14 @@ export function PublicRepositoryCard({ repository, onShareToggle }: PublicReposi
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               )}
               <Switch
-                checked={!!repository.departmentName}
+                checked={toggleMode === "restrict" ? !repository.isRestricted : !!repository.departmentName}
                 onCheckedChange={handleShareToggle}
                 disabled={shareLoading}
               />
               <span className="text-sm text-muted-foreground">
-                {repository.departmentName
-                  ? t("home.filter.sharedWithOrg")
-                  : t("home.filter.shareWithOrg")}
+                {toggleMode === "restrict"
+                  ? (repository.isRestricted ? t("home.filter.restricted") : t("home.filter.visibleToOrg"))
+                  : (repository.departmentName ? t("home.filter.sharedWithOrg") : t("home.filter.shareWithOrg"))}
               </span>
             </div>
           )}

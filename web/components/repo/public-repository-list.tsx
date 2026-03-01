@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/use-translations";
@@ -108,7 +108,11 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // Race condition protection: only the latest request's results are applied
+  const loadIdRef = useRef(0);
+
   const loadRepositories = useCallback(async () => {
+    const loadId = ++loadIdRef.current;
     try {
       setIsLoading(true);
       setError(null);
@@ -124,6 +128,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
             page,
             pageSize: PAGE_SIZE,
           });
+          if (loadId !== loadIdRef.current) return;
           setRepositories(response.items);
           setTotal(response.total);
           break;
@@ -140,6 +145,8 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
             }),
             getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
           ]);
+
+          if (loadId !== loadIdRef.current) return;
 
           // Subtract department repos - these belong to org, not "mine"
           const mineDeptRepoIds = new Set(mineDeptRepos.map(r => r.repositoryId));
@@ -159,6 +166,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
         case "organization": {
           if (!user) break;
           const orgDeptRepos = await getMyDepartmentRepositories(isAdmin);
+          if (loadId !== loadIdRef.current) return;
           let mapped = orgDeptRepos.map(mapDepartmentRepoToItem);
 
           setViewLanguages(computeLanguageStats(mapped));
@@ -198,6 +206,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
               page,
               pageSize: PAGE_SIZE,
             });
+            if (loadId !== loadIdRef.current) return;
             setRepositories(response.items);
             setTotal(response.total);
             break;
@@ -219,6 +228,8 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
               pageSize: MAX_CLIENT_PAGE_SIZE,
             }).catch(() => ({ items: [] as RepositoryItemResponse[], total: 0 })),
           ]);
+
+          if (loadId !== loadIdRef.current) return;
 
           // Merge: start with owned repos, then OVERWRITE with dept repos (they have departmentName), then add remaining public
           const repoMap = new Map<string, RepositoryItemResponse>();
@@ -253,10 +264,13 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
         }
       }
     } catch (err) {
+      if (loadId !== loadIdRef.current) return;
       setError("Failed to load repositories");
       console.error("Failed to fetch repositories:", err);
     } finally {
-      setIsLoading(false);
+      if (loadId === loadIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [effectiveView, keyword, selectedLanguage, page, user]);
 
@@ -264,10 +278,18 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
     loadRepositories();
   }, [loadRepositories]);
 
-  // Reset page number when filter criteria change
+  // Clear stale state when view changes (prevents flash of old data)
+  useEffect(() => {
+    setRepositories([]);
+    setViewLanguages(null);
+    setTotal(0);
+    setPage(1);
+  }, [effectiveView]);
+
+  // Reset page when keyword/language filter changes (within same view)
   useEffect(() => {
     setPage(1);
-  }, [keyword, selectedLanguage, effectiveView]);
+  }, [keyword, selectedLanguage]);
 
   // Auto-refresh for pending/processing repositories (ported from repository-list.tsx)
   useEffect(() => {

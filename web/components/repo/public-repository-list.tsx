@@ -111,16 +111,26 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
 
         case "mine": {
           if (!user) break;
-          const response = await fetchRepositoryList({
-            ownerId: user.id,
-            sortBy: "status",
-            keyword: keyword || undefined,
-            language: selectedLanguage || undefined,
-            page,
-            pageSize: PAGE_SIZE,
-          });
-          setRepositories(response.items);
-          setTotal(response.total);
+          // Fetch user's repos and department repos in parallel
+          const [mineResponse, mineDeptRepos] = await Promise.all([
+            fetchRepositoryList({
+              ownerId: user.id,
+              sortBy: "status",
+              keyword: keyword || undefined,
+              language: selectedLanguage || undefined,
+              pageSize: 200,
+            }),
+            getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
+          ]);
+
+          // Exclude repos assigned to departments (those are org-imported)
+          const mineDeptRepoIds = new Set(mineDeptRepos.map((r) => r.repositoryId));
+          const myRepos = mineResponse.items.filter((r) => !mineDeptRepoIds.has(r.id));
+
+          setTotal(myRepos.length);
+          // Client-side pagination
+          const mineStart = (page - 1) * PAGE_SIZE;
+          setRepositories(myRepos.slice(mineStart, mineStart + PAGE_SIZE));
           break;
         }
 
@@ -153,56 +163,57 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
         }
 
         case "all": {
-          // Fetch public repos (server-paginated)
-          const publicResponse = await fetchRepositoryList({
-            isPublic: true,
-            sortBy: "status",
-            keyword: keyword || undefined,
-            language: selectedLanguage || undefined,
-            page,
-            pageSize: PAGE_SIZE,
-          });
+          // For unauthenticated users, same as public
+          if (!user) {
+            const response = await fetchRepositoryList({
+              isPublic: true,
+              sortBy: "status",
+              keyword: keyword || undefined,
+              language: selectedLanguage || undefined,
+              page,
+              pageSize: PAGE_SIZE,
+            });
+            setRepositories(response.items);
+            setTotal(response.total);
+            break;
+          }
 
-          let allRepos = [...publicResponse.items];
-          let allTotal = publicResponse.total;
+          // Fetch all sources in parallel
+          const [allPublicResponse, allDeptRepos, allOwnResponse] = await Promise.all([
+            fetchRepositoryList({
+              isPublic: true,
+              sortBy: "status",
+              keyword: keyword || undefined,
+              language: selectedLanguage || undefined,
+              pageSize: 200,
+            }),
+            getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
+            fetchRepositoryList({
+              ownerId: user.id,
+              sortBy: "status",
+              keyword: keyword || undefined,
+              language: selectedLanguage || undefined,
+              pageSize: 200,
+            }).catch(() => ({ items: [] as RepositoryItemResponse[], total: 0 })),
+          ]);
 
-          if (user) {
-            // Fetch org repos and own repos, merge and deduplicate
-            const [deptRepos, ownResponse] = await Promise.all([
-              getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
-              fetchRepositoryList({
-                ownerId: user.id,
-                sortBy: "status",
-                keyword: keyword || undefined,
-                language: selectedLanguage || undefined,
-                pageSize: 100, // Own repos are typically small
-              }).catch(() => ({ items: [], total: 0 })),
-            ]);
-
-            const deptMapped = deptRepos.map(mapDepartmentRepoToItem);
-            const existingIds = new Set(allRepos.map((r) => r.id));
-
-            // Add own repos not already in public list
-            for (const repo of ownResponse.items) {
-              if (!existingIds.has(repo.id)) {
-                allRepos.push(repo);
-                existingIds.add(repo.id);
-                allTotal++;
-              }
-            }
-
-            // Add department repos not already present
-            for (const repo of deptMapped) {
-              if (!existingIds.has(repo.id)) {
-                allRepos.push(repo);
-                existingIds.add(repo.id);
-                allTotal++;
-              }
+          // Merge and deduplicate (public first, then own, then dept)
+          const repoMap = new Map<string, RepositoryItemResponse>();
+          for (const r of allPublicResponse.items) repoMap.set(r.id, r);
+          for (const r of allOwnResponse.items) {
+            if (!repoMap.has(r.id)) repoMap.set(r.id, r);
+          }
+          for (const dr of allDeptRepos) {
+            if (!repoMap.has(dr.repositoryId)) {
+              repoMap.set(dr.repositoryId, mapDepartmentRepoToItem(dr));
             }
           }
 
-          setRepositories(allRepos);
-          setTotal(allTotal);
+          const allRepos = Array.from(repoMap.values());
+          setTotal(allRepos.length);
+          // Client-side pagination
+          const allStart = (page - 1) * PAGE_SIZE;
+          setRepositories(allRepos.slice(allStart, allStart + PAGE_SIZE));
           break;
         }
       }

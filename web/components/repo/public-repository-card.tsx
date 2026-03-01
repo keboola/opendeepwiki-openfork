@@ -80,7 +80,9 @@ interface PublicRepositoryCardProps {
 export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) {
   const t = useTranslations();
   const { user } = useAuth();
-  const createdDate = new Date(repository.createdAt).toLocaleDateString();
+  const createdDate = repository.createdAt
+    ? new Date(repository.createdAt).toLocaleDateString()
+    : null;
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -172,10 +174,12 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span>{createdDate}</span>
-                </div>
+                {createdDate && createdDate !== "Invalid Date" && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>{createdDate}</span>
+                  </div>
+                )}
                 {typeof repository.starCount === "number" && (
                   <div className="flex items-center gap-1">
                     <Star className="h-3.5 w-3.5" />

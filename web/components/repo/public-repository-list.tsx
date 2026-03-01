@@ -220,7 +220,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
               keyword: keyword || undefined,
               pageSize: MAX_CLIENT_PAGE_SIZE,
             }),
-            getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
+            getMyDepartmentRepositories(isAdmin).catch(() => [] as DepartmentRepository[]),
             fetchRepositoryList({
               ownerId: user.id,
               sortBy: "status",

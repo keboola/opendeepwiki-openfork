@@ -147,5 +147,15 @@
       "ja": "日本語",
       "ko": "韓国語"
     }
+  },
+  "filter": {
+    "all": "すべて",
+    "public": "公開",
+    "organization": "組織",
+    "myRepos": "マイリポジトリ",
+    "allTitle": "すべてのリポジトリ",
+    "organizationTitle": "組織リポジトリ",
+    "organizationEmpty": "部門で共有されているリポジトリはありません",
+    "myReposEmpty": "まだリポジトリを追加していません"
   }
 }

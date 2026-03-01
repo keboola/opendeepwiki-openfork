@@ -159,5 +159,15 @@
       "ja": "Japanese",
       "ko": "Korean"
     }
+  },
+  "filter": {
+    "all": "All",
+    "public": "Public",
+    "organization": "Organization",
+    "myRepos": "My Repos",
+    "allTitle": "All Repositories",
+    "organizationTitle": "Organization Repositories",
+    "organizationEmpty": "No repositories shared with your departments",
+    "myReposEmpty": "You haven't added any repositories yet"
   }
 }

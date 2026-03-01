@@ -1,22 +1,48 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/use-translations";
 import { fetchRepositoryList } from "@/lib/repository-api";
+import { getMyDepartmentRepositories } from "@/lib/organization-api";
+import type { DepartmentRepository } from "@/lib/organization-api";
 import { PublicRepositoryCard } from "./public-repository-card";
 import { LanguageTags } from "./language-tags";
 import type { RepositoryItemResponse } from "@/types/repository";
-import { GitBranch, XCircle, RefreshCw, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { GitBranch, XCircle, RefreshCw, Search, ChevronLeft, ChevronRight, Globe, Building2, User, Layers, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import Link from "next/link";
+import { RepositorySubmitForm } from "@/components/repo/repository-submit-form";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+
+export type RepositoryView = "all" | "public" | "organization" | "mine";
 
 interface PublicRepositoryListProps {
   keyword: string;
+  view?: RepositoryView;
+  onViewChange?: (view: RepositoryView) => void;
   className?: string;
 }
 
 const PAGE_SIZE = 12;
+
+function mapDepartmentRepoToItem(repo: DepartmentRepository): RepositoryItemResponse {
+  return {
+    id: repo.repositoryId,
+    orgName: repo.orgName,
+    repoName: repo.repoName,
+    gitUrl: repo.gitUrl || "",
+    status: repo.status,
+    statusName: (repo.statusName as RepositoryItemResponse["statusName"]) || "Pending",
+    isPublic: false,
+    createdAt: "",
+  };
+}
 
 function RepositoryGridSkeleton() {
   return (
@@ -36,14 +62,30 @@ function RepositoryGridSkeleton() {
   );
 }
 
-export function PublicRepositoryList({ keyword, className }: PublicRepositoryListProps) {
+const GithubIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+  </svg>
+);
+
+export function PublicRepositoryList({ keyword, view = "public", onViewChange, className }: PublicRepositoryListProps) {
   const t = useTranslations();
+  const { user } = useAuth();
   const [repositories, setRepositories] = useState<RepositoryItemResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // Effective view: fall back to "public" if auth-required view is used without auth
+  const effectiveView = useMemo(() => {
+    if ((view === "organization" || view === "mine") && !user) {
+      return "public";
+    }
+    return view;
+  }, [view, user]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -51,23 +93,126 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetchRepositoryList({
-        isPublic: true,
-        sortBy: "status",
-        keyword: keyword || undefined,
-        language: selectedLanguage || undefined,
-        page,
-        pageSize: PAGE_SIZE,
-      });
-      setRepositories(response.items);
-      setTotal(response.total);
+
+      switch (effectiveView) {
+        case "public": {
+          const response = await fetchRepositoryList({
+            isPublic: true,
+            sortBy: "status",
+            keyword: keyword || undefined,
+            language: selectedLanguage || undefined,
+            page,
+            pageSize: PAGE_SIZE,
+          });
+          setRepositories(response.items);
+          setTotal(response.total);
+          break;
+        }
+
+        case "mine": {
+          if (!user) break;
+          const response = await fetchRepositoryList({
+            ownerId: user.id,
+            sortBy: "status",
+            keyword: keyword || undefined,
+            language: selectedLanguage || undefined,
+            page,
+            pageSize: PAGE_SIZE,
+          });
+          setRepositories(response.items);
+          setTotal(response.total);
+          break;
+        }
+
+        case "organization": {
+          if (!user) break;
+          const deptRepos = await getMyDepartmentRepositories();
+          let mapped = deptRepos.map(mapDepartmentRepoToItem);
+
+          // Client-side keyword filter
+          if (keyword) {
+            const kw = keyword.toLowerCase();
+            mapped = mapped.filter(
+              (r) =>
+                r.orgName.toLowerCase().includes(kw) ||
+                r.repoName.toLowerCase().includes(kw)
+            );
+          }
+          // Client-side language filter
+          if (selectedLanguage) {
+            mapped = mapped.filter(
+              (r) => r.primaryLanguage?.toLowerCase() === selectedLanguage.toLowerCase()
+            );
+          }
+
+          setTotal(mapped.length);
+          // Client-side pagination
+          const start = (page - 1) * PAGE_SIZE;
+          setRepositories(mapped.slice(start, start + PAGE_SIZE));
+          break;
+        }
+
+        case "all": {
+          // Fetch public repos (server-paginated)
+          const publicResponse = await fetchRepositoryList({
+            isPublic: true,
+            sortBy: "status",
+            keyword: keyword || undefined,
+            language: selectedLanguage || undefined,
+            page,
+            pageSize: PAGE_SIZE,
+          });
+
+          let allRepos = [...publicResponse.items];
+          let allTotal = publicResponse.total;
+
+          if (user) {
+            // Fetch org repos and own repos, merge and deduplicate
+            const [deptRepos, ownResponse] = await Promise.all([
+              getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
+              fetchRepositoryList({
+                ownerId: user.id,
+                sortBy: "status",
+                keyword: keyword || undefined,
+                language: selectedLanguage || undefined,
+                pageSize: 100, // Own repos are typically small
+              }).catch(() => ({ items: [], total: 0 })),
+            ]);
+
+            const deptMapped = deptRepos.map(mapDepartmentRepoToItem);
+            const existingIds = new Set(allRepos.map((r) => r.id));
+
+            // Add own repos not already in public list
+            for (const repo of ownResponse.items) {
+              if (!existingIds.has(repo.id)) {
+                allRepos.push(repo);
+                existingIds.add(repo.id);
+                allTotal++;
+              }
+            }
+
+            // Add department repos not already present
+            for (const repo of deptMapped) {
+              if (!existingIds.has(repo.id)) {
+                allRepos.push(repo);
+                existingIds.add(repo.id);
+                allTotal++;
+              }
+            }
+          }
+
+          setRepositories(allRepos);
+          setTotal(allTotal);
+          break;
+        }
+      }
     } catch (err) {
       setError("Failed to load repositories");
-      console.error("Failed to fetch public repositories:", err);
+      console.error("Failed to fetch repositories:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [keyword, selectedLanguage, page]);
+  }, [effectiveView, keyword, selectedLanguage, page, user]);
 
   useEffect(() => {
     loadRepositories();
@@ -76,7 +221,21 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
   // Reset page number when filter criteria change
   useEffect(() => {
     setPage(1);
-  }, [keyword, selectedLanguage]);
+  }, [keyword, selectedLanguage, effectiveView]);
+
+  // Auto-refresh for pending/processing repositories (ported from repository-list.tsx)
+  useEffect(() => {
+    if (effectiveView === "public") return; // Public repos don't need auto-refresh
+
+    const hasPendingOrProcessing = repositories.some(
+      (r) => r.statusName === "Pending" || r.statusName === "Processing"
+    );
+
+    if (hasPendingOrProcessing) {
+      const interval = setInterval(loadRepositories, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [repositories, loadRepositories, effectiveView]);
 
   const handleLanguageChange = (language: string | null) => {
     setSelectedLanguage(language);
@@ -90,12 +249,70 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
     if (page < totalPages) setPage(page + 1);
   };
 
+  const handleViewChange = (newView: RepositoryView) => {
+    onViewChange?.(newView);
+  };
+
+  const handleSubmitSuccess = useCallback(() => {
+    setIsFormOpen(false);
+    loadRepositories();
+  }, [loadRepositories]);
+
+  // Dynamic section title
+  const sectionTitle = useMemo(() => {
+    switch (effectiveView) {
+      case "all":
+        return t("home.filter.allTitle");
+      case "public":
+        return t("home.publicRepository.title");
+      case "organization":
+        return t("home.filter.organizationTitle");
+      case "mine":
+        return t("home.repository.listTitle");
+    }
+  }, [effectiveView, t]);
+
+  // Dynamic empty state message
+  const emptyMessage = useMemo(() => {
+    switch (effectiveView) {
+      case "organization":
+        return t("home.filter.organizationEmpty");
+      case "mine":
+        return t("home.filter.myReposEmpty");
+      default:
+        return t("home.publicRepository.empty");
+    }
+  }, [effectiveView, t]);
+
+  // Filter tabs
+  const filterTabs: { key: RepositoryView; label: string; icon: React.ElementType; requireAuth: boolean }[] = [
+    { key: "all", label: t("home.filter.all"), icon: Layers, requireAuth: false },
+    { key: "public", label: t("home.filter.public"), icon: Globe, requireAuth: false },
+    { key: "organization", label: t("home.filter.organization"), icon: Building2, requireAuth: true },
+    { key: "mine", label: t("home.filter.myRepos"), icon: User, requireAuth: true },
+  ];
+
+  const visibleTabs = filterTabs.filter((tab) => !tab.requireAuth || user);
+
   if (isLoading && repositories.length === 0) {
     return (
       <div className={cn("w-full", className)}>
-        <h2 className="text-xl font-semibold mb-4">
-          {t("home.publicRepository.title")}
-        </h2>
+        {/* Filter tabs */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {visibleTabs.map((tab) => (
+            <Button
+              key={tab.key}
+              variant={effectiveView === tab.key ? "default" : "outline"}
+              size="sm"
+              className="gap-1.5"
+              onClick={() => handleViewChange(tab.key)}
+            >
+              <tab.icon className="h-3.5 w-3.5" />
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+        <h2 className="text-xl font-semibold mb-4">{sectionTitle}</h2>
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -111,9 +328,22 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
   if (error) {
     return (
       <div className={cn("w-full", className)}>
-        <h2 className="text-xl font-semibold mb-4">
-          {t("home.publicRepository.title")}
-        </h2>
+        {/* Filter tabs */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {visibleTabs.map((tab) => (
+            <Button
+              key={tab.key}
+              variant={effectiveView === tab.key ? "default" : "outline"}
+              size="sm"
+              className="gap-1.5"
+              onClick={() => handleViewChange(tab.key)}
+            >
+              <tab.icon className="h-3.5 w-3.5" />
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+        <h2 className="text-xl font-semibold mb-4">{sectionTitle}</h2>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <XCircle className="h-12 w-12 text-destructive mb-4" />
           <p className="text-muted-foreground mb-4">{t("home.publicRepository.loadError")}</p>
@@ -128,10 +358,49 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
 
   return (
     <div className={cn("w-full", className)}>
+      {/* Filter tabs */}
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        {visibleTabs.map((tab) => (
+          <Button
+            key={tab.key}
+            variant={effectiveView === tab.key ? "default" : "outline"}
+            size="sm"
+            className="gap-1.5"
+            onClick={() => handleViewChange(tab.key)}
+          >
+            <tab.icon className="h-3.5 w-3.5" />
+            {tab.label}
+          </Button>
+        ))}
+
+        {/* Action buttons for mine/organization views */}
+        {user && (effectiveView === "mine" || effectiveView === "organization") && (
+          <div className="ml-auto flex items-center gap-2">
+            <Link href="/private/github-import">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <GithubIcon className="h-3.5 w-3.5" />
+                {t("home.importFromGitHub")}
+              </Button>
+            </Link>
+            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+              <Button
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setIsFormOpen(true)}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {t("home.addPrivateRepo")}
+              </Button>
+              <DialogContent className="sm:max-w-md">
+                <RepositorySubmitForm onSuccess={handleSubmitSuccess} />
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">
-          {t("home.publicRepository.title")}
-        </h2>
+        <h2 className="text-xl font-semibold">{sectionTitle}</h2>
         <Button
           variant="ghost"
           size="icon"
@@ -152,9 +421,7 @@ export function PublicRepositoryList({ keyword, className }: PublicRepositoryLis
       {repositories.length === 0 && !keyword && !selectedLanguage ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <GitBranch className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">
-            {t("home.publicRepository.empty")}
-          </p>
+          <p className="text-muted-foreground">{emptyMessage}</p>
         </div>
       ) : repositories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">

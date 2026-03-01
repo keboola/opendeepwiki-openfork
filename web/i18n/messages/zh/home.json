@@ -159,5 +159,15 @@
       "ja": "日语",
       "ko": "韩语"
     }
+  },
+  "filter": {
+    "all": "全部",
+    "public": "公开",
+    "organization": "组织",
+    "myRepos": "我的仓库",
+    "allTitle": "所有仓库",
+    "organizationTitle": "组织仓库",
+    "organizationEmpty": "您的部门没有共享的仓库",
+    "myReposEmpty": "您还没有添加任何仓库"
   }
 }

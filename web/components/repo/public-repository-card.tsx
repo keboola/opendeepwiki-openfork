@@ -18,6 +18,7 @@ import {
   Bell,
   Star,
   GitFork,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { addBookmark, removeBookmark, getBookmarkStatus } from "@/lib/bookmark-api";
@@ -163,6 +164,9 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
                 <h3 className="font-medium truncate">
                   {repository.orgName}/{repository.repoName}
                 </h3>
+                  {!repository.isPublic && (
+                    <Lock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                  )}
               </div>
               <StatusBadge status={repository.statusName} />
             </div>

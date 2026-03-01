@@ -76,7 +76,8 @@ public class OrganizationService : IOrganizationService
                 StatusName = GetStatusName((int)repos[a.RepositoryId].Status),
                 DepartmentId = a.DepartmentId,
                 DepartmentName = depts[a.DepartmentId].Name,
-                CreatedAt = repos[a.RepositoryId].CreatedAt
+                CreatedAt = repos[a.RepositoryId].CreatedAt,
+                PrimaryLanguage = repos[a.RepositoryId].PrimaryLanguage
             })
             .DistinctBy(r => r.RepositoryId)
             .ToList();

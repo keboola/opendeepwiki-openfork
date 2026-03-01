@@ -49,6 +49,7 @@ export interface DepartmentRepository {
   departmentId: string;
   departmentName: string;
   createdAt?: string;
+  primaryLanguage?: string;
 }
 
 /**

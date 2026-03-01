@@ -269,12 +269,14 @@ export function PublicRepositoryCard({ repository, onShareToggle }: PublicReposi
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               )}
               <Switch
-                checked={false}
+                checked={!!repository.departmentName}
                 onCheckedChange={handleShareToggle}
                 disabled={shareLoading}
               />
               <span className="text-sm text-muted-foreground">
-                {t("home.filter.shareWithOrg")}
+                {repository.departmentName
+                  ? t("home.filter.sharedWithOrg")
+                  : t("home.filter.shareWithOrg")}
               </span>
             </div>
           )}

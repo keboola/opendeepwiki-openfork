@@ -38,4 +38,5 @@ public class DepartmentRepositoryInfo
     public string DepartmentId { get; set; } = string.Empty;
     public string DepartmentName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public string? PrimaryLanguage { get; set; }
 }

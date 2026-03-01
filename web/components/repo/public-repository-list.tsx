@@ -44,6 +44,7 @@ function mapDepartmentRepoToItem(repo: DepartmentRepository): RepositoryItemResp
     isPublic: false,
     createdAt: repo.createdAt || "",
     departmentName: repo.departmentName,
+    primaryLanguage: repo.primaryLanguage,
   };
 }
 
@@ -86,6 +87,7 @@ const GithubIcon = ({ className }: { className?: string }) => (
 export function PublicRepositoryList({ keyword, view = "public", onViewChange, className }: PublicRepositoryListProps) {
   const t = useTranslations();
   const { user } = useAuth();
+  const isAdmin = user?.roles?.includes("Admin") ?? false;
   const [repositories, setRepositories] = useState<RepositoryItemResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,7 +130,6 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
 
         case "mine": {
           if (!user) break;
-          // Fetch user's repos and department repos in parallel
           const [mineResponse, mineDeptRepos] = await Promise.all([
             fetchRepositoryList({
               ownerId: user.id,
@@ -139,9 +140,16 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
             getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
           ]);
 
-          // Exclude repos assigned to departments (those are org-imported)
-          const mineDeptRepoIds = new Set(mineDeptRepos.map((r) => r.repositoryId));
-          let myRepos = mineResponse.items.filter((r) => !mineDeptRepoIds.has(r.id));
+          // Build a map of department repo IDs to department names
+          const deptRepoMap = new Map(mineDeptRepos.map((r) => [r.repositoryId, r.departmentName]));
+
+          // Keep only private (non-public) repos, enrich with departmentName if shared
+          let myRepos = mineResponse.items
+            .filter((r) => !r.isPublic)
+            .map((r) => ({
+              ...r,
+              departmentName: deptRepoMap.get(r.id) || r.departmentName,
+            }));
 
           setViewLanguages(computeLanguageStats(myRepos));
 
@@ -484,7 +492,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
               <PublicRepositoryCard
                 key={repo.id}
                 repository={repo}
-                {...(effectiveView === "mine" ? { onShareToggle: () => loadRepositories() } : {})}
+                {...((effectiveView === "mine" || (effectiveView === "organization" && isAdmin)) ? { onShareToggle: () => loadRepositories() } : {})}
               />
             ))}
           </div>

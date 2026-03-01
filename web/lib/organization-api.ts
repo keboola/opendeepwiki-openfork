@@ -48,6 +48,7 @@ export interface DepartmentRepository {
   statusName: string;
   departmentId: string;
   departmentName: string;
+  createdAt?: string;
 }
 
 /**
@@ -66,4 +67,14 @@ export async function getMyDepartmentRepositories(): Promise<DepartmentRepositor
   const url = buildApiUrl("/api/organizations/my-repositories");
   const result = await fetchWithAuth(url);
   return result.data;
+}
+
+export async function shareRepoWithOrganization(repositoryId: string): Promise<{ success: boolean }> {
+  const url = buildApiUrl(`/api/organizations/my-repositories/${repositoryId}/share`);
+  return fetchWithAuth(url, { method: "POST" });
+}
+
+export async function unshareRepoFromOrganization(repositoryId: string): Promise<{ success: boolean }> {
+  const url = buildApiUrl(`/api/organizations/my-repositories/${repositoryId}/share`);
+  return fetchWithAuth(url, { method: "DELETE" });
 }

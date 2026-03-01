@@ -235,7 +235,12 @@ export function RepoShell({
     <DocsLayout
       tree={tree}
       nav={{
-        title,
+        title: (
+          <>
+            <span className="text-muted-foreground">{owner}/</span>{repo}
+          </>
+        ),
+        url: "/",
       }}
       sidebar={{
         defaultOpenLevel: 1,

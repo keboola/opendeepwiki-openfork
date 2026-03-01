@@ -45,6 +45,38 @@ public static class OrganizationEndpoints
         .WithName("GetMyDepartmentRepositories")
         .WithSummary("Get repository list for current user's departments");
 
+        // Share a repository with current user's departments
+        group.MapPost("/my-repositories/{repositoryId}/share", async (
+            string repositoryId,
+            ClaimsPrincipal user,
+            [FromServices] IOrganizationService orgService) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Results.Unauthorized();
+
+            var result = await orgService.ShareRepositoryWithMyDepartmentsAsync(userId, repositoryId);
+            return Results.Ok(new { success = result });
+        })
+        .WithName("ShareRepositoryWithMyDepartments")
+        .WithSummary("Share a repository with current user's departments");
+
+        // Unshare a repository from current user's departments
+        group.MapDelete("/my-repositories/{repositoryId}/share", async (
+            string repositoryId,
+            ClaimsPrincipal user,
+            [FromServices] IOrganizationService orgService) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Results.Unauthorized();
+
+            var result = await orgService.UnshareRepositoryFromMyDepartmentsAsync(userId, repositoryId);
+            return Results.Ok(new { success = result });
+        })
+        .WithName("UnshareRepositoryFromMyDepartments")
+        .WithSummary("Unshare a repository from current user's departments");
+
         return app;
     }
 }

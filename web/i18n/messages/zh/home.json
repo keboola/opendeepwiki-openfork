@@ -168,6 +168,9 @@
     "allTitle": "所有仓库",
     "organizationTitle": "组织仓库",
     "organizationEmpty": "您的部门没有共享的仓库",
-    "myReposEmpty": "您还没有添加任何仓库"
+    "myReposEmpty": "您还没有添加任何仓库",
+    "shareWithOrg": "共享给组织",
+    "sharedWithOrg": "已共享给组织",
+    "unsharedFromOrg": "已从组织移除"
   }
 }

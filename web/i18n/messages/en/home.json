@@ -168,6 +168,9 @@
     "allTitle": "All Repositories",
     "organizationTitle": "Organization Repositories",
     "organizationEmpty": "No repositories shared with your departments",
-    "myReposEmpty": "You haven't added any repositories yet"
+    "myReposEmpty": "You haven't added any repositories yet",
+    "shareWithOrg": "Share with organization",
+    "sharedWithOrg": "Shared with organization",
+    "unsharedFromOrg": "Removed from organization"
   }
 }

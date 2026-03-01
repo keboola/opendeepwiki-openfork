@@ -12,7 +12,8 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
-  GitBranch,
+  Globe,
+  Building2,
   Calendar,
   Bookmark,
   Bell,
@@ -23,6 +24,8 @@ import {
 import { cn } from "@/lib/utils";
 import { addBookmark, removeBookmark, getBookmarkStatus } from "@/lib/bookmark-api";
 import { addSubscription, removeSubscription, getSubscriptionStatus } from "@/lib/subscription-api";
+import { shareRepoWithOrganization, unshareRepoFromOrganization } from "@/lib/organization-api";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 const STATUS_CONFIG: Record<RepositoryStatus, {
@@ -75,9 +78,10 @@ function StatusBadge({ status }: { status: RepositoryStatus }) {
 
 interface PublicRepositoryCardProps {
   repository: RepositoryItemResponse;
+  onShareToggle?: (repositoryId: string, shared: boolean) => void;
 }
 
-export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) {
+export function PublicRepositoryCard({ repository, onShareToggle }: PublicRepositoryCardProps) {
   const t = useTranslations();
   const { user } = useAuth();
   const createdDate = repository.createdAt
@@ -88,6 +92,7 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
 
   // Fetch bookmark and subscription status
   useEffect(() => {
@@ -155,6 +160,25 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
     }
   }, [user, repository.id, isSubscribed, subscribeLoading, t]);
 
+  const handleShareToggle = useCallback(async (checked: boolean) => {
+    if (shareLoading) return;
+    setShareLoading(true);
+    try {
+      if (checked) {
+        await shareRepoWithOrganization(repository.id);
+        toast.success(t("home.filter.sharedWithOrg"));
+      } else {
+        await unshareRepoFromOrganization(repository.id);
+        toast.success(t("home.filter.unsharedFromOrg"));
+      }
+      onShareToggle?.(repository.id, checked);
+    } catch {
+      toast.error(t("home.actions.actionError"));
+    } finally {
+      setShareLoading(false);
+    }
+  }, [repository.id, shareLoading, onShareToggle, t]);
+
   return (
     <Link href={`/${repository.orgName}/${repository.repoName}`}>
       <Card className="h-full transition-all hover:shadow-md hover:border-primary/50 cursor-pointer">
@@ -162,13 +186,16 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
+                {repository.isPublic ? (
+                  <Globe className="h-4 w-4 text-green-500 shrink-0" />
+                ) : repository.departmentName ? (
+                  <Building2 className="h-4 w-4 text-blue-500 shrink-0" />
+                ) : (
+                  <Lock className="h-4 w-4 text-amber-500 shrink-0" />
+                )}
                 <h3 className="font-medium truncate">
                   {repository.orgName}/{repository.repoName}
                 </h3>
-                  {!repository.isPublic && (
-                    <Lock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                  )}
               </div>
               <StatusBadge status={repository.statusName} />
             </div>
@@ -234,6 +261,23 @@ export function PublicRepositoryCard({ repository }: PublicRepositoryCardProps) 
               )}
             </div>
           </div>
+          {onShareToggle && (
+            <div className="flex items-center gap-2 pt-2 border-t mt-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+              {shareLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+              )}
+              <Switch
+                checked={false}
+                onCheckedChange={handleShareToggle}
+                disabled={shareLoading}
+              />
+              <span className="text-sm text-muted-foreground">
+                {t("home.filter.shareWithOrg")}
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>

@@ -156,6 +156,9 @@
     "allTitle": "すべてのリポジトリ",
     "organizationTitle": "組織リポジトリ",
     "organizationEmpty": "部門で共有されているリポジトリはありません",
-    "myReposEmpty": "まだリポジトリを追加していません"
+    "myReposEmpty": "まだリポジトリを追加していません",
+    "shareWithOrg": "組織に共有",
+    "sharedWithOrg": "組織に共有されました",
+    "unsharedFromOrg": "組織から削除されました"
   }
 }

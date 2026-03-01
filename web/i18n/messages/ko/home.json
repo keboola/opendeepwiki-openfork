@@ -156,6 +156,9 @@
     "allTitle": "모든 저장소",
     "organizationTitle": "조직 저장소",
     "organizationEmpty": "부서에 공유된 저장소가 없습니다",
-    "myReposEmpty": "아직 추가한 저장소가 없습니다"
+    "myReposEmpty": "아직 추가한 저장소가 없습니다",
+    "shareWithOrg": "조직에 공유",
+    "sharedWithOrg": "조직에 공유됨",
+    "unsharedFromOrg": "조직에서 제거됨"
   }
 }

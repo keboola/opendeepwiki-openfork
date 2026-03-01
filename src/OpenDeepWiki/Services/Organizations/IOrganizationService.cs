@@ -9,6 +9,8 @@ public interface IOrganizationService
 {
     Task<List<UserDepartmentInfo>> GetUserDepartmentsAsync(string userId);
     Task<List<DepartmentRepositoryInfo>> GetDepartmentRepositoriesAsync(string userId);
+    Task<bool> ShareRepositoryWithMyDepartmentsAsync(string userId, string repositoryId);
+    Task<bool> UnshareRepositoryFromMyDepartmentsAsync(string userId, string repositoryId);
 }
 
 /// <summary>
@@ -35,4 +37,5 @@ public class DepartmentRepositoryInfo
     public string StatusName { get; set; } = string.Empty;
     public string DepartmentId { get; set; } = string.Empty;
     public string DepartmentName { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }

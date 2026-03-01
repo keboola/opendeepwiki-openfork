@@ -10,6 +10,7 @@ import type { DepartmentRepository } from "@/lib/organization-api";
 import { PublicRepositoryCard } from "./public-repository-card";
 import { LanguageTags } from "./language-tags";
 import type { RepositoryItemResponse } from "@/types/repository";
+import type { LanguageInfo } from "@/lib/recommendation-api";
 import { GitBranch, XCircle, RefreshCw, Search, ChevronLeft, ChevronRight, Globe, Building2, User, Layers, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -30,6 +31,7 @@ interface PublicRepositoryListProps {
 }
 
 const PAGE_SIZE = 12;
+const MAX_CLIENT_PAGE_SIZE = 200;
 
 function mapDepartmentRepoToItem(repo: DepartmentRepository): RepositoryItemResponse {
   return {
@@ -40,7 +42,8 @@ function mapDepartmentRepoToItem(repo: DepartmentRepository): RepositoryItemResp
     status: repo.status,
     statusName: (repo.statusName as RepositoryItemResponse["statusName"]) || "Pending",
     isPublic: false,
-    createdAt: "",
+    createdAt: repo.createdAt || "",
+    departmentName: repo.departmentName,
   };
 }
 
@@ -62,6 +65,18 @@ function RepositoryGridSkeleton() {
   );
 }
 
+function computeLanguageStats(repos: RepositoryItemResponse[]): LanguageInfo[] {
+  const counts = new Map<string, number>();
+  for (const r of repos) {
+    if (r.primaryLanguage) {
+      counts.set(r.primaryLanguage, (counts.get(r.primaryLanguage) || 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
@@ -78,6 +93,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [viewLanguages, setViewLanguages] = useState<LanguageInfo[] | null>(null);
 
   // Effective view: fall back to "public" if auth-required view is used without auth
   const effectiveView = useMemo(() => {
@@ -96,6 +112,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
 
       switch (effectiveView) {
         case "public": {
+          setViewLanguages(null);
           const response = await fetchRepositoryList({
             isPublic: true,
             sortBy: "status",
@@ -117,15 +134,23 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
               ownerId: user.id,
               sortBy: "status",
               keyword: keyword || undefined,
-              language: selectedLanguage || undefined,
-              pageSize: 200,
+              pageSize: MAX_CLIENT_PAGE_SIZE,
             }),
             getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
           ]);
 
           // Exclude repos assigned to departments (those are org-imported)
           const mineDeptRepoIds = new Set(mineDeptRepos.map((r) => r.repositoryId));
-          const myRepos = mineResponse.items.filter((r) => !mineDeptRepoIds.has(r.id));
+          let myRepos = mineResponse.items.filter((r) => !mineDeptRepoIds.has(r.id));
+
+          setViewLanguages(computeLanguageStats(myRepos));
+
+          // Client-side language filter
+          if (selectedLanguage) {
+            myRepos = myRepos.filter(
+              (r) => r.primaryLanguage?.toLowerCase() === selectedLanguage.toLowerCase()
+            );
+          }
 
           setTotal(myRepos.length);
           // Client-side pagination
@@ -138,6 +163,8 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
           if (!user) break;
           const deptRepos = await getMyDepartmentRepositories();
           let mapped = deptRepos.map(mapDepartmentRepoToItem);
+
+          setViewLanguages(computeLanguageStats(mapped));
 
           // Client-side keyword filter
           if (keyword) {
@@ -165,6 +192,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
         case "all": {
           // For unauthenticated users, same as public
           if (!user) {
+            setViewLanguages(null);
             const response = await fetchRepositoryList({
               isPublic: true,
               sortBy: "status",
@@ -184,16 +212,14 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
               isPublic: true,
               sortBy: "status",
               keyword: keyword || undefined,
-              language: selectedLanguage || undefined,
-              pageSize: 200,
+              pageSize: MAX_CLIENT_PAGE_SIZE,
             }),
             getMyDepartmentRepositories().catch(() => [] as DepartmentRepository[]),
             fetchRepositoryList({
               ownerId: user.id,
               sortBy: "status",
               keyword: keyword || undefined,
-              language: selectedLanguage || undefined,
-              pageSize: 200,
+              pageSize: MAX_CLIENT_PAGE_SIZE,
             }).catch(() => ({ items: [] as RepositoryItemResponse[], total: 0 })),
           ]);
 
@@ -210,10 +236,19 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
           }
 
           const allRepos = Array.from(repoMap.values());
-          setTotal(allRepos.length);
+          setViewLanguages(computeLanguageStats(allRepos));
+
+          // Client-side language filter
+          let filteredRepos = allRepos;
+          if (selectedLanguage) {
+            filteredRepos = allRepos.filter(
+              (r) => r.primaryLanguage?.toLowerCase() === selectedLanguage.toLowerCase()
+            );
+          }
+          setTotal(filteredRepos.length);
           // Client-side pagination
           const allStart = (page - 1) * PAGE_SIZE;
-          setRepositories(allRepos.slice(allStart, allStart + PAGE_SIZE));
+          setRepositories(filteredRepos.slice(allStart, allStart + PAGE_SIZE));
           break;
         }
       }
@@ -427,6 +462,7 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
         selectedLanguage={selectedLanguage}
         onLanguageChange={handleLanguageChange}
         className="mb-6"
+        languages={viewLanguages ?? undefined}
       />
 
       {repositories.length === 0 && !keyword && !selectedLanguage ? (
@@ -445,7 +481,11 @@ export function PublicRepositoryList({ keyword, view = "public", onViewChange, c
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {repositories.map((repo) => (
-              <PublicRepositoryCard key={repo.id} repository={repo} />
+              <PublicRepositoryCard
+                key={repo.id}
+                repository={repo}
+                {...(effectiveView === "mine" ? { onShareToggle: () => loadRepositories() } : {})}
+              />
             ))}
           </div>
 

@@ -178,7 +178,8 @@ Remember to call WriteMindMapAsync with the complete mind map content.";
                 tools,
                 "MindMapGeneration",
                 ProcessingStep.Catalog,
-                cancellationToken);
+                cancellationToken,
+                _options.MindMapMaxOutputTokens);
 
             stopwatch.Stop();
             _logger.LogInformation(
@@ -268,7 +269,8 @@ Execute the workflow now. Read entry point files to understand the architecture,
                 tools,
                 "CatalogGeneration",
                 ProcessingStep.Catalog,
-                cancellationToken);
+                cancellationToken,
+                _options.CatalogMaxOutputTokens);
 
             stopwatch.Stop();
             _logger.LogInformation(
@@ -622,14 +624,15 @@ Please start executing the task.";
             // Build base URL for file references
             var gitBaseUrl = BuildGitFileBaseUrl(workspace.GitUrl, workspace.BranchName);
 
+            // Only pass repo-level variables to the prompt template (not per-document ones)
+            // This keeps the system prompt byte-identical across documents, enabling
+            // Gemini implicit context caching (75-90% discount on cached prefix tokens)
             var prompt = await _promptPlugin.LoadPromptAsync(
                 "content-generator",
                 new Dictionary<string, string>
                 {
                     ["repository_name"] = $"{workspace.Organization}/{workspace.RepositoryName}",
-                    ["language"] = branchLanguage.LanguageCode,
-                    ["catalog_path"] = catalogPath,
-                    ["catalog_title"] = catalogTitle
+                    ["language"] = branchLanguage.LanguageCode
                 },
                 cancellationToken);
 
@@ -639,86 +642,16 @@ Please start executing the task.";
                 gitTool.GetTools().Concat(docTool.GetTools()),
                 cancellationToken);
 
-            var userMessage = $@"Please generate Wiki document content for catalog item ""{catalogTitle}"" (path: {catalogPath}).
+            // Keep user message concise -- detailed instructions are in the system prompt
+            var userMessage = $@"Generate Wiki document for catalog item ""{catalogTitle}"" (path: {catalogPath}).
 
-## Repository Information
+Repository: {workspace.Organization}/{workspace.RepositoryName}
+Git URL: {workspace.GitUrl}
+Branch: {workspace.BranchName}
+File Reference Base URL: {gitBaseUrl}
+Target Language: {branchLanguage.LanguageCode}
 
-- Repository: {workspace.Organization}/{workspace.RepositoryName}
-- Git URL: {workspace.GitUrl}
-- Branch: {workspace.BranchName}
-- File Reference Base URL: {gitBaseUrl}
-- Target Language: {branchLanguage.LanguageCode}
-
-## Task Requirements
-
-1. **Gather Source Material**
-   - Use ListFiles to find source files related to ""{catalogTitle}""
-   - Read key implementation files and configuration files
-   - Read interface definitions only when they are directly used or necessary for this document (skip unused/irrelevant interfaces)
-   - Use Grep to search for related classes, functions, API endpoints
-
-2. **Document Structure** (Must Include)
-   - Title (H1): Must match catalog title
-   - Overview: Explain purpose and use cases
-   - Architecture Diagram: Use Mermaid to illustrate component relationships, data flow, or system architecture
-   - Main Content: Detailed explanation of implementation, architecture, or usage
-   - Usage Examples: Code examples extracted from actual source code
-   - Configuration Options (if applicable): List options in table format
-   - API Reference (if applicable): Method signatures, parameters, return values
-   - Related Links: Links to related documentation and source files
-
-3. **File Reference Links** (IMPORTANT)
-   - When referencing source files, use the full URL format: {gitBaseUrl}/<file_path>
-   - Example: [{gitBaseUrl}/src/Example.cs]({gitBaseUrl}/src/Example.cs)
-   - For specific line references: {gitBaseUrl}/<file_path>#L<line_number>
-   - Always provide clickable links to source files mentioned in the document
-
-4. **Mermaid Diagram Requirements** (IMPORTANT)
-   - Include at least one architecture or flow diagram using Mermaid
-   - Use appropriate diagram types:
-     * `flowchart TD` or `flowchart LR` for process flows and component relationships
-     * `classDiagram` for class structures and inheritance
-     * `sequenceDiagram` for interaction sequences
-     * `erDiagram` for data models and relationships
-     * `stateDiagram-v2` for state machines
-   - Mermaid syntax rules:
-     * Node IDs must not contain special characters (use letters, numbers, underscores only)
-     * Use quotes for labels with special characters: `A[""Label with (parentheses)""]`
-     * Escape special characters in labels properly
-     * Keep diagrams focused and readable (max 15-20 nodes per diagram)
-     * Use subgraph for grouping related components
-   - Example valid Mermaid syntax:
-     ```mermaid
-     flowchart TD
-         subgraph Core[""Core Components""]
-             A[Service Layer] --> B[Repository]
-             B --> C[(Database)]
-         end
-         D[API Controller] --> A
-     ```
-
-5. **Content Quality Requirements**
-   - All information must be based on actual source code, do not fabricate
-   - Code examples must be extracted from repository with syntax highlighting
-   - Explain design intent (WHY), not just description (WHAT)
-   - Write document content in {branchLanguage.LanguageCode} language
-   - Keep code identifiers in original form, do not translate
-
-6. **Output Requirements**
-   - Use WriteDoc tool to write the document
-   - Source files are automatically tracked from files you read
-
-## Execution Steps
-
-1. Analyze catalog title to determine document scope
-2. Use ListFiles and Grep to find related source files
-3. Read key files, extract information and code examples
-4. Design appropriate Mermaid diagrams to illustrate architecture/flow
-5. Organize content following document structure template
-6. Ensure all file references use the correct URL format with branch
-7. Call WriteDoc(content) to write document
-
-Please start executing the task.";
+Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save the final document.";
 
             await ExecuteAgentWithRetryAsync(
                 _options.ContentModel,
@@ -804,14 +737,16 @@ Please start executing the task.";
         AITool[] tools,
         string operationName,
         ProcessingStep step,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        int? maxOutputTokens = null)
     {
         var retryCount = 0;
         Exception? lastException = null;
+        var effectiveMaxOutputTokens = maxOutputTokens ?? _options.MaxOutputTokens;
 
         _logger.LogDebug(
-            "Starting AI agent execution. Operation: {Operation}, Model: {Model}, ToolCount: {ToolCount}",
-            operationName, model, tools.Length);
+            "Starting AI agent execution. Operation: {Operation}, Model: {Model}, ToolCount: {ToolCount}, MaxOutputTokens: {MaxOutputTokens}",
+            operationName, model, tools.Length, effectiveMaxOutputTokens);
 
         while (retryCount < _options.MaxRetryAttempts)
         {
@@ -830,7 +765,7 @@ Please start executing the task.";
                     ChatOptions = new ChatOptions()
                     {
                         ToolMode = ChatToolMode.Auto,
-                        MaxOutputTokens = _options.MaxOutputTokens,
+                        MaxOutputTokens = effectiveMaxOutputTokens,
                         Tools = tools
                     }
                 };

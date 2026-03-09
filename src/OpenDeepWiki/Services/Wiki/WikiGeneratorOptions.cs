@@ -74,10 +74,24 @@ public class WikiGeneratorOptions
     public int ParallelCount { get; set; } = GetParallelCountFromEnv();
 
     /// <summary>
-    /// Maximum output tokens for AI generation.
+    /// Maximum output tokens for document content generation.
     /// Default: 32000
     /// </summary>
     public int MaxOutputTokens { get; set; } = 32000;
+
+    /// <summary>
+    /// Maximum output tokens for catalog structure generation.
+    /// Catalog output is structured JSON, needs fewer tokens than content.
+    /// Default: 16000
+    /// </summary>
+    public int CatalogMaxOutputTokens { get; set; } = 16000;
+
+    /// <summary>
+    /// Maximum output tokens for mind map generation.
+    /// Mind maps are concise hierarchical structures.
+    /// Default: 8000
+    /// </summary>
+    public int MindMapMaxOutputTokens { get; set; } = 8000;
 
     /// <summary>
     /// Timeout in minutes for document generation tasks.

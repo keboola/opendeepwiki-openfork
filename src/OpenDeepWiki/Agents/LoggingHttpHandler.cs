@@ -1,10 +1,12 @@
 ﻿using System.Net;
+using System.Text.Json;
 
 namespace OpenDeepWiki.Agents;
 
 /// <summary>
 /// Custom HTTP message handler for intercepting and logging request/response status
 /// Supports automatic retry for 502/429 errors
+/// Also injects stream_options to enable token usage tracking in streaming responses
 /// </summary>
 public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
 {
@@ -20,6 +22,9 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
+        // Inject stream_options for streaming chat completions to enable token usage tracking
+        await InjectStreamOptionsAsync(request);
+
         var requestId = Guid.NewGuid().ToString("N")[..8];
         var startTime = DateTime.UtcNow;
 
@@ -167,5 +172,57 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
         }
 
         return clone;
+    }
+
+    /// <summary>
+    /// Injects stream_options: { include_usage: true } into streaming chat completion requests.
+    /// The MEAI OpenAI adapter does not set this by default, so without it,
+    /// StreamingChatCompletionUpdate.Usage is always null and we can't track token costs.
+    /// </summary>
+    private static async Task InjectStreamOptionsAsync(HttpRequestMessage request)
+    {
+        if (request.Method != HttpMethod.Post || request.Content == null)
+            return;
+
+        var uri = request.RequestUri?.AbsolutePath;
+        if (uri == null || !uri.EndsWith("/chat/completions", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        try
+        {
+            var body = await request.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(body);
+
+            // Only inject for streaming requests that don't already have stream_options
+            if (!doc.RootElement.TryGetProperty("stream", out var streamProp) || !streamProp.GetBoolean())
+                return;
+
+            if (doc.RootElement.TryGetProperty("stream_options", out _))
+                return;
+
+            // Rebuild JSON with stream_options injected
+            using var ms = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(ms))
+            {
+                writer.WriteStartObject();
+                foreach (var prop in doc.RootElement.EnumerateObject())
+                {
+                    prop.WriteTo(writer);
+                }
+                writer.WritePropertyName("stream_options");
+                writer.WriteStartObject();
+                writer.WriteBoolean("include_usage", true);
+                writer.WriteEndObject();
+                writer.WriteEndObject();
+            }
+
+            var newBody = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+            var contentType = request.Content.Headers.ContentType;
+            request.Content = new StringContent(newBody, System.Text.Encoding.UTF8, contentType?.MediaType ?? "application/json");
+        }
+        catch (JsonException)
+        {
+            // Not valid JSON - skip injection silently
+        }
     }
 }

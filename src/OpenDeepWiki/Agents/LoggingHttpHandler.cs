@@ -191,14 +191,22 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
         try
         {
             var body = await request.Content.ReadAsStringAsync();
+            Console.WriteLine($"[stream_options] Content type: {request.Content.GetType().Name}, Body length: {body.Length}, Has stream_options: {body.Contains("stream_options")}");
+
             using var doc = JsonDocument.Parse(body);
 
             // Only inject for streaming requests that don't already have stream_options
             if (!doc.RootElement.TryGetProperty("stream", out var streamProp) || !streamProp.GetBoolean())
+            {
+                Console.WriteLine("[stream_options] Not a streaming request, skipping");
                 return;
+            }
 
             if (doc.RootElement.TryGetProperty("stream_options", out _))
+            {
+                Console.WriteLine("[stream_options] Already has stream_options, skipping");
                 return;
+            }
 
             // Rebuild JSON with stream_options injected
             using var ms = new MemoryStream();
@@ -219,10 +227,15 @@ public class LoggingHttpHandler(HttpMessageHandler innerHandler) : DelegatingHan
             var newBody = System.Text.Encoding.UTF8.GetString(ms.ToArray());
             var contentType = request.Content.Headers.ContentType;
             request.Content = new StringContent(newBody, System.Text.Encoding.UTF8, contentType?.MediaType ?? "application/json");
+            Console.WriteLine($"[stream_options] Injected stream_options into request. New body length: {newBody.Length}");
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            // Not valid JSON - skip injection silently
+            Console.WriteLine($"[stream_options] JSON parse error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[stream_options] Unexpected error: {ex.GetType().Name}: {ex.Message}");
         }
     }
 }

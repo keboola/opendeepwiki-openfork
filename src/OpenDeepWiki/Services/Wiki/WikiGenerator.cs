@@ -803,6 +803,7 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
                 var inputTokens = 0;
                 var outputTokens = 0;
                 var toolCallCount = 0;
+                string? lastRawType = null;
 
                 _logger.LogDebug("Starting streaming response. Operation: {Operation}", operationName);
 
@@ -868,10 +869,12 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
                     {
                         inputTokens = openAiUpdate.Usage.InputTokenCount;
                         outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                        Console.WriteLine($"[token-track] OpenAI usage captured: input={inputTokens}, output={outputTokens}");
                     }
                     // Path 3: Generic fallback (UsageContent from MEAI abstraction)
                     else
                     {
+                        lastRawType = update.RawRepresentation?.GetType().FullName;
                         var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;
                         if (usage != null)
                         {
@@ -882,6 +885,12 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
 
                 // Print newline after streaming completes
                 Console.WriteLine();
+
+                // Diagnostic: log raw type if no usage was captured
+                if (inputTokens == 0 && outputTokens == 0 && usageDetails == null)
+                {
+                    Console.WriteLine($"[token-track] No usage extracted for {operationName}. Last RawRepresentation type: {lastRawType ?? "never-reached-else"}");
+                }
 
                 attemptStopwatch.Stop();
 

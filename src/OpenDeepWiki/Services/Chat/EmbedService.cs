@@ -5,6 +5,7 @@ using Anthropic.Models.Messages;
 using LibGit2Sharp;
 using Microsoft.Agents.AI;
 using OpenAI.Chat;
+using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;

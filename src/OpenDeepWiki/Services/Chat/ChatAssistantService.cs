@@ -700,13 +700,20 @@ public class ChatAssistantService : IChatAssistantService
                         }
                     }
                 }
+                // Path 1b: OpenAI / Gemini (StreamingChatCompletionUpdate nested inside ChatResponseUpdate)
+                else if (chatResponseUpdate.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                         && openAiUpdate.Usage != null)
+                {
+                    inputTokens = openAiUpdate.Usage.InputTokenCount;
+                    outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                }
             }
-            // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
-            else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUsageUpdate
-                     && openAiUsageUpdate.Usage != null)
+            // Path 2: Direct StreamingChatCompletionUpdate (for frameworks that expose it directly)
+            else if (update.RawRepresentation is StreamingChatCompletionUpdate directOpenAiUpdate
+                     && directOpenAiUpdate.Usage != null)
             {
-                inputTokens = openAiUsageUpdate.Usage.InputTokenCount;
-                outputTokens = openAiUsageUpdate.Usage.OutputTokenCount;
+                inputTokens = directOpenAiUpdate.Usage.InputTokenCount;
+                outputTokens = directOpenAiUpdate.Usage.OutputTokenCount;
             }
             // Path 3: Generic fallback (UsageContent from MEAI abstraction)
             else

@@ -803,8 +803,6 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
                 var inputTokens = 0;
                 var outputTokens = 0;
                 var toolCallCount = 0;
-                string? lastRawType = null;
-
                 _logger.LogDebug("Starting streaming response. Operation: {Operation}", operationName);
 
                 var thread = await chatClient.CreateSessionAsync(cancellationToken);
@@ -850,9 +848,10 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
                     }
 
                     // Track token usage if available
-                    // Path 1: Anthropic (via ChatResponseUpdate wrapper)
+                    // Path 1: Via ChatResponseUpdate wrapper (MEAI)
                     if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
                     {
+                        // Path 1a: Anthropic
                         if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
                             {
                                 Value: RawMessageDeltaEvent deltaEvent
@@ -862,19 +861,24 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
                                 deltaEvent.Usage.CacheCreationInputTokens + deltaEvent.Usage.CacheReadInputTokens ?? 0);
                             outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                         }
+                        // Path 1b: OpenAI / Gemini (StreamingChatCompletionUpdate nested inside ChatResponseUpdate)
+                        else if (chatResponseUpdate.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                                 && openAiUpdate.Usage != null)
+                        {
+                            inputTokens = openAiUpdate.Usage.InputTokenCount;
+                            outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                        }
                     }
-                    // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
-                    else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
-                             && openAiUpdate.Usage != null)
+                    // Path 2: Direct StreamingChatCompletionUpdate (for frameworks that expose it directly)
+                    else if (update.RawRepresentation is StreamingChatCompletionUpdate directOpenAiUpdate
+                             && directOpenAiUpdate.Usage != null)
                     {
-                        inputTokens = openAiUpdate.Usage.InputTokenCount;
-                        outputTokens = openAiUpdate.Usage.OutputTokenCount;
-                        Console.WriteLine($"[token-track] OpenAI usage captured: input={inputTokens}, output={outputTokens}");
+                        inputTokens = directOpenAiUpdate.Usage.InputTokenCount;
+                        outputTokens = directOpenAiUpdate.Usage.OutputTokenCount;
                     }
                     // Path 3: Generic fallback (UsageContent from MEAI abstraction)
                     else
                     {
-                        lastRawType = update.RawRepresentation?.GetType().FullName;
                         var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;
                         if (usage != null)
                         {
@@ -885,12 +889,6 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
 
                 // Print newline after streaming completes
                 Console.WriteLine();
-
-                // Diagnostic: log raw type if no usage was captured
-                if (inputTokens == 0 && outputTokens == 0 && usageDetails == null)
-                {
-                    Console.WriteLine($"[token-track] No usage extracted for {operationName}. Last RawRepresentation type: {lastRawType ?? "never-reached-else"}");
-                }
 
                 attemptStopwatch.Stop();
 
@@ -1529,9 +1527,10 @@ Translation:";
                 contentBuilder.Append(update.Text);
             }
 
-            // Path 1: Anthropic (via ChatResponseUpdate wrapper)
+            // Path 1: Via ChatResponseUpdate wrapper (MEAI)
             if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
             {
+                // Path 1a: Anthropic
                 if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
                     {
                         Value: RawMessageDeltaEvent deltaEvent
@@ -1541,13 +1540,20 @@ Translation:";
                         deltaEvent.Usage.CacheCreationInputTokens + deltaEvent.Usage.CacheReadInputTokens ?? 0);
                     outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                 }
+                // Path 1b: OpenAI / Gemini (StreamingChatCompletionUpdate nested inside ChatResponseUpdate)
+                else if (chatResponseUpdate.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                         && openAiUpdate.Usage != null)
+                {
+                    inputTokens = openAiUpdate.Usage.InputTokenCount;
+                    outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                }
             }
-            // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
-            else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
-                     && openAiUpdate.Usage != null)
+            // Path 2: Direct StreamingChatCompletionUpdate (for frameworks that expose it directly)
+            else if (update.RawRepresentation is StreamingChatCompletionUpdate directOpenAiUpdate
+                     && directOpenAiUpdate.Usage != null)
             {
-                inputTokens = openAiUpdate.Usage.InputTokenCount;
-                outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                inputTokens = directOpenAiUpdate.Usage.InputTokenCount;
+                outputTokens = directOpenAiUpdate.Usage.OutputTokenCount;
             }
             // Path 3: Generic fallback (UsageContent from MEAI abstraction)
             else
@@ -1640,9 +1646,10 @@ Translated document:";
                     }
 
                     // Track token usage if available
-                    // Path 1: Anthropic (via ChatResponseUpdate wrapper)
+                    // Path 1: Via ChatResponseUpdate wrapper (MEAI)
                     if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
                     {
+                        // Path 1a: Anthropic
                         if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
                             {
                                 Value: RawMessageDeltaEvent deltaEvent
@@ -1652,13 +1659,20 @@ Translated document:";
                                 deltaEvent.Usage.CacheCreationInputTokens + deltaEvent.Usage.CacheReadInputTokens ?? 0);
                             outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                         }
+                        // Path 1b: OpenAI / Gemini (StreamingChatCompletionUpdate nested inside ChatResponseUpdate)
+                        else if (chatResponseUpdate.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                                 && openAiUpdate.Usage != null)
+                        {
+                            inputTokens = openAiUpdate.Usage.InputTokenCount;
+                            outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                        }
                     }
-                    // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
-                    else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
-                             && openAiUpdate.Usage != null)
+                    // Path 2: Direct StreamingChatCompletionUpdate (for frameworks that expose it directly)
+                    else if (update.RawRepresentation is StreamingChatCompletionUpdate directOpenAiUpdate
+                             && directOpenAiUpdate.Usage != null)
                     {
-                        inputTokens = openAiUpdate.Usage.InputTokenCount;
-                        outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                        inputTokens = directOpenAiUpdate.Usage.InputTokenCount;
+                        outputTokens = directOpenAiUpdate.Usage.OutputTokenCount;
                     }
                     // Path 3: Generic fallback (UsageContent from MEAI abstraction)
                     else
@@ -1777,9 +1791,10 @@ Translated mind map:";
                     }
 
                     // Track token usage if available
-                    // Path 1: Anthropic (via ChatResponseUpdate wrapper)
+                    // Path 1: Via ChatResponseUpdate wrapper (MEAI)
                     if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
                     {
+                        // Path 1a: Anthropic
                         if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
                             {
                                 Value: RawMessageDeltaEvent deltaEvent
@@ -1789,13 +1804,20 @@ Translated mind map:";
                                 deltaEvent.Usage.CacheCreationInputTokens + deltaEvent.Usage.CacheReadInputTokens ?? 0);
                             outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                         }
+                        // Path 1b: OpenAI / Gemini (StreamingChatCompletionUpdate nested inside ChatResponseUpdate)
+                        else if (chatResponseUpdate.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                                 && openAiUpdate.Usage != null)
+                        {
+                            inputTokens = openAiUpdate.Usage.InputTokenCount;
+                            outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                        }
                     }
-                    // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
-                    else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
-                             && openAiUpdate.Usage != null)
+                    // Path 2: Direct StreamingChatCompletionUpdate (for frameworks that expose it directly)
+                    else if (update.RawRepresentation is StreamingChatCompletionUpdate directOpenAiUpdate
+                             && directOpenAiUpdate.Usage != null)
                     {
-                        inputTokens = openAiUpdate.Usage.InputTokenCount;
-                        outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                        inputTokens = directOpenAiUpdate.Usage.InputTokenCount;
+                        outputTokens = directOpenAiUpdate.Usage.OutputTokenCount;
                     }
                     // Path 3: Generic fallback (UsageContent from MEAI abstraction)
                     else

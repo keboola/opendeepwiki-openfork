@@ -4,6 +4,7 @@ using System.Text.Json;
 using Anthropic.Models.Messages;
 using LibGit2Sharp;
 using Microsoft.Agents.AI;
+using OpenAI.Chat;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
@@ -424,6 +425,7 @@ public class EmbedService : IEmbedService
             }
 
             // Track token usage if available
+            // Path 1: Anthropic (via ChatResponseUpdate wrapper)
             if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
             {
                 if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
@@ -436,6 +438,14 @@ public class EmbedService : IEmbedService
                     outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                 }
             }
+            // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
+            else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                     && openAiUpdate.Usage != null)
+            {
+                inputTokens = openAiUpdate.Usage.InputTokenCount;
+                outputTokens = openAiUpdate.Usage.OutputTokenCount;
+            }
+            // Path 3: Generic fallback (UsageContent from MEAI abstraction)
             else
             {
                 var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;

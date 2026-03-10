@@ -849,6 +849,7 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
                     }
 
                     // Track token usage if available
+                    // Path 1: Anthropic (via ChatResponseUpdate wrapper)
                     if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
                     {
                         if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
@@ -861,6 +862,14 @@ Execute the 3-phase process (Gather -> Think -> Write) now. Use WriteDoc to save
                             outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                         }
                     }
+                    // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
+                    else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                             && openAiUpdate.Usage != null)
+                    {
+                        inputTokens = openAiUpdate.Usage.InputTokenCount;
+                        outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                    }
+                    // Path 3: Generic fallback (UsageContent from MEAI abstraction)
                     else
                     {
                         var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;
@@ -1511,6 +1520,7 @@ Translation:";
                 contentBuilder.Append(update.Text);
             }
 
+            // Path 1: Anthropic (via ChatResponseUpdate wrapper)
             if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
             {
                 if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
@@ -1523,6 +1533,14 @@ Translation:";
                     outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                 }
             }
+            // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
+            else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                     && openAiUpdate.Usage != null)
+            {
+                inputTokens = openAiUpdate.Usage.InputTokenCount;
+                outputTokens = openAiUpdate.Usage.OutputTokenCount;
+            }
+            // Path 3: Generic fallback (UsageContent from MEAI abstraction)
             else
             {
                 var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;
@@ -1613,6 +1631,7 @@ Translated document:";
                     }
 
                     // Track token usage if available
+                    // Path 1: Anthropic (via ChatResponseUpdate wrapper)
                     if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
                     {
                         if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
@@ -1625,6 +1644,14 @@ Translated document:";
                             outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                         }
                     }
+                    // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
+                    else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                             && openAiUpdate.Usage != null)
+                    {
+                        inputTokens = openAiUpdate.Usage.InputTokenCount;
+                        outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                    }
+                    // Path 3: Generic fallback (UsageContent from MEAI abstraction)
                     else
                     {
                         var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;
@@ -1741,6 +1768,7 @@ Translated mind map:";
                     }
 
                     // Track token usage if available
+                    // Path 1: Anthropic (via ChatResponseUpdate wrapper)
                     if (update.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
                     {
                         if (chatResponseUpdate.RawRepresentation is RawMessageStreamEvent
@@ -1753,6 +1781,14 @@ Translated mind map:";
                             outputTokens = (int)(deltaEvent.Usage.OutputTokens);
                         }
                     }
+                    // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
+                    else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUpdate
+                             && openAiUpdate.Usage != null)
+                    {
+                        inputTokens = openAiUpdate.Usage.InputTokenCount;
+                        outputTokens = openAiUpdate.Usage.OutputTokenCount;
+                    }
+                    // Path 3: Generic fallback (UsageContent from MEAI abstraction)
                     else
                     {
                         var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;

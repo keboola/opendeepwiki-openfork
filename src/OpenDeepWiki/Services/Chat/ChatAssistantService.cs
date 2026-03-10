@@ -4,6 +4,7 @@ using System.Text.Json;
 using Anthropic.Models.Messages;
 using LibGit2Sharp;
 using Microsoft.Agents.AI;
+using OpenAI.Chat;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
@@ -475,7 +476,7 @@ public class ChatAssistantService : IChatAssistantService
             }
             
             // handle tool results
-            if (update.RawRepresentation is OpenAI.Chat.StreamingChatCompletionUpdate chatCompletionUpdate &&
+            if (update.RawRepresentation is StreamingChatCompletionUpdate chatCompletionUpdate &&
                 chatCompletionUpdate.ToolCallUpdates.Count > 0)
             {
                 foreach (var toolCall in chatCompletionUpdate.ToolCallUpdates)
@@ -511,7 +512,7 @@ public class ChatAssistantService : IChatAssistantService
             }
 
             // handle tool call completions for OpenAI streaming format (based on finish reason)
-            if (update.RawRepresentation is OpenAI.Chat.StreamingChatCompletionUpdate finishUpdate)
+            if (update.RawRepresentation is StreamingChatCompletionUpdate finishUpdate)
             {
                 var finishReason = finishUpdate.FinishReason;
                 if (finishReason == OpenAI.Chat.ChatFinishReason.ToolCalls)
@@ -699,9 +700,16 @@ public class ChatAssistantService : IChatAssistantService
                     }
                 }
             }
+            // Path 2: OpenAI / Gemini (via StreamingChatCompletionUpdate)
+            else if (update.RawRepresentation is StreamingChatCompletionUpdate openAiUsageUpdate
+                     && openAiUsageUpdate.Usage != null)
+            {
+                inputTokens = openAiUsageUpdate.Usage.InputTokenCount;
+                outputTokens = openAiUsageUpdate.Usage.OutputTokenCount;
+            }
+            // Path 3: Generic fallback (UsageContent from MEAI abstraction)
             else
             {
-                // try to extract token usage from other response formats
                 var usage = update.Contents.OfType<UsageContent>().FirstOrDefault()?.Details;
                 if (usage != null)
                 {
